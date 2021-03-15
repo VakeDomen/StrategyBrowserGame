@@ -1,0 +1,75 @@
+version: '3.2'
+services:
+
+  db:
+    image: mysql:5.7
+    container_name: browser_strategy_game_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks: 
+      - internal
+      - exposed
+
+
+  # server:
+  #   container_name: ocenjevalec_lovskih_trofej
+  #   restart: "unless-stopped"
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #     PORT: ${PORT}
+  #     JWT_SECTRET: ${JWT_SECRET}
+  #     ADMIN_EMAIL: ${ADMIN_EMAIL}
+  #     UPLOADS_FOLDER_PATH: ${UPLOADS_FOLDER_PATH}
+  #     HASH_SALT_ROUNDS: ${HASH_SALT_ROUNDS}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_HOST: db
+  #   volumes: 
+  #     - ./uploads:${UPLOADS_FOLDER_PATH}
+  #   # labels:
+  #   #   - traefik.enable=true
+  #   #   - traefik.http.routers.lovskiapi.rule=Host(`${DOMAIN}`)
+  #   #   - traefik.http.routers.lovskiapi.entrypoints=websecure
+  #   #   - traefik.http.routers.lovskiapi.tls=true
+  #   #   - traefik.http.routers.lovskiapi.tls.certresolver=le
+  #   #   - traefik.http.services.lovskiapi.loadbalancer.server.port=${PORT} 
+  #   ports: 
+  #     - 3000:3000
+  #   depends_on:
+  #     - db
+  #   networks: 
+  #     - lovci
+  #     - exposed
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: browser_strategy_game_phpmyadmin
+    environment:
+      PMA_HOST: db
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    restart: always
+    ports:
+      - 8080:80
+    networks:
+      - internal
+      - exposed
+
+volumes:
+  dbdata:
+
+networks:
+  internal: 
+    internal: true
+  exposed:

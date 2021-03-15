@@ -1,0 +1,47 @@
+<div class="container" *ngIf="game">
+    <div class="level">
+        <div class="level-left">
+            <h1 class="title is-1">Game {{game.id}}</h1>
+        </div>
+        <div class="level-right">
+            <button class="button is-danger is-outlined" *ngIf="isHost()">Close room</button>
+            <button class="button is-success" *ngIf="!isHost() && !isMember()" (click)=joinRoom()>Join!</button>
+            <button class="button is-danger is-outlined" *ngIf="!isHost() && isMember()" (click)=leaveRoom()>Leave</button>
+        </div>
+    </div>
+
+    <div class="level" *ngIf="!isHost()">
+        <div class="level-left">
+            <h1 class="title is-3" *ngIf="isMember()">Waiting for host to start the game.</h1>
+        </div>
+        <div class="level-right"></div>
+    </div>
+
+    <div class="level" *ngIf="isHost()">
+        <div class="level-item">
+            <button class="button is-success" *ngIf="game.players.length > 1" (click)=startGame()>Start!</button>
+            <h1 class="title is-3" *ngIf="game.players.length <= 1">Waiting for more players to join.</h1>
+        </div>
+    </div>
+
+    <br><br><br>
+
+    <div class="box">
+        <h3 class="title is-3">
+            Players:
+        </h3>
+        <p *ngFor="let player of game.players">{{player}}</p>
+    </div>
+    
+
+</div>
+
+<div class="container" *ngIf="!game">
+    <div class="level">
+        <div class="level-item">
+            <h1 class="title is-1">
+                Game does not exist!
+            </h1>
+        </div>
+    </div>
+</div>

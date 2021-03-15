@@ -31,7 +31,9 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.sass"
+              "src/styles.sass",
+              "node_modules/ngx-toastr/toastr.css",
+              "node_modules/bulma/css/bulma.css"
             ],
             "scripts": []
           },

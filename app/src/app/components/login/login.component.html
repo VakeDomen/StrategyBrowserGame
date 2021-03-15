@@ -1,0 +1,29 @@
+<div class="container ">
+    <div class="box has-text-cenered">
+        <br>
+        <h3 class="title is-3">Login</h3>
+        <br>
+        <input 
+            class="input is-rounded is-large" 
+            type="text" 
+            placeholder="Choose your name"
+            [(ngModel)]='name'
+        >
+        <br>
+        <input 
+            class="input is-rounded is-large mt-3" 
+            type="password" 
+            placeholder="Password"
+            [(ngModel)]='password'
+        >
+        <br>
+        <div class="level mt-3">
+            <div class="level-item">
+                <button class="button is-success is-large" (click)=login()>Login</button>
+            </div>
+            <div class="level-item">
+                <button class="button is-success is-large is-outlined" (click)=register()>Register</button>
+            </div>
+        </div>
+    </div>
+</div>

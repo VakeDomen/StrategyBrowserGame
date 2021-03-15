@@ -1,0 +1,8 @@
+{
+  "tables": {
+    "player": "players",
+    "user": "users",
+    "game": "games"
+  },
+  "log": true
+}
