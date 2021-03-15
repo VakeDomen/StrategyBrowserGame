@@ -1,4 +1,4 @@
-<div class="container has-text-centered">
+<div class="container has-text-centered" *ngIf="dataReady">
     <div class="level">
         <div class="level-left">
             <h1 class="title is-1">Games:</h1>
@@ -20,7 +20,7 @@
             <tbody>
                <tr *ngFor="let game of games" class='gray-hover' (click)=goToRoom(game.id)>
                     <td>{{game.id}}</td>
-                    <td>{{game.host}}</td>
+                    <td>{{userById(game.host)}}</td>
                     <td>{{game.players.length}}</td>
                </tr>
             </tbody>
@@ -37,3 +37,5 @@
         </div>
     </div>
 </div>
+
+<progress class="progress is-small is-primary" max="100" *ngIf="!dataReady">15%</progress>

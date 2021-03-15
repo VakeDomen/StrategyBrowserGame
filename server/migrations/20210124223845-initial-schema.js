@@ -63,7 +63,10 @@ const games = {
       type: 'datetime'
     },
     host: {
-      type: 'real',
+      type: 'string',
+    },
+    running: {
+      type: 'boolean',
     },
   },
   ifNotExists: true
@@ -88,5 +91,6 @@ const players = {
     defeated_at: {
       type: 'datetime'
     }
-  }
+  },
+  ifNotExists: true
 }

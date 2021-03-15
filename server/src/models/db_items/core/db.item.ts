@@ -1,3 +1,4 @@
+import { type } from 'node:os';
 import { v4 as uuidv4 } from 'uuid';
 
 export class DbItem {
@@ -26,7 +27,9 @@ export class DbItem {
 		for (let key of Object.keys(this)){
 			if (typeof this[key] !== 'undefined'){
 				if (key !== 'id') {
-					if (typeof this[key] === 'boolean') {
+					if (typeof this[key] === 'object' && this[key] === null) {
+						str.push(key + ' = null' );
+					} else if (typeof this[key] === 'boolean') {
 						str.push(key + ' = ' + ((this[key])? 1 : 0));
 					} else {
 						str.push(key + ' = \'' + this[key] + '\'');
@@ -41,7 +44,9 @@ export class DbItem {
 		for (let key of Object.keys(this)) {
 			if (typeof this[key] !== 'undefined') {
 				if (key === 'id') continue;
-				if (typeof this[key] === 'boolean') {
+				if (typeof this[key] === 'object' && this[key] === null) {
+					str.push(key + ' = null' );
+				} else if (typeof this[key] === 'boolean') {
 					str.push(key + ' = ' + ((this[key] ? 1 : 0)));
 					continue;
 				}
@@ -63,7 +68,9 @@ export class DbItem {
 		const str: string[] = [];
 		for (let data of Object.keys(this)){
 			if (typeof this[data] !== 'undefined') {
-				if (typeof this[data] === 'number') {
+				if (typeof this[data] === 'object' && this[data] === null) {
+					str.push(data + ' = null' );
+				} else if (typeof this[data] === 'number') {
 					str.push(data + ' = ' + this[data] + '');
 				} else if (typeof this[data] === 'boolean') {
 					str.push(data + ' = ' + ((this[data])? 1 : 0) + '');
@@ -79,7 +86,9 @@ export class DbItem {
 		const str: string[] = [];
 		for (let data of Object.keys(this)) {
 			if (typeof this[data] !== 'undefined') {
-				if (typeof this[data] === 'boolean') {
+				if (typeof this[data] === 'object' && this[data] === null) {
+					str.push('null');
+				} else if (typeof this[data] === 'boolean') {
 					str.push('\'' + ((this[data])? 1 : 0) + '\'');
 				} else {
 					str.push('\'' + this[data] + '\'');

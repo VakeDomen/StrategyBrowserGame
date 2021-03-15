@@ -4,6 +4,7 @@ import { CredentialsPacket } from '../../models/packets/credentials.packet';
 import { SocketHandler } from '../handler.socket';
 import * as conf from '../../db/database.config.json';
 import { LoginPacket } from '../../models/packets/login.packet';
+import { on } from 'node:events';
 
 export function appendAuth (socket) {
 
@@ -13,10 +14,12 @@ export function appendAuth (socket) {
         const user = users.pop();
         const packet: LoginPacket = {
             success: false,
+            id: '',
             username: credentials.username,
         };
         if (user) {
-            packet.success = SocketHandler.login(socket, credentials.username);
+            packet.id = user.id as string;
+            packet.success = SocketHandler.login(socket, packet.id);
             if (packet.success) {
                 console.log(`User logged in (${user.username}: ${user.id})`);
                 socket.emit('GREET', 'Hello ' + credentials.username + '! Join a room or host a game!');
@@ -26,21 +29,45 @@ export function appendAuth (socket) {
     });
 
     socket.on('REGISTER', async (credentials: CredentialsPacket) => {
+        const existing: User[] = await fetch<User>(conf.tables.user, new User({username: credentials.username}));
+        if (existing.length > 0) {
+            socket.emit('LOGIN', {
+                success: false,
+                id: '',
+                username: credentials.username,
+            } as LoginPacket);
+            return;
+        }
         await insert<User>(conf.tables.user, new User(credentials).generateId());
         const users: User[] = await fetch<User>(conf.tables.user, new User(credentials));
         const user = users.pop();
         const packet: LoginPacket = {
             success: false,
+            id: '',
             username: credentials.username,
         }
         if (user) {
-            packet.success = SocketHandler.login(socket, credentials.username);
+            packet.id = user.id as string;
+            packet.success = SocketHandler.login(socket, packet.id);
             if (packet.success) {
                 console.log(`User registered in (${user.username}: ${user.id})`);
                 socket.emit('GREET', 'Hello ' + credentials.username + '! Join a room or host a game!');
             }
         }
         socket.emit('LOGIN', packet);
+    });
+    
+    socket.on('PING', async (id: string) => {
+        const users: User[] = await fetch<User>(conf.tables.user, new User({id: id}));
+        const user = users.pop();
+        if (!user) {
+            return;
+        }
+        if (!SocketHandler.playerConnectionMap.get(id) || SocketHandler.playerConnectionMap.get(id) != socket) {
+            SocketHandler.login(socket, id);
+            socket.emit('GREET', 'Hello ' + user.username + '! Join a room or host a game!');
+
+        }
     });
 
     socket.on('disconnect', async () => {

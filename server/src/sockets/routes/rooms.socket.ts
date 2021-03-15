@@ -1,6 +1,10 @@
 import { SocketHandler } from '../handler.socket';
 import { Game } from '../../models/game_models/game.game';
 import { v4 as uuidv4 } from 'uuid';
+import { GameMetaData } from '../../models/db_items/game.item';
+import { Player } from '../../models/db_items/player.item';
+import { insert } from '../../db/database.handler';
+import * as conf from '../../db/database.config.json';
 
 export function rooms(socket) {
     
@@ -23,7 +27,6 @@ export function rooms(socket) {
             host: SocketHandler.connectionPlayerMap.get(socket),
             players: [SocketHandler.connectionPlayerMap.get(socket)],
             running: false,
-            mode: mode,
         });
         socket.join(game.id);
         SocketHandler.games.push(game);
@@ -53,12 +56,33 @@ export function rooms(socket) {
         }
     });
 
-    socket.on('LOBBY_START_GAME', (id: string) => {
+    socket.on('LOBBY_START_GAME', async (id: string) => {
         const player = SocketHandler.connectionPlayerMap.get(socket);
         const game = SocketHandler.getGameById(id);
         if (player && game) {
             if (player === game.host) {
                 game.running = true;
+                const gameMeta: GameMetaData = new GameMetaData({
+                    id: game.id, 
+                    host: game.host, 
+                    name: game.id, 
+                    started: new Date(),
+                    running: true,
+                });
+                const players: Player[] = game.players.map((id: string) => {
+                    const player = new Player({
+                        user_id: id,
+                        game_id: gameMeta.id,
+                        defeated: false,
+                        defeated_at: null,
+                    });
+                    player.generateId();
+                    return player;
+                });
+                await insert(conf.tables.game, gameMeta);
+                await Promise.all(players.map((player: Player) => {
+                    return insert(conf.tables.player, player);
+                }));
                 SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game);
             }
         }

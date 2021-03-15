@@ -3,9 +3,10 @@ import { WebSocketService } from './web-socket.service';
 import { AuthService } from './auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
-import { Game } from '../models/game';
+import { GamePacket } from '../models/packets/game.packet';
 import { CredentialsPacket } from '../models/packets/credentials.packet';
 import { LoginPacket } from '../models/packets/login.packet';
+import { UserPacket } from '../models/packets/user.packet';
 
 
 @Injectable({
@@ -39,6 +40,29 @@ export class SocketHandlerService {
 
   initAuth(): void {
     this.ws.listen('LOGIN').subscribe(resp => this.loginHandle(resp));
+    this.ws.listen('PONG').subscribe((resp: LoginPacket) => this.handlePong(resp));
+    this.ws.listen('GET_USER').subscribe((resp: UserPacket) => this.saveUser(resp));
+    this.ws.listen('GET_USERS').subscribe((resp: UserPacket[]) => this.saveUsers(resp));
+  }
+
+  saveUser(user: UserPacket): void {
+    this.auth.saveUser(user);
+  }
+  saveUsers(users: UserPacket[]): void {
+    for (const user of users) {
+      this.auth.saveUser(user);
+    }
+    this.contexts['lobby'].usersFetched();
+  }
+
+  handlePong(login: LoginPacket): void {
+    if (login.success) {
+      this.auth.login(login);
+    }
+  }
+
+  getUsers(): void {
+    this.ws.emit('GET_USERS', null);
   }
 
   login(name: string, password: string): void {
@@ -59,7 +83,7 @@ export class SocketHandlerService {
 
   loginHandle(resp: LoginPacket): void {
     if (resp.success === true) {
-      this.auth.login(resp.username);
+      this.auth.login(resp);
       this.toastr.success('Success', 'Logged as ' + resp.username + '!');
       this.router.navigate(['/lobby']);
     } else {
@@ -69,18 +93,21 @@ export class SocketHandlerService {
 
   // ------------------ lobby ------------------
   initLobby(): void {
-    this.ws.listen('LOBBY_GAMES').subscribe((resp: Game[]) => this.handleGames(resp));
-    this.ws.listen('LOBBY_GAME').subscribe((resp: Game) => this.setRoom(resp));
-    this.ws.listen('LOBBY_JOIN_GAME').subscribe((resp: Game) => this.setRoom(resp));
-    this.ws.listen('LOBBY_START_GAME').subscribe((resp: Game) => this.handleStartGame(resp));
+    this.ws.listen('LOBBY_GAMES').subscribe((resp: GamePacket[]) => this.handleGames(resp));
+    this.ws.listen('LOBBY_GAME').subscribe((resp: GamePacket) => this.setRoom(resp));
+    this.ws.listen('LOBBY_JOIN_GAME').subscribe((resp: GamePacket) => this.setRoom(resp));
+    this.ws.listen('LOBBY_START_GAME').subscribe((resp: GamePacket) => this.handleStartGame(resp));
   }
 
   getGames(): void {
     this.ws.emit('LOBBY_GAMES', null);
   }
-  handleGames(games: Game[]): void {
-    const gameContext = this.contexts['game'];
+  handleGames(games: GamePacket[]): void {
+    const gameContext = this.contexts['lobby'];
     if (gameContext) {
+      for (const game of games) {
+        this.ws.emit('GET_USER', game.players);
+      }
       gameContext.handleGames(games);
     }
   }
@@ -91,7 +118,8 @@ export class SocketHandlerService {
   getRoom(id: string): void {
     this.ws.emit('LOBBY_GAME', id);
   }
-  setRoom(game: Game): void {
+  setRoom(game: GamePacket): void {
+    console.log(game);
     const roomContext = this.contexts['room'];
     if (roomContext) {
       roomContext.setRoom(game);
@@ -106,7 +134,7 @@ export class SocketHandlerService {
   startGame(id: string): void {
     this.ws.emit('LOBBY_START_GAME', id);
   }
-  handleStartGame(game: Game): void {
+  handleStartGame(game: GamePacket): void {
     this.toastr.success('Host ' + game.host + ' starting the game!');
     const roomContext = this.contexts['room'];
     if (roomContext) {
@@ -116,5 +144,6 @@ export class SocketHandlerService {
 
   // ------------------ game ------------------
   initGame(): void {
+    
   }
 }

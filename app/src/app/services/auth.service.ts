@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
+import { LoginPacket } from '../models/packets/login.packet';
+import { UserPacket } from '../models/packets/user.packet';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +14,8 @@ export class AuthService {
     private toastr: ToastrService,
   ) { }
 
-  login(name: string): void {
-    this.name = name;
+  login(credentials: LoginPacket): void {
+    sessionStorage.setItem('credentials', JSON.stringify(credentials))
   }
 
   logout(): void {
@@ -25,10 +27,37 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return typeof this.name !== 'undefined';
+    return sessionStorage.getItem('credentials') !== null;
   }
 
   getName(): string | undefined {
-    return this.name;
+    const credString: string | null = sessionStorage.getItem('credentials');
+    if (!credString) {
+      return;
+    }
+    const creds: LoginPacket = JSON.parse(credString);
+    return creds.username;
+  }
+
+  getId(): string | undefined {
+    const credString: string | null = sessionStorage.getItem('credentials');
+    if (!credString) {
+      return;
+    }
+    const creds: LoginPacket = JSON.parse(credString);
+    return creds.id; 
+  }
+
+  saveUser(user: UserPacket): void {
+    sessionStorage.setItem(user.id, JSON.stringify(user));
+  }
+
+  getUserById(id: string): UserPacket | undefined {
+    const userSting: string | null = sessionStorage.getItem(id);
+    if (!userSting) {
+      return;
+    }
+    const user: UserPacket = JSON.parse(userSting);
+    return user;
   }
 }

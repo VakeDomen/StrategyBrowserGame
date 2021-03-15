@@ -4,6 +4,11 @@ import { appendAuth } from './routes/auth.socket';
 import { rooms } from './routes/rooms.socket';
 import { Game } from '../models/game_models/game.game';
 import { Socket } from 'socket.io';
+import { applyUserSockets } from './routes/users.socket';
+import { fetch, fetchAll } from '../db/database.handler';
+import * as conf from '../db/database.config.json';
+import { GameMetaData } from '../models/db_items/game.item';
+import { Player } from '../models/db_items/player.item';
 
 export class SocketHandler {
 
@@ -17,11 +22,13 @@ export class SocketHandler {
 
     static games: Game[] = [];
 
-    static init(io) {
+    static async init(io) {
         this.io = io;
+        await this.prefillGames();
         io.on('connection', (socket) => {
             appendAuth(socket);
             rooms(socket);
+            applyUserSockets(socket);
         });
     }
 
@@ -82,5 +89,16 @@ export class SocketHandler {
 
     static broadcast(key: string, value: any): void {
         this.io.emit(key, value);
+    }
+
+    private static async prefillGames(): Promise<void> {
+        const games = await fetchAll<GameMetaData>(conf.tables.game);
+        this.games = await Promise.all(games.map(async (gameMeta: GameMetaData) => {
+            const game = new Game(gameMeta);
+            const players = await fetch<Player>(conf.tables.player, new Player({game_id: game.id}));
+            game.players = players.map((player: Player) => player.id as string);
+            return game;
+        }));
+        return;
     }
 }  

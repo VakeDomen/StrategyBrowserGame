@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
+import { GamePacket } from 'src/app/models/packets/game.packet';
 import { Game } from 'src/app/models/game';
 
 @Component({
@@ -11,14 +12,13 @@ import { Game } from 'src/app/models/game';
 })
 export class GameComponent implements OnInit {
   
-  game: Game | undefined;
-  @ViewChild('canvas') canvas: ElementRef | undefined;
-  public canvasContext: CanvasRenderingContext2D | null = null;;
+  game: GamePacket | undefined;
+  @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
+  public canvasContext: CanvasRenderingContext2D | null = null;
 
 
   constructor(
     private route: ActivatedRoute,
-    private auth: AuthService,
     private ws: SocketHandlerService,
   ) { }
 
@@ -27,26 +27,26 @@ export class GameComponent implements OnInit {
     if (id) {
       this.ws.setCotext('room', this);
       this.ws.getRoom(id);
+      const game = sessionStorage.getItem(id);
+      if (game) {
+        this.game = JSON.parse(game);
+        this.bootstrapGame();
+      } 
     }
   }
 
-  setRoom(room: Game): void {
-    this.game = room;
+  setRoom(game: GamePacket): void {
+    console.log(game);
+    this.game = game;
+    sessionStorage.setItem(game.id, JSON.stringify(game));
     this.bootstrapGame();
   }
 
   bootstrapGame(): void {
     if (this.canvas && this.game) {
-      this.canvasContext = (<HTMLCanvasElement>this.canvas.nativeElement).getContext('2d');
-      switch (this.game.mode) {
-        case 'VERSUS':
-          console.log('NEW GAME!!! VERSUS');
-          break;
-      
-        default:
-          console.log('NEW GAME!!! VERSUS');
-          break;
-      }
+      this.canvas.nativeElement.width = window.innerWidth;
+      this.canvas.nativeElement.height = window.innerHeight;
+      new Game(this.game, this.ws, this.canvas);
     }
   }
 }

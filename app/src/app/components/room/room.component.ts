@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Game } from 'src/app/models/game';
+import { GamePacket } from 'src/app/models/packets/game.packet';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
@@ -11,7 +11,7 @@ import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 })
 export class RoomComponent implements OnInit {
 
-  game: Game | undefined;
+  game: GamePacket | undefined;
 
   constructor(
     private route: ActivatedRoute,
@@ -29,22 +29,22 @@ export class RoomComponent implements OnInit {
     }
   }
 
-  setRoom(room: Game): void {
+  setRoom(room: GamePacket): void {
     this.game = room;
   }
 
   isHost(): boolean {
     if (this.game) {
-      return (this.game && this.game.host === this.auth.getName());
+      return (this.game && this.game.host === this.auth.getId());
     } else {
       return false;
     }
   }
 
   isMember(): boolean {
-    const name = this.auth.getName();
-    if (name && this.game) {
-      return (this.game && this.game.players.includes(name));
+    const id = this.auth.getId();
+    if (id && this.game) {
+      return (this.game && this.game.players.includes(id));
     } else {
       return false;
     }
@@ -64,13 +64,23 @@ export class RoomComponent implements OnInit {
     }
   }
 
+
+  userById(id: string): string {
+    const user = this.auth.getUserById(id);
+    if (user) {
+      return user.username;
+    }
+    return id;
+  }
+
+
   startGame(): void {
     if (this.game) {
       this.ws.startGame(this.game.id);
     }
   }
 
-  handleStartGame(game: Game): void {
+  handleStartGame(game: GamePacket): void {
     this.router.navigate(['/game', game.id]);    
   }
 }

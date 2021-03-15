@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
-import { Game } from '../../models/game';
+import { GamePacket } from '../../models/packets/game.packet';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
+import { UserPacket } from 'src/app/models/packets/user.packet';
 
 @Component({
   selector: 'app-lobby',
@@ -11,7 +12,9 @@ import { Router } from '@angular/router';
 })
 export class LobbyComponent implements OnInit {
 
-  games: Game[] = [];
+  games: GamePacket[] = [];
+
+  dataReady: boolean = false;
 
   constructor(
     private ws: SocketHandlerService,
@@ -21,18 +24,32 @@ export class LobbyComponent implements OnInit {
 
   ngOnInit(): void {
     const context = this;
-    this.ws.setCotext('game', this);
-    this.ws.getGames()
+    this.ws.setCotext('lobby', this);
+    this.ws.getGames();
+    this.ws.getUsers();
   }
 
-  handleGames(games: Game[]): void {
+  usersFetched(): void {
+    console.log(this.dataReady)
+    this.dataReady = true;
+  }
+
+  handleGames(games: GamePacket[]): void {
     this.games = games;
     this.hostCheck();
   }
 
-  hostCheck(): void {
+  userById(id: string): string {
+    const user = this.auth.getUserById(id);
+    if (user) {
+      return user.username;
+    }
+    return id;
+  }
+  
+  private hostCheck(): void {
     for (const game of this.games) {
-      if (game.host === this.auth.getName()) {
+      if (game.host === this.auth.getId()) {
         this.router.navigate(['/room', game.id]);
       }
     }
