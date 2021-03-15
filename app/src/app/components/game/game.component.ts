@@ -44,9 +44,11 @@ export class GameComponent implements OnInit {
 
   bootstrapGame(): void {
     if (this.canvas && this.game) {
-      this.canvas.nativeElement.width = window.innerWidth;
-      this.canvas.nativeElement.height = window.innerHeight;
-      new Game(this.game, this.ws, this.canvas);
+      console.log('canvas', this.canvas)
+      this.canvas.nativeElement.width = 1600;
+      this.canvas.nativeElement.height = 900;
+      const game = new Game(this.game, this.ws, this.canvas);
+      game.start();
     }
   }
 }

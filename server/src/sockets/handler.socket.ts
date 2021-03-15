@@ -3,7 +3,7 @@ const path = require('path');
 import { appendAuth } from './routes/auth.socket';
 import { rooms } from './routes/rooms.socket';
 import { Game } from '../models/game_models/game.game';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { applyUserSockets } from './routes/users.socket';
 import { fetch, fetchAll } from '../db/database.handler';
 import * as conf from '../db/database.config.json';
@@ -12,7 +12,7 @@ import { Player } from '../models/db_items/player.item';
 
 export class SocketHandler {
 
-    static io;
+    static io: Server;
 
     // connected sockets of players
     // Map<key: string, value: Socket>
