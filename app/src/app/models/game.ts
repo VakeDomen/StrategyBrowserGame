@@ -2,7 +2,6 @@ import { GamePacket } from "./packets/game.packet";
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { ElementRef } from "@angular/core";
 import { LoadingSpinner } from "./ui_models/loading";
-import { Player } from "./game_models/payler";
 
 export class Game {
 
@@ -36,7 +35,7 @@ export class Game {
 
     async start(): Promise<void> {
         this.initLoops();
-        await this.delay(1000);
+        
         this.loaded = true;
     }
 
@@ -61,11 +60,11 @@ export class Game {
         }
         while(1) {
             this._lastDrawTimestamp = new Date().getTime();
-            if (canvasContext) {
-                canvasContext.fillRect(0,0, 100, 100);
-                canvasContext.stroke()
-                
-            }
+            // draw code here
+            // clear
+            canvasContext.fillRect(0, 0, 1600, 900);
+
+            // end draw code
             const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
         }
@@ -74,7 +73,10 @@ export class Game {
     private async updateLoop(): Promise<void> {
         while(this.running) {
             this._lastUpdateTimestamp = new Date().getTime();
-           
+            // update code here
+            
+
+            // end update code
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
         }

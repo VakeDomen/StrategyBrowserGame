@@ -68,6 +68,12 @@ const games = {
     running: {
       type: 'boolean',
     },
+    seed: {
+      type: 'string',
+    },
+    map_radius: {
+      type: 'int',
+    }
   },
   ifNotExists: true
 };
@@ -90,6 +96,32 @@ const players = {
     },
     defeated_at: {
       type: 'datetime'
+    }
+  },
+  ifNotExists: true
+}
+
+const tiles = {
+  columns: {
+    id: {
+      type: 'string',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    x: {
+      type: 'int',
+    },
+    y: {
+      type: 'int',
+    },
+    tpye: {
+      type: 'int',
+    },
+    orientation: {
+      type: 'int',
+    },
+    building: {
+      type: 'string',
     }
   },
   ifNotExists: true
