@@ -2,7 +2,8 @@
   "tables": {
     "player": "players",
     "user": "users",
-    "game": "games"
+    "game": "games",
+    "tile": "tiles"
   },
   "log": true
 }

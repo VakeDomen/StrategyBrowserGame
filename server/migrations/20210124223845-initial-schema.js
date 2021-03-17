@@ -17,6 +17,7 @@ exports.up = function(db, callback) {
     db.createTable.bind(db, 'users', users),
     db.createTable.bind(db, 'players', players),
     db.createTable.bind(db, 'games', games),
+    db.createTable.bind(db, 'tiles', tiles),
   ], callback);
 };
 
@@ -25,6 +26,7 @@ exports.down = function(db, callback) {
     db.dropTable.bind(db, 'users'),
     db.dropTable.bind(db, 'games'),
     db.dropTable.bind(db, 'players'),
+    db.dropTable.bind(db, 'tiles'),
   ], callback);
 };
 
@@ -108,13 +110,16 @@ const tiles = {
       primaryKey: true,
       autoIncrement: false,
     },
+    game_id: {
+      type: 'string',
+    },
     x: {
       type: 'int',
     },
     y: {
       type: 'int',
     },
-    tpye: {
+    tile_type: {
       type: 'int',
     },
     orientation: {

@@ -1,7 +1,7 @@
 import { SocketHandler } from '../handler.socket';
 import { Game } from '../../models/game_models/game.game';
 import { v4 as uuidv4 } from 'uuid';
-import { GameMetaData } from '../../models/db_items/game.item';
+import { GameItem } from '../../models/db_items/game.item';
 import { Player } from '../../models/db_items/player.item';
 import { insert } from '../../db/database.handler';
 import * as conf from '../../db/database.config.json';
@@ -62,13 +62,8 @@ export function rooms(socket) {
         if (player && game) {
             if (player === game.host) {
                 game.running = true;
-                const gameMeta: GameMetaData = new GameMetaData({
-                    id: game.id, 
-                    host: game.host, 
-                    name: game.id, 
-                    started: new Date(),
-                    running: true,
-                });
+                game.generateSeed();
+                const gameMeta = game.exportItem();
                 const players: Player[] = game.players.map((id: string) => {
                     const player = new Player({
                         user_id: id,
@@ -79,10 +74,12 @@ export function rooms(socket) {
                     player.generateId();
                     return player;
                 });
+                gameMeta.parseStarted(new Date());
                 await insert(conf.tables.game, gameMeta);
                 await Promise.all(players.map((player: Player) => {
                     return insert(conf.tables.player, player);
                 }));
+                await game.generateMap();
                 SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game);
             }
         }
