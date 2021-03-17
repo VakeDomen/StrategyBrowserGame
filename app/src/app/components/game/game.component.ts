@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
@@ -10,7 +10,7 @@ import { Game } from 'src/app/models/game';
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.sass']
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements AfterViewInit {
   
   game: GamePacket | undefined;
   @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
@@ -21,14 +21,14 @@ export class GameComponent implements OnInit {
     private route: ActivatedRoute,
     private ws: SocketHandlerService,
   ) { }
-
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.ws.setCotext('room', this);
       this.ws.getRoom(id);
       const game = sessionStorage.getItem(id);
       if (game) {
+        console.log(game)
         this.game = JSON.parse(game);
         this.bootstrapGame();
       } 
@@ -43,7 +43,8 @@ export class GameComponent implements OnInit {
   }
 
   bootstrapGame(): void {
-    if (this.canvas && this.game) {
+    console.log(this.canvas, this.game)
+    if (!!this.canvas && !!this.game) {
       console.log('canvas', this.canvas)
       this.canvas.nativeElement.width = 1600;
       this.canvas.nativeElement.height = 900;

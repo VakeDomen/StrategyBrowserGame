@@ -2,6 +2,7 @@ import { GamePacket } from "./packets/game.packet";
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { ElementRef } from "@angular/core";
 import { LoadingSpinner } from "./ui_models/loading";
+import { MapPacket } from "./packets/map.packet";
 
 export class Game {
 
@@ -22,6 +23,7 @@ export class Game {
     private _updateLoopTime: number = 100;
 
     constructor(data: GamePacket, ws: SocketHandlerService, canvas: ElementRef) {
+        console.log('Iniializing game...')
         this.loaded = false;
         this.canvas = canvas;
         this.ws = ws;
@@ -35,8 +37,13 @@ export class Game {
 
     async start(): Promise<void> {
         this.initLoops();
-        
+        this.ws.setCotext('game', this);
+        this.ws.getMap(this.id);
         this.loaded = true;
+    }
+
+    setMap(map: MapPacket) {
+        console.log(map);
     }
 
     private initLoops(): void {

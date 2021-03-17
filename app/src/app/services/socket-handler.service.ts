@@ -7,6 +7,7 @@ import { GamePacket } from '../models/packets/game.packet';
 import { CredentialsPacket } from '../models/packets/credentials.packet';
 import { LoginPacket } from '../models/packets/login.packet';
 import { UserPacket } from '../models/packets/user.packet';
+import { MapPacket } from '../models/packets/map.packet';
 
 
 @Injectable({
@@ -27,6 +28,7 @@ export class SocketHandlerService {
 
 
   init(): void {
+    this.initErrors();
     this.initAuth();
     this.initLobby();
     this.initGame();
@@ -34,6 +36,17 @@ export class SocketHandlerService {
 
   setCotext(tag: string, context: any) {
     this.contexts[tag] = context;
+  }
+
+  // ------------------ errors ------------------
+
+  initErrors(): void {
+    this.ws.listen('GAME_NOT_EXIST').subscribe(resp => this.handleGameNotExist());
+  }
+
+  handleGameNotExist(): void {
+    this.toastr.error('Game does not exist!');
+    this.router.navigate(['lobby']);
   }
 
   // ------------------ auth ------------------
@@ -119,7 +132,6 @@ export class SocketHandlerService {
     this.ws.emit('LOBBY_GAME', id);
   }
   setRoom(game: GamePacket): void {
-    console.log(game);
     const roomContext = this.contexts['room'];
     if (roomContext) {
       roomContext.setRoom(game);
@@ -144,6 +156,10 @@ export class SocketHandlerService {
 
   // ------------------ game ------------------
   initGame(): void {
-    
+    this.ws.listen('GET_MAP').subscribe((resp: MapPacket[]) => this.contexts['game'].setMap(resp));
+  }
+
+  getMap(id: string): void {
+    this.ws.emit('GET_MAP', id);
   }
 }
