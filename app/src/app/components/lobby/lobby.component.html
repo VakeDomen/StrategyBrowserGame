@@ -1,7 +1,48 @@
+<div class="container has-text-centered" *ngIf="dataReady && startedGames.length">
+    <div class="level">
+        <div class="level-left">
+            <h1 class="title is-1">Running:</h1>
+        </div>
+        <div class="level-right">
+        </div>
+    </div>
+
+    <div class="box" *ngIf="startedGames && startedGames.length > 0">
+        <table class = "table">
+            <thead>
+               <tr >
+                  <th>ID</th>
+                  <th>Host</th>
+                  <th>Players</th>
+                  <th>In progress</th>
+                  
+               </tr>
+            </thead>
+            <tbody>
+               <tr *ngFor="let game of startedGames" class='gray-hover' (click)=goToGame(game.id)>
+                    <td>{{game.id}}</td>
+                    <td>{{userById(game.host)}}</td>
+                    <td>{{game.players.length}}</td>
+                    <td>{{game.running ? 'true' : 'false'}}</td>
+               </tr>
+            </tbody>
+         </table>
+    </div>
+
+    <div class="box" *ngIf="!(games && games.length > 0)">
+        <div class="level">
+            <div class="level-item">
+                <h3 class="title is-3">
+                    No games! Host one!
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container has-text-centered" *ngIf="dataReady">
     <div class="level">
         <div class="level-left">
-            <h1 class="title is-1">Games:</h1>
+            <h1 class="title is-1">Games in setup:</h1>
         </div>
         <div class="level-right">
             <button class="button is-primary" (click)=hostGame()>Host game</button>
@@ -15,6 +56,9 @@
                   <th>ID</th>
                   <th>Host</th>
                   <th>Players</th>
+                  <th>In progress</th>
+                  <th>Can join</th>
+                  
                </tr>
             </thead>
             <tbody>
@@ -22,6 +66,8 @@
                     <td>{{game.id}}</td>
                     <td>{{userById(game.host)}}</td>
                     <td>{{game.players.length}}</td>
+                    <td>{{game.running ? 'true' : 'false'}}</td>
+                    <td>{{canJoin(game)}}</td>
                </tr>
             </tbody>
          </table>

@@ -1,13 +1,18 @@
-export class LoadingSpinner {
+import { Drawable } from "../core/drawable.abstract";
 
+export class LoadingSpinner implements Drawable {
+
+    canvas: any;
     animationStep = 0;
 
-    constructor() { }
+    constructor(canvas: any) {
+        this.canvas = canvas;
+    }
 
-    rawProgressIndicator(can: any, ctx: any){
+    draw(ctx: CanvasRenderingContext2D): void {
         ctx.save();
-        ctx.clearRect(0, 0, can.nativeElement.width, can.nativeElement.height);
-        ctx.translate(can.nativeElement.width / 2, can.nativeElement.height / 2);
+        // ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+        ctx.translate(this.canvas.nativeElement.width / 2, this.canvas.nativeElement.height / 2);
         ctx.scale(0.4, 0.4);
         ctx.rotate(-Math.PI / 2);
         ctx.strokeStyle = "black";

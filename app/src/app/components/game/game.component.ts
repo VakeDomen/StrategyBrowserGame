@@ -28,7 +28,6 @@ export class GameComponent implements AfterViewInit {
       this.ws.getRoom(id);
       const game = sessionStorage.getItem(id);
       if (game) {
-        console.log(game)
         this.game = JSON.parse(game);
         this.bootstrapGame();
       } 
@@ -36,16 +35,13 @@ export class GameComponent implements AfterViewInit {
   }
 
   setRoom(game: GamePacket): void {
-    console.log(game);
     this.game = game;
     sessionStorage.setItem(game.id, JSON.stringify(game));
     this.bootstrapGame();
   }
 
   bootstrapGame(): void {
-    console.log(this.canvas, this.game)
     if (!!this.canvas && !!this.game) {
-      console.log('canvas', this.canvas)
       this.canvas.nativeElement.width = 1600;
       this.canvas.nativeElement.height = 900;
       const game = new Game(this.game, this.ws, this.canvas);

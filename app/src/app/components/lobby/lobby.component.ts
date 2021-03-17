@@ -1,46 +1,65 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { GamePacket } from '../../models/packets/game.packet';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
-import { UserPacket } from 'src/app/models/packets/user.packet';
+import { CacheService } from 'src/app/services/cache.service';
 
 @Component({
   selector: 'app-lobby',
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.sass']
 })
-export class LobbyComponent implements OnInit {
+export class LobbyComponent implements AfterViewInit {
 
   games: GamePacket[] = [];
+  startedGames: GamePacket[] = [];
 
   dataReady: boolean = false;
+  usersReady: boolean = false;
+  gamesReady: boolean = false;
+  startedGamesReady: boolean = false;
 
   constructor(
     private ws: SocketHandlerService,
+    private cache: CacheService,
     private auth: AuthService,
     private router: Router,
-  ) { }
-
-  ngOnInit(): void {
+  ) {
     const context = this;
     this.ws.setCotext('lobby', this);
     this.ws.getGames();
+    this.ws.getParticipatedGames();
     this.ws.getUsers();
   }
+  ngAfterViewInit(): void {  }
 
   usersFetched(): void {
-    console.log(this.dataReady)
-    this.dataReady = true;
+    this.usersReady = true;
+    this.checkData()
+  }
+  
+  handleStartedGames(games: GamePacket[]): void {
+    this.startedGames.push(...games);
+    console.log(games)
+    this.startedGamesReady = true;
+    this.checkData();
   }
 
   handleGames(games: GamePacket[]): void {
     this.games = games;
-    this.hostCheck();
+    console.log(games)
+    this.gamesReady = true;
+    this.checkData()
+    // this.hostCheck();
+  }
+
+  private checkData(): void {
+    this.dataReady = this.usersReady && this.gamesReady && this.startedGamesReady;
   }
 
   userById(id: string): string {
-    const user = this.auth.getUserById(id);
+    const user = this.cache.getUserById(id);
     if (user) {
       return user.username;
     }
@@ -63,4 +82,12 @@ export class LobbyComponent implements OnInit {
     this.router.navigate(['/room', id]);
   }
 
+  goToGame(id: string): void {
+    this.router.navigate(['/game', id]);
+  }
+  canJoin(game: GamePacket): boolean {
+    console.log(game.players, this.auth.getId())
+    return !game.running || 
+      (game.running && game.players.includes(this.auth.getId() as string));
+  }
 }

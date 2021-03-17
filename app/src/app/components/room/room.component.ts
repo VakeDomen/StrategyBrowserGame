@@ -3,6 +3,8 @@ import { GamePacket } from 'src/app/models/packets/game.packet';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
+import { ToastrService } from 'ngx-toastr';
+import { CacheService } from 'src/app/services/cache.service';
 
 @Component({
   selector: 'app-room',
@@ -18,6 +20,8 @@ export class RoomComponent implements OnInit {
     private auth: AuthService,
     private ws: SocketHandlerService,
     private router: Router,
+    private toastr: ToastrService,
+    private cache: CacheService,
   ) { }
 
   ngOnInit(): void {
@@ -66,7 +70,7 @@ export class RoomComponent implements OnInit {
 
 
   userById(id: string): string {
-    const user = this.auth.getUserById(id);
+    const user = this.cache.getUserById(id);
     if (user) {
       return user.username;
     }
@@ -81,6 +85,10 @@ export class RoomComponent implements OnInit {
   }
 
   handleStartGame(game: GamePacket): void {
-    this.router.navigate(['/game', game.id]);    
+    if (game.players.includes(this.auth.getId() as string)) {
+      this.router.navigate(['/game', game.id]);    
+    } else {
+      this.toastr.info('New game started!');
+    }
   }
 }

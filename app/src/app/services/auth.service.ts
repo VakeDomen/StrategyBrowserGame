@@ -47,17 +47,4 @@ export class AuthService {
     const creds: LoginPacket = JSON.parse(credString);
     return creds.id; 
   }
-
-  saveUser(user: UserPacket): void {
-    sessionStorage.setItem(user.id, JSON.stringify(user));
-  }
-
-  getUserById(id: string): UserPacket | undefined {
-    const userSting: string | null = sessionStorage.getItem(id);
-    if (!userSting) {
-      return;
-    }
-    const user: UserPacket = JSON.parse(userSting);
-    return user;
-  }
 }

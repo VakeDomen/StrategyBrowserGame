@@ -8,6 +8,8 @@ import { CredentialsPacket } from '../models/packets/credentials.packet';
 import { LoginPacket } from '../models/packets/login.packet';
 import { UserPacket } from '../models/packets/user.packet';
 import { MapPacket } from '../models/packets/map.packet';
+import { PlayersPacket } from '../models/packets/players.packet';
+import { CacheService } from './cache.service';
 
 
 @Injectable({
@@ -22,6 +24,7 @@ export class SocketHandlerService {
     private auth: AuthService,
     private toastr: ToastrService,
     private router: Router,
+    private cache: CacheService,
   ) { 
     this.init();
   }
@@ -35,6 +38,9 @@ export class SocketHandlerService {
   }
 
   setCotext(tag: string, context: any) {
+    if (this.contexts[tag]) {
+      console.log(`Context '${tag}' already exists!`);
+    }
     this.contexts[tag] = context;
   }
 
@@ -42,12 +48,23 @@ export class SocketHandlerService {
 
   initErrors(): void {
     this.ws.listen('GAME_NOT_EXIST').subscribe(resp => this.handleGameNotExist());
+    this.ws.listen('ROOM_NOT_EXIST').subscribe(resp => this.handleRoomNotExist());
+    this.ws.listen('PLAYER_NOT_EXIST').subscribe(resp => this.handlePlayerNotExist());
+    this.ws.listen('USER_NOT_EXIST').subscribe(resp => this.handlePlayerNotExist());
   }
 
   handleGameNotExist(): void {
     this.toastr.error('Game does not exist!');
     this.router.navigate(['lobby']);
+  }  
+  handleRoomNotExist(): void {
+    this.toastr.error('Room does not exist!');
+    this.router.navigate(['lobby']);
   }
+  handlePlayerNotExist(): void {
+    this.toastr.error('Player does not exist!');
+  }
+
 
   // ------------------ auth ------------------
 
@@ -59,23 +76,24 @@ export class SocketHandlerService {
   }
 
   saveUser(user: UserPacket): void {
-    this.auth.saveUser(user);
+    this.cache.saveUser(user);
   }
+
   saveUsers(users: UserPacket[]): void {
     for (const user of users) {
-      this.auth.saveUser(user);
+      this.cache.saveUser(user);
     }
-    this.contexts['lobby'].usersFetched();
+    if (this.contexts['lobby']) {
+      this.contexts['lobby'].usersFetched();
+    } else {
+      console.log('missing lobby context!');
+    }
   }
 
   handlePong(login: LoginPacket): void {
     if (login.success) {
       this.auth.login(login);
     }
-  }
-
-  getUsers(): void {
-    this.ws.emit('GET_USERS', null);
   }
 
   login(name: string, password: string): void {
@@ -110,17 +128,31 @@ export class SocketHandlerService {
     this.ws.listen('LOBBY_GAME').subscribe((resp: GamePacket) => this.setRoom(resp));
     this.ws.listen('LOBBY_JOIN_GAME').subscribe((resp: GamePacket) => this.setRoom(resp));
     this.ws.listen('LOBBY_START_GAME').subscribe((resp: GamePacket) => this.handleStartGame(resp));
+    this.ws.listen('STARTED_GAMES').subscribe((resp: GamePacket[]) => this.handleStartedGames(resp));
+  }
+
+  handleStartedGames(games: GamePacket[]): void {
+    const gameContext = this.contexts['lobby'];
+    if (gameContext) {
+      gameContext.handleStartedGames(games);
+    }
+  }
+
+  getParticipatedGames(): void {
+    this.ws.emit('STARTED_GAMES', null);
   }
 
   getGames(): void {
     this.ws.emit('LOBBY_GAMES', null);
   }
+
+  getUsers(): void {
+    this.ws.emit('GET_USERS', null);
+  }
+
   handleGames(games: GamePacket[]): void {
     const gameContext = this.contexts['lobby'];
     if (gameContext) {
-      for (const game of games) {
-        this.ws.emit('GET_USER', game.players);
-      }
       gameContext.handleGames(games);
     }
   }
@@ -157,9 +189,14 @@ export class SocketHandlerService {
   // ------------------ game ------------------
   initGame(): void {
     this.ws.listen('GET_MAP').subscribe((resp: MapPacket[]) => this.contexts['game'].setMap(resp));
+    this.ws.listen('GET_PLAYERS').subscribe((resp: PlayersPacket[]) => this.contexts['game'].setPlayers(resp));
   }
 
   getMap(id: string): void {
     this.ws.emit('GET_MAP', id);
+  }
+
+  getPlayers(id: string): void {
+    this.ws.emit('GET_PLAYERS', id);
   }
 }
