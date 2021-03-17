@@ -1,5 +1,5 @@
 import { DbItem } from './core/db.item';
-export class Player extends DbItem {
+export class PlayerItem extends DbItem {
     
     user_id: string;
     game_id: string;

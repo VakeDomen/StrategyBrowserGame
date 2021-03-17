@@ -8,7 +8,7 @@ import { applyUserSockets } from './routes/users.socket';
 import { fetch, fetchAll } from '../db/database.handler';
 import * as conf from '../db/database.config.json';
 import { GameItem } from '../models/db_items/game.item';
-import { Player } from '../models/db_items/player.item';
+import { PlayerItem } from '../models/db_items/player.item';
 import { applyGameSockets } from './routes/game.socket';
 
 export class SocketHandler {
@@ -97,8 +97,8 @@ export class SocketHandler {
         const games = await fetchAll<GameItem>(conf.tables.game);
         this.games = await Promise.all(games.map(async (gameMeta: GameItem) => {
             const game = new Game(gameMeta);
-            const players = await fetch<Player>(conf.tables.player, new Player({game_id: game.id}));
-            game.players = players.map((player: Player) => player.id as string);
+            const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
+            game.players = players.map((player: PlayerItem) => player.id as string);
             return game;
         }));
         return;

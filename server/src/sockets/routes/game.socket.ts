@@ -6,6 +6,9 @@ import { fetch } from '../../db/database.handler';
 import * as conf from '../../db/database.config.json';
 import { TileItem } from '../../models/db_items/tile.item';
 import { MapPacket } from '../../models/packets/map.packet';
+import { PlayerItem } from '../../models/db_items/player.item';
+import { PlayersPacket } from '../../models/packets/players.packet';
+import { PlayerPacket } from '../../models/packets/player.packet';
 
 export function applyGameSockets(socket) {
     
@@ -23,7 +26,17 @@ export function applyGameSockets(socket) {
         } else {
             socket.emit('GAME_NOT_EXIST', null);
         }
+    });
 
-        
+    socket.on('GET_PLAYERS', async (game_id: string) => {
+        const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
+        const game = games.pop();
+        if (game) {
+            const players: PlayerItem[] = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game_id}));
+            const packet: PlayerPacket[] = players.map((player: PlayerItem) => player as PlayerPacket);
+            socket.emit('GET_PLAYERS', packet);
+        } else {
+            socket.emit('GAME_NOT_EXIST', null);
+        }
     });
 }
