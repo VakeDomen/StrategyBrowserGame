@@ -58,8 +58,9 @@ export class Game {
         this.checkLoaded();
     }
 
-    setMap(map: MapPacket) {
+    async setMap(map: MapPacket) {
         this.map = new GameMap(map);
+        await this.map.load();
         this.loadedMap = true;
         this.checkLoaded();
     }

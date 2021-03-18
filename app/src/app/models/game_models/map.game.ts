@@ -1,22 +1,29 @@
 import { Drawable } from "../core/drawable.abstract";
 import { MapPacket } from "../packets/map.packet";
 import { TilePacket } from "../packets/tile.packet";
+import { Tile } from "./tile.game";
 
 export class GameMap implements Drawable {
 
     radius: number;
-    tiles: TilePacket[];
+    tiles: Tile[];
 
     constructor(data: MapPacket) {
         this.radius = data.radius;
-        this.tiles = data.tiles;
+        if (data.tiles) {
+            this.tiles = data.tiles.map((tile: TilePacket) => new Tile(tile));
+        } else {
+            this.tiles = [];
+        }
+        console.log(this.tiles)
     }
-    async draw(ctx: CanvasRenderingContext2D): Promise<void> {
-        const img = new Image();
-        img.src = '../../../assets/tiles/building_cabin_E.png';
-        await img.onload;
-        ctx.drawImage(img, 10, 70);
 
+    async load(): Promise<void> {
+        await Promise.all(this.tiles.map((tile: Tile) => tile.load()));
+    }
+
+    async draw(ctx: CanvasRenderingContext2D): Promise<void> {
+        this.tiles.map((tile: Tile) => tile.draw(ctx));
     }
 
 }
