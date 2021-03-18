@@ -9,6 +9,8 @@ import { MapPacket } from '../../models/packets/map.packet';
 import { PlayerItem } from '../../models/db_items/player.item';
 import { PlayersPacket } from '../../models/packets/players.packet';
 import { PlayerPacket } from '../../models/packets/player.packet';
+import { Tile } from '../../models/game_models/tile.game';
+import { TilePacket } from '../../models/packets/tile.packet';
 
 export function applyGameSockets(socket) {
     
@@ -18,9 +20,19 @@ export function applyGameSockets(socket) {
         const game = games.pop();
         if (game) {
             const tiles: TileItem[] = await fetch<TileItem>(conf.tables.tile, new TileItem({game_id: game.id}));
+            // const gameInstance = new Game(game);
+            // gameInstance.generateSeed();
+            // await gameInstance.generateMap();
+            // let tiles: TilePacket[] = [];
+            // for(const row of gameInstance.board.values()) {
+            //     for (const tile of row) {
+            //         tiles.push(tile as TilePacket);
+            //     }
+            // }
             socket.emit('GET_MAP', {
                 game_id: game.id,
                 radius: game.map_radius,
+                // tiles: tiles
                 tiles: tiles
             } as MapPacket);
         } else {

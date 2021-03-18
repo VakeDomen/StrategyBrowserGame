@@ -24,7 +24,7 @@ export class Tile implements Drawable {
 
     constructor(tile: TilePacket) {
         this.img = new Image();
-        this.img.src = '../../../assets/tiles/grass_E.png';
+        this.img.src = this.getAssetRoute(tile.tile_type);
         this.id = tile.id;
         this.game_id = tile.game_id;
         this.x = tile.x;
@@ -58,7 +58,7 @@ export class Tile implements Drawable {
         // ctx.fillStyle = "#FF0000";
         // console.log(this.x, this.y, offsets)
         // ctx.font = "30px Arial";
-        ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+        // ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
 		
         // ctx.beginPath();
 		// ctx.moveTo(this.hexBorders[0][0]+offsets[0], this.hexBorders[0][1]+offsets[1]);
@@ -81,5 +81,27 @@ export class Tile implements Drawable {
         offset += this.y * this.hexHeight;
         offset += Math.abs(this.x * this.hexYoffset);
         return offset;
+    }
+
+    getAssetRoute(type: number): string {
+        switch (type) {
+            case 1:
+                return '../../../assets/tiles/grass_E.png';
+            case 2:
+                return '../../../assets/tiles/grass_forest_E.png';
+            case 3:
+                return '../../../assets/tiles/grass_hill_E.png';
+            case 4:
+                return '../../../assets/tiles/sand_rocks_E.png';
+            case 5:
+                return '../../../assets/tiles/stone_rocks_E.png';
+            case 6:
+                return '../../../assets/tiles/stone_hill_E.png';
+            case 7:
+                return '../../../assets/tiles/stone_mountain_E.png';
+        
+            default:
+                return '../../../assets/tiles/grass_E.png';
+        }
     }
 }

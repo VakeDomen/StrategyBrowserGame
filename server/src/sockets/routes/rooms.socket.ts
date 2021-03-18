@@ -5,6 +5,7 @@ import { GameItem } from '../../models/db_items/game.item';
 import { PlayerItem } from '../../models/db_items/player.item';
 import { insert, fetch } from '../../db/database.handler';
 import * as conf from '../../db/database.config.json';
+import { StartGamePacket } from '../../models/packets/start-game.packet';
 
 export function rooms(socket) {
     
@@ -81,13 +82,20 @@ export function rooms(socket) {
         }
     });
 
-    socket.on('LOBBY_START_GAME', async (id: string) => {
+    socket.on('LOBBY_START_GAME', async (startGamePacket: StartGamePacket) => {
         const player = SocketHandler.connectionPlayerMap.get(socket);
-        const game = SocketHandler.getGameById(id);
+        const game = SocketHandler.getGameById(startGamePacket.id);
         if (player && game) {
             if (player === game.host) {
+                game.map_radius = startGamePacket.radius;
+                game.name = startGamePacket.name;
                 game.running = true;
-                game.generateSeed();
+                if (!startGamePacket.seed && startGamePacket.seed != '') {
+                    game.generateSeed();
+                } else {
+                    game.seed = startGamePacket.seed;
+                }
+                    
                 const gameMeta = game.exportItem();
                 const players: PlayerItem[] = game.players.map((id: string) => {
                     const player = new PlayerItem({

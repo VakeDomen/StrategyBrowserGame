@@ -4,9 +4,12 @@ import * as conf from '../../db/database.config.json';
 import { Export } from "./core/export.item";
 import { GameItem } from "../db_items/game.item";
 import { v4 as uuidv4 } from 'uuid';
+import random from 'random'
+const seedrandom = require('seedrandom')
 
 export class Game implements Export {
     id: string;
+    name: string;
     host: string;
     players: string[];
     running: boolean;
@@ -19,10 +22,11 @@ export class Game implements Export {
     constructor(data: any) {
         this.id = data.id;
         this.host = data.host;
+        this.name = data.name;
         this.players = data.players;
         this.running = data.running;
         this.seed = data.seed;
-        this.map_radius = 3;
+        this.map_radius = data.map_radius ? data.map_radius : 3;
 
         this.board = new Map();
     }
@@ -31,7 +35,7 @@ export class Game implements Export {
         return new GameItem({
             id: this.id, 
             host: this.host, 
-            name: this.id, 
+            name: this.name ? this.name : this.id, 
             started: '',
             seed: this.seed,
             running: true,
@@ -57,8 +61,8 @@ export class Game implements Export {
 
             for (let row = 0 ; row < rows ; row++) {
                 col.push(new Tile({
-                    x: row, 
-                    y: column, 
+                    x: column, 
+                    y: row, 
                     game_id: this.id,
                     orientation: 0,
                     tile_type: 0,
@@ -67,6 +71,7 @@ export class Game implements Export {
             }
             board.set(column, col);
         }
+        this.randomizeMapLandscape(board);
         for (const columnIndex of board) {
             await Promise.all(columnIndex[1].map(async (tile: Tile) => {
                 let insertable = tile.exportItem().generateId();
@@ -74,6 +79,17 @@ export class Game implements Export {
             }));
         }
         this.board = board;
+    }
+
+    private randomizeMapLandscape(board: Map<number, Tile[]>): void {
+        random.use(seedrandom(this.seed));
+        const normal = random.normal(0, 3);
+        for (const row of board.values()) {
+            for (const tile of row) {
+                tile.tile_type = Math.min(Math.abs(Math.round(normal())), 7);
+                if (tile.tile_type == 0) tile.tile_type++;
+            }
+        }
     }
 
 }

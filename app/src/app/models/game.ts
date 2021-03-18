@@ -56,9 +56,7 @@ export class Game {
         this.view = 'map';
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450);
-        this.camera.setGoal(0, 3800)
-        // this.camera.goalY = 500;
-        // this.mousePressedTime = new Date().getTime();
+        // this.camera.setGoal(0, 3800)
     }
 
     async start(): Promise<void> {
@@ -98,18 +96,18 @@ export class Game {
         }
         while (!this.loaded) {
             this._lastUpdateTimestamp = new Date().getTime();
-            // canvasContext.fillRect(0, 0, 1600, 900);
             spinner.draw(canvasContext);
             canvasContext.stroke();
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
         }
-        // canvasContext.fillRect(0, 0, 1600, 900);
         while(1) {
             this._lastDrawTimestamp = new Date().getTime();
             // draw code here
             // clear
             this.clearCanvas(canvasContext)
+            // canvasContext.fillStyle = 'black';
+            // canvasContext.fillRect(-5000, -5000, 5000, 5000);
             switch (this.view) {
                 case 'map':
                     this.map.draw(canvasContext); 
@@ -122,7 +120,6 @@ export class Game {
             }
             // end draw code
             this.camera.adjust(canvasContext, !this.mousePressed);
-            canvasContext.fillRect(800, 450, 5, 5)
             const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
             // console.log(this._drawLoopTime - deltaTime)
             await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
@@ -142,7 +139,6 @@ export class Game {
         while(this.running) {
             this._lastUpdateTimestamp = new Date().getTime();
             // update code here
-            // console.log(this.mouseX, this.mouseY)
 
             // end update code
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;

@@ -17,6 +17,7 @@ export class RoomComponent implements OnInit {
   game: GamePacket | undefined;
   name: string = '';
   radius: number = 20;
+  seed: string = '';
 
   constructor(
     private route: ActivatedRoute,
