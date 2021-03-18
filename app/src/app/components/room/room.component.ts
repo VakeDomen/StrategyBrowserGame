@@ -5,6 +5,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { ToastrService } from 'ngx-toastr';
 import { CacheService } from 'src/app/services/cache.service';
+import { StartGamePacket } from 'src/app/models/packets/start-game.packet';
 
 @Component({
   selector: 'app-room',
@@ -14,6 +15,8 @@ import { CacheService } from 'src/app/services/cache.service';
 export class RoomComponent implements OnInit {
 
   game: GamePacket | undefined;
+  name: string = '';
+  radius: number = 20;
 
   constructor(
     private route: ActivatedRoute,
@@ -80,7 +83,11 @@ export class RoomComponent implements OnInit {
 
   startGame(): void {
     if (this.game) {
-      this.ws.startGame(this.game.id);
+      this.ws.startGame({
+        id: this.game.id,
+        name: this.name,
+        radius: this.radius
+      } as StartGamePacket);
     }
   }
 

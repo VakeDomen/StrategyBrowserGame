@@ -10,6 +10,7 @@ import { UserPacket } from '../models/packets/user.packet';
 import { MapPacket } from '../models/packets/map.packet';
 import { PlayersPacket } from '../models/packets/players.packet';
 import { CacheService } from './cache.service';
+import { StartGamePacket } from '../models/packets/start-game.packet';
 
 
 @Injectable({
@@ -175,8 +176,8 @@ export class SocketHandlerService {
   leaveRoom(id: string): void {
     this.ws.emit('LOBBY_LEAVE_GAME', id);
   }
-  startGame(id: string): void {
-    this.ws.emit('LOBBY_START_GAME', id);
+  startGame(packet: StartGamePacket): void {
+    this.ws.emit('LOBBY_START_GAME', packet);
   }
   handleStartGame(game: GamePacket): void {
     this.toastr.success('Host ' + game.host + ' starting the game!');

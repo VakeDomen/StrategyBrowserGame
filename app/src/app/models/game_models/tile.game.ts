@@ -1,4 +1,3 @@
-import { ThrowStmt } from "@angular/compiler";
 import { Drawable } from "../core/drawable.abstract";
 import { TilePacket } from "../packets/tile.packet";
 
@@ -25,7 +24,7 @@ export class Tile implements Drawable {
 
     constructor(tile: TilePacket) {
         this.img = new Image();
-        this.img.src = '../../../assets/tiles/building_cabin_E.png';
+        this.img.src = '../../../assets/tiles/grass_E.png';
         this.id = tile.id;
         this.game_id = tile.game_id;
         this.x = tile.x;
@@ -53,15 +52,34 @@ export class Tile implements Drawable {
 
     draw(ctx: CanvasRenderingContext2D): void {
         const color = ctx.fillStyle;
-        ctx.drawImage(this.img, 0, 0);
-        ctx.strokeStyle = "#FF0000";
-		ctx.beginPath();
-		ctx.moveTo(...this.hexBorders[0]);
-		for(let i = 1 ; i < this.hexBorders.length ; i++){
-			ctx.lineTo(...this.hexBorders[i])
-		}
-		ctx.closePath();
-		ctx.stroke();
+        const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
+        // ctx.strokeRect(this.calcImageXOffset(), this.calcImageYOffset(), this.img.width, this.img.height)
+        ctx.drawImage(this.img, ...offsets);
+        // ctx.fillStyle = "#FF0000";
+        // console.log(this.x, this.y, offsets)
+        // ctx.font = "30px Arial";
+        ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+		
+        // ctx.beginPath();
+		// ctx.moveTo(this.hexBorders[0][0]+offsets[0], this.hexBorders[0][1]+offsets[1]);
+		// for(let i = 1 ; i < this.hexBorders.length ; i++){
+		// 	ctx.lineTo(this.hexBorders[i][0]+offsets[0], this.hexBorders[i][1]+offsets[1]);
+		// }
+		// ctx.closePath();
+		// ctx.stroke();
         ctx.strokeStyle = color;
+    }
+
+    calcImageXOffset(): number {
+        let offset = 0;
+        offset += this.x * this.hexXoffset;
+        return offset;
+    }
+
+    calcImageYOffset(): number {
+        let offset = 0;
+        offset += this.y * this.hexHeight;
+        offset += Math.abs(this.x * this.hexYoffset);
+        return offset;
     }
 }

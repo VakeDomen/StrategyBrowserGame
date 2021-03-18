@@ -16,6 +16,7 @@ export class GameComponent implements AfterViewInit {
   @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
   public canvasContext: CanvasRenderingContext2D | null = null;
 
+  private runningGame: Game | undefined;
 
   constructor(
     private route: ActivatedRoute,
@@ -46,6 +47,21 @@ export class GameComponent implements AfterViewInit {
       this.canvas.nativeElement.height = 900;
       const game = new Game(this.game, this.ws, this.canvas);
       game.start();
+      this.runningGame = game;
     }
+  }
+
+  mouseUp(event: MouseEvent): void {
+    if (this.runningGame) {
+      this.runningGame.handleMouseUp(event);
+    }
+    console.log('up', event)
+  }
+
+  mouseDown(event: MouseEvent): void {
+    if (this.runningGame) {
+      this.runningGame.handleMouseDown(event)
+    }
+    console.log('down', event)
   }
 }

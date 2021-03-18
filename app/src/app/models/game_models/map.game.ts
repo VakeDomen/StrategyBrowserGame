@@ -7,6 +7,7 @@ export class GameMap implements Drawable {
 
     radius: number;
     tiles: Tile[];
+    sortedTilesByCoords: Tile[];
 
     constructor(data: MapPacket) {
         this.radius = data.radius;
@@ -15,7 +16,16 @@ export class GameMap implements Drawable {
         } else {
             this.tiles = [];
         }
-        console.log(this.tiles)
+        this.sortedTilesByCoords = this.sortTilesByCoords();
+        console.log(this.sortedTilesByCoords)
+    }
+
+    private sortTilesByCoords(): Tile[] {
+        if (this.tiles) {
+            return this.tiles.sort((a: Tile, b: Tile) => a.calcImageYOffset() - b.calcImageYOffset());
+        }
+        
+        return [];
     }
 
     async load(): Promise<void> {
@@ -23,7 +33,9 @@ export class GameMap implements Drawable {
     }
 
     async draw(ctx: CanvasRenderingContext2D): Promise<void> {
-        this.tiles.map((tile: Tile) => tile.draw(ctx));
+        for (const tile of this.sortedTilesByCoords) {
+            tile.draw(ctx);
+        }
     }
 
 }
