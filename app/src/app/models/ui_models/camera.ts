@@ -1,13 +1,22 @@
+import { Game } from "../game";
+
 export class Camera {
+
+    private game: Game;
+
     x: number;
     y: number;
 
-    goalX: number;
-    goalY: number;
+    private goalX: number;
+    private goalY: number;
 
-    maxStep: number = 50;
+    private maxStep: number = 50;
+    private zoom: number;
+    private jumpNextFrame: boolean = false;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, game: Game) {
+        this.game = game;
+        this.zoom = game.getZoom();
         this.x = x;
         this.y = y;
         this.goalX = x;
@@ -24,10 +33,13 @@ export class Camera {
         if (distToGoal > 0) {
             let xStep = this.goalX - this.x;
             let yStep = this.goalY - this.y;
-            if (cameraSpeedLock && distToGoal > this.maxStep) {
+            if (!this.jumpNextFrame && (cameraSpeedLock && distToGoal > this.maxStep)) {
                 const ratio = this.maxStep / distToGoal;
                 xStep = ratio * xStep;
                 yStep = ratio * yStep;
+            }
+            if (this.jumpNextFrame) {
+                this.jumpNextFrame = false;
             }
             ctx.translate( -xStep, -yStep);
             this.x += xStep;
@@ -38,5 +50,12 @@ export class Camera {
     setGoal(x: number, y: number): void {
         this.goalX = x;
         this.goalY = y;
+    }
+
+    setZoom(zoom: number): void {
+        this.x = zoom / this.zoom * this.x;
+        this.y = zoom / this.zoom * this.y;
+        this.jumpNextFrame = true;
+        this.zoom = zoom;
     }
 }

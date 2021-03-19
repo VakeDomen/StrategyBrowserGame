@@ -38,4 +38,13 @@ export class GameMap implements Drawable {
         }
     }
 
+    getTile(x: number, y: number): Tile | undefined {
+        for (const tile of this.tiles) {
+            if (tile.x == x && tile.y == y) {
+                return tile;
+            }
+        }
+        return undefined;
+    }
+
 }

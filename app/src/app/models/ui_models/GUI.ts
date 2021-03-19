@@ -6,7 +6,6 @@ import { Camera } from "./camera";
 export class GUI implements Drawable {
 
     private game: Game;
-    private camera: Camera;
 
     redUiBox: HTMLImageElement;
     redUiBoxClicked: HTMLImageElement;
@@ -19,7 +18,6 @@ export class GUI implements Drawable {
         this.redUiBoxClicked = new Image()
         this.redUiBox.src = "../../../assets/ui/red.png";
         this.redUiBoxClicked.src = "../../../assets/ui/red_clicked.png";
-        this.camera = this.game.getCamera();
         this.cameraZoomButton = new CameraZoomButton(this, game);
     }
 

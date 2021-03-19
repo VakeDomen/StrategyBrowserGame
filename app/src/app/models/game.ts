@@ -72,8 +72,7 @@ export class Game {
         this._lastUpdateTimestamp = new Date().getTime();
         this.view = 'map';
         this.map = new GameMap({} as MapPacket);
-        this.camera = new Camera(800, 450);
-        // this.camera.setGoal(0, 3800)
+        this.camera = new Camera(800, 450, this);
         this.armies = new Map();
     }
 
@@ -127,12 +126,9 @@ export class Game {
             this.drawUI(guiContext);
             guiContext.scale(1, 1)
             const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
-            // console.log(this._drawLoopTime - deltaTime)
             await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
         }
     }
-
-
 
     async start(): Promise<void> {
         this.initLoops();
@@ -150,7 +146,6 @@ export class Game {
     }
 
     async setArmies(packet: ArmyPacket[]) {
-        console.log('packet', packet)
         for (const armyPacket of packet) {
             const army = new Army(armyPacket);
             await army.load();
@@ -162,7 +157,6 @@ export class Game {
         }
         this.loadedArmies = true;
         this.checkLoaded()
-        console.log(this.armies)
     }
 
     async setMap(map: MapPacket) {
@@ -217,7 +211,6 @@ export class Game {
     }
     
     handleMouseUp(event: MouseEvent): void {
-        console.log('mouse', event)
         if (this.mouseDownEvent) {
             const dist = this.distToMouse(
                 (this.mouseDownEvent.screenX / window.innerWidth) * 1600,
@@ -265,8 +258,10 @@ export class Game {
         if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
             const startX = (this.mouseDownEvent.offsetX / window.innerWidth) * 1600;
             const startY = (this.mouseDownEvent.offsetY / window.innerHeight) * 900;
-            this.camera.goalX = this.preMoveCameraX + (startX - this.mouseX) * this.cameraZoom;
-            this.camera.goalY = this.preMoveCameraY + (startY - this.mouseY) * this.cameraZoom;
+            this.camera.setGoal(
+                this.preMoveCameraX + (startX - this.mouseX) * this.cameraZoom,
+                this.preMoveCameraY + (startY - this.mouseY) * this.cameraZoom
+            )
         }
     }
 
@@ -289,6 +284,11 @@ export class Game {
 
     setZoom(zoom: number): void {
         if (this.cameraZoomOptions.includes(zoom)) {
+            const tile = this.map.getTile(0, this.map.radius - 1);
+            this.camera.setZoom(zoom);
+            // if (tile) {
+            //     this.camera.setGoal(...tile.calcCenter());
+            // }
             this.cameraZoom = zoom;
         }
     }

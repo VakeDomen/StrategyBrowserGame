@@ -2,10 +2,7 @@ import { Game } from "../../game";
 import { GUI } from "../GUI";
 import { Button } from "./button.ui";
 
-export class CameraZoomButton implements Button {
-
-    static width: number = 40;
-    static height: number = 40;
+export class CameraFocusButton implements Button {
 
     private game: Game;
     private hovered:boolean = false;
@@ -15,10 +12,10 @@ export class CameraZoomButton implements Button {
     icon: HTMLImageElement;
     hoverIcon: HTMLImageElement;
     isClicked = false;
-
     
     constructor(gui: GUI, game: Game) {
         this.game = game;
+        this.gui = gui;
         this.icon = new Image()
         this.hoverIcon = new Image()
         this.cameraZoomIcon = new Image()
@@ -29,36 +26,24 @@ export class CameraZoomButton implements Button {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
+        // const xOffset = (this.game.getCamera().x - 800) * this.game.getZoom();
+        // const yOffset = (this.game.getCamera().y - 450) * this.game.getZoom();
+        const xOffset = 0;
+        const yOffset = 0;
         let img;
         if (this.isClicked) {
             img = this.hoverIcon;
         } else {
             if (this.hovered) {
                 ctx.fillStyle = 'white';
-                ctx.fillRect(9, 849, 42, 42);
+                ctx.fillRect(xOffset + 9, yOffset + 849, 42, 42);
             }
             img = this.icon;
         }
-        ctx.drawImage(
-            img, 
-            10, 
-            850, 
-            CameraZoomButton.width, 
-            CameraZoomButton.height
-        );
-        ctx.drawImage(
-            this.cameraZoomIcon, 
-            15, 
-            855, 
-            CameraZoomButton.width - 10, 
-            CameraZoomButton.width - 10
-        );
-        ctx.strokeText(
-            `${this.zoomOptions[0]}`, 
-            37, 
-            865, 
-            10
-        );
+        ctx.drawImage(img, xOffset + 10, yOffset + 850, 40, 40);
+        ctx.drawImage(this.cameraZoomIcon, xOffset + 15, yOffset + 855, 30, 30);
+        ctx.strokeText(`${this.zoomOptions[0]}`, xOffset + 37, yOffset + 865, 10);
+        // console.log('drawing', this.cameraZoomIcon, xOffset + 15, yOffset + 855, 30, 30)
         ctx.fillStyle = 'black';
     }
     checkHover(x: number, y: number): boolean {
