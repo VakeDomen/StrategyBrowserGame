@@ -29,6 +29,7 @@ export class RoomComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.ws.ping();
     const context = this;
     this.ws.setCotext('room', context)
     const id = this.route.snapshot.paramMap.get('id');

@@ -4,53 +4,73 @@ import { Button } from "./button.ui";
 
 export class CameraFocusButton implements Button {
 
+    static width: number = 40;
+    static height: number = 40;
+    static xOffset: number = 70;
+    static yOffset: number = 850;
+
     private game: Game;
     private hovered:boolean = false;
-    private zoomOptions: number[];
 
-    private cameraZoomIcon: HTMLImageElement;
     icon: HTMLImageElement;
-    hoverIcon: HTMLImageElement;
+    bg: HTMLImageElement;
+    bghover: HTMLImageElement;
     isClicked = false;
     
-    constructor(gui: GUI, game: Game) {
+    constructor(game: Game) {
         this.game = game;
-        this.gui = gui;
+        this.bg = new Image()
+        this.bghover = new Image()
         this.icon = new Image()
-        this.hoverIcon = new Image()
-        this.cameraZoomIcon = new Image()
-        this.cameraZoomIcon.src = "../../../assets/ui/camera_zoom_icon.png";
-        this.icon.src = "../../../assets/ui/red.png";
-        this.hoverIcon.src = "../../../assets/ui/red_pressed.png";
-        this.zoomOptions = game.getZoomOptions();
+        this.icon.src = "../../../assets/ui/camera_pin.png";
+        this.bg.src = "../../../assets/ui/red.png";
+        this.bghover.src = "../../../assets/ui/red_pressed.png";
+    }
+
+    async load(): Promise<void> {
+        await Promise.all([
+            this.bg.onload,
+            this.bghover.onload,
+            this.icon.onload,
+        ]);
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        // const xOffset = (this.game.getCamera().x - 800) * this.game.getZoom();
-        // const yOffset = (this.game.getCamera().y - 450) * this.game.getZoom();
-        const xOffset = 0;
-        const yOffset = 0;
         let img;
         if (this.isClicked) {
-            img = this.hoverIcon;
+            img = this.bghover;
         } else {
             if (this.hovered) {
                 ctx.fillStyle = 'white';
-                ctx.fillRect(xOffset + 9, yOffset + 849, 42, 42);
+                ctx.fillRect(            
+                    CameraFocusButton.xOffset - 1, 
+                    CameraFocusButton.yOffset - 1,
+                    CameraFocusButton.width + 2, 
+                    CameraFocusButton.height + 2
+                );
             }
-            img = this.icon;
+            img = this.bg;
         }
-        ctx.drawImage(img, xOffset + 10, yOffset + 850, 40, 40);
-        ctx.drawImage(this.cameraZoomIcon, xOffset + 15, yOffset + 855, 30, 30);
-        ctx.strokeText(`${this.zoomOptions[0]}`, xOffset + 37, yOffset + 865, 10);
-        // console.log('drawing', this.cameraZoomIcon, xOffset + 15, yOffset + 855, 30, 30)
-        ctx.fillStyle = 'black';
+        ctx.drawImage(
+            img, 
+            CameraFocusButton.xOffset, 
+            CameraFocusButton.yOffset,
+            CameraFocusButton.width, 
+            CameraFocusButton.height
+        );
+        ctx.drawImage(
+            this.icon, 
+            CameraFocusButton.xOffset + 5, 
+            CameraFocusButton.yOffset + 5,
+            CameraFocusButton.width - 10, 
+            CameraFocusButton.height - 10
+        );
     }
     checkHover(x: number, y: number): boolean {
-        this.hovered = x >= 10 && 
-            x <= 50 && 
-            y >= 850 &&
-            y <= 890;
+        this.hovered = x >= CameraFocusButton.xOffset && 
+            x <= CameraFocusButton.xOffset + CameraFocusButton.width && 
+            y >= CameraFocusButton.yOffset &&
+            y <= CameraFocusButton.yOffset + CameraFocusButton.height;
         return this.hovered;
     }
 
@@ -59,12 +79,9 @@ export class CameraFocusButton implements Button {
     }
 
     handleClick(): boolean {
-        console.log('click')
-        const zoom = this.zoomOptions.shift();
-        console.log(zoom)
-        if (zoom) {
-            this.zoomOptions.push(zoom);
-            this.game.setZoom(this.zoomOptions[0]);
+        const tile = this.game.getMap().getTile(0, this.game.getMap().radius - 1);
+        if (tile) {
+            this.game.getCamera().setGoal(...tile.calcCenter());
             return true;
         }
         return false;

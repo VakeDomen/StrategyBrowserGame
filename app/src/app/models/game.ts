@@ -166,6 +166,11 @@ export class Game {
         this.checkLoaded();
     }
     private checkLoaded(): void {
+        console.log(this.loadedMap ,
+            this.loadedPlayers,
+            this.mouseSetUp,
+            this.loadedArmies ,
+            this.loadedGUI)
         this.loaded = this.loadedMap && 
             this.loadedPlayers &&
             this.mouseSetUp &&
@@ -286,13 +291,14 @@ export class Game {
         if (this.cameraZoomOptions.includes(zoom)) {
             const tile = this.map.getTile(0, this.map.radius - 1);
             this.camera.setZoom(zoom);
-            // if (tile) {
-            //     this.camera.setGoal(...tile.calcCenter());
-            // }
             this.cameraZoom = zoom;
         }
     }
     getZoom(): number {
         return this.cameraZoom;
+    }
+
+    getMap(): GameMap {
+        return this.map;
     }
 }

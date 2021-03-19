@@ -25,25 +25,24 @@ export class GameComponent implements AfterViewInit {
   ) { }
 
   ngAfterViewInit(): void {
+    console.log('ping1');
+    this.ws.ping();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.ws.setCotext('room', this);
-      this.ws.getRoom(id);
-      const game = sessionStorage.getItem(id);
-      if (game) {
-        this.game = JSON.parse(game);
-        this.bootstrapGame();
-      } 
+      console.log('setting game context');
+      this.ws.setCotext('game', this);
+      console.log('fetching game');
+      this.ws.getGame(id);
     }
   }
 
-  setRoom(game: GamePacket): void {
+  setGame(game: GamePacket): void {
     this.game = game;
-    sessionStorage.setItem(game.id, JSON.stringify(game));
     this.bootstrapGame();
   }
 
   bootstrapGame(): void {
+    console.log(!!this.canvas && !!this.game && !!this.gui)
     if (!!this.canvas && !!this.game && !!this.gui) {
       this.canvas.nativeElement.width = 1600;
       this.canvas.nativeElement.height = 900;

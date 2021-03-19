@@ -17,7 +17,6 @@ export class GameMap implements Drawable {
             this.tiles = [];
         }
         this.sortedTilesByCoords = this.sortTilesByCoords();
-        console.log(this.sortedTilesByCoords)
     }
 
     private sortTilesByCoords(): Tile[] {

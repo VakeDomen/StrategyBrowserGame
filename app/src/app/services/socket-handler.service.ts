@@ -53,6 +53,12 @@ export class SocketHandlerService {
     this.ws.listen('ROOM_NOT_EXIST').subscribe(resp => this.handleRoomNotExist());
     this.ws.listen('PLAYER_NOT_EXIST').subscribe(resp => this.handlePlayerNotExist());
     this.ws.listen('USER_NOT_EXIST').subscribe(resp => this.handlePlayerNotExist());
+    this.ws.listen('UNAUTHORIZED').subscribe((resp) => this.handleUnauthorized());
+  }
+
+  handleUnauthorized(): void {
+    console.log('unathorized');
+    this.router.navigate(['/']);
   }
 
   handleGameNotExist(): void {
@@ -66,6 +72,11 @@ export class SocketHandlerService {
   handlePlayerNotExist(): void {
     this.toastr.error('Player does not exist!');
   }
+
+  ping() {  
+    this.ws.emit('PING', this.auth.getId());
+  }
+            
 
 
   // ------------------ auth ------------------
@@ -93,6 +104,7 @@ export class SocketHandlerService {
   }
 
   handlePong(login: LoginPacket): void {
+    console.log('pong: ', login.success);
     if (login.success) {
       this.auth.login(login);
     }
@@ -131,6 +143,15 @@ export class SocketHandlerService {
     this.ws.listen('LOBBY_JOIN_GAME').subscribe((resp: GamePacket) => this.setRoom(resp));
     this.ws.listen('LOBBY_START_GAME').subscribe((resp: GamePacket) => this.handleStartGame(resp));
     this.ws.listen('STARTED_GAMES').subscribe((resp: GamePacket[]) => this.handleStartedGames(resp));
+    this.ws.listen('GET_GAME').subscribe((resp: GamePacket) => this.handleGetGame(resp));
+  }
+
+  handleGetGame(game: GamePacket): void {
+    if (!game.running) {
+      this.handleGameNotExist();
+    } else {
+      this.contexts['game'].setGame(game);
+    }
   }
 
   handleStartedGames(games: GamePacket[]): void {
@@ -164,6 +185,9 @@ export class SocketHandlerService {
   
   getRoom(id: string): void {
     this.ws.emit('LOBBY_GAME', id);
+  }  
+  getGame(id: string): void {
+    this.ws.emit('GET_GAME', id);
   }
   setRoom(game: GamePacket): void {
     const roomContext = this.contexts['room'];

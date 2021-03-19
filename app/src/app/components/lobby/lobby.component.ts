@@ -32,7 +32,9 @@ export class LobbyComponent implements AfterViewInit {
     this.ws.getParticipatedGames();
     this.ws.getUsers();
   }
-  ngAfterViewInit(): void {  }
+  ngAfterViewInit(): void { 
+    this.ws.ping();
+   }
 
   usersFetched(): void {
     this.usersReady = true;

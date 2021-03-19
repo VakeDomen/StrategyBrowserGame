@@ -6,50 +6,60 @@ export class CameraZoomButton implements Button {
 
     static width: number = 40;
     static height: number = 40;
+    static xOffset: number = 10;
+    static yOffset: number = 850;
 
     private game: Game;
     private hovered:boolean = false;
     private zoomOptions: number[];
 
-    private cameraZoomIcon: HTMLImageElement;
     icon: HTMLImageElement;
-    hoverIcon: HTMLImageElement;
+    bg: HTMLImageElement;
+    bghover: HTMLImageElement;
     isClicked = false;
 
     
-    constructor(gui: GUI, game: Game) {
+    constructor(game: Game) {
         this.game = game;
+        this.bg = new Image()
+        this.bghover = new Image()
         this.icon = new Image()
-        this.hoverIcon = new Image()
-        this.cameraZoomIcon = new Image()
-        this.cameraZoomIcon.src = "../../../assets/ui/camera_zoom_icon.png";
-        this.icon.src = "../../../assets/ui/red.png";
-        this.hoverIcon.src = "../../../assets/ui/red_pressed.png";
+        this.icon.src = "../../../assets/ui/camera_zoom_icon.png";
+        this.bg.src = "../../../assets/ui/red.png";
+        this.bghover.src = "../../../assets/ui/red_pressed.png";
         this.zoomOptions = game.getZoomOptions();
+    }
+    
+    async load(): Promise<void> {
+        await Promise.all([
+            this.bg.onload,
+            this.bghover.onload,
+            this.icon.onload,
+        ]);
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
         let img;
         if (this.isClicked) {
-            img = this.hoverIcon;
+            img = this.bghover;
         } else {
             if (this.hovered) {
                 ctx.fillStyle = 'white';
                 ctx.fillRect(9, 849, 42, 42);
             }
-            img = this.icon;
+            img = this.bg;
         }
         ctx.drawImage(
             img, 
-            10, 
-            850, 
+            CameraZoomButton.xOffset, 
+            CameraZoomButton.yOffset, 
             CameraZoomButton.width, 
             CameraZoomButton.height
         );
         ctx.drawImage(
-            this.cameraZoomIcon, 
-            15, 
-            855, 
+            this.icon, 
+            CameraZoomButton.xOffset + 5, 
+            CameraZoomButton.yOffset + 5, 
             CameraZoomButton.width - 10, 
             CameraZoomButton.width - 10
         );
@@ -62,10 +72,10 @@ export class CameraZoomButton implements Button {
         ctx.fillStyle = 'black';
     }
     checkHover(x: number, y: number): boolean {
-        this.hovered = x >= 10 && 
-            x <= 50 && 
-            y >= 850 &&
-            y <= 890;
+        this.hovered = x >= CameraZoomButton.xOffset && 
+            x <= CameraZoomButton.xOffset + CameraZoomButton.width && 
+            y >= CameraZoomButton.yOffset &&
+            y <= CameraZoomButton.yOffset + CameraZoomButton.height;
         return this.hovered;
     }
 
@@ -74,9 +84,7 @@ export class CameraZoomButton implements Button {
     }
 
     handleClick(): boolean {
-        console.log('click')
         const zoom = this.zoomOptions.shift();
-        console.log(zoom)
         if (zoom) {
             this.zoomOptions.push(zoom);
             this.game.setZoom(this.zoomOptions[0]);

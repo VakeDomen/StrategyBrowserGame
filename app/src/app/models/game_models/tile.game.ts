@@ -29,8 +29,6 @@ export class Tile implements Drawable {
     tile_type: number;
     orientation: number;
     building: string | null;
-    
-    
 
     constructor(tile: TilePacket) {
         this.img = new Image();
@@ -52,7 +50,7 @@ export class Tile implements Drawable {
         const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
         ctx.drawImage(this.img, ...offsets);
-        ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+        // ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
 		ctx.strokeStyle = color;
     }
 
