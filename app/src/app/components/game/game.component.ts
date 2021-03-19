@@ -14,6 +14,7 @@ export class GameComponent implements AfterViewInit {
   
   game: GamePacket | undefined;
   @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
+  @ViewChild('gui') gui: ElementRef<HTMLCanvasElement> | undefined;
   public canvasContext: CanvasRenderingContext2D | null = null;
 
   private runningGame: Game | undefined;
@@ -42,10 +43,12 @@ export class GameComponent implements AfterViewInit {
   }
 
   bootstrapGame(): void {
-    if (!!this.canvas && !!this.game) {
+    if (!!this.canvas && !!this.game && !!this.gui) {
       this.canvas.nativeElement.width = 1600;
       this.canvas.nativeElement.height = 900;
-      const game = new Game(this.game, this.ws, this.canvas);
+      this.gui.nativeElement.width = 1600;
+      this.gui.nativeElement.height = 900;
+      const game = new Game(this.game, this.ws, this.canvas, this.gui);
       game.start();
       this.runningGame = game;
     }
