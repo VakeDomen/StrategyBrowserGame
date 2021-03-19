@@ -55,13 +55,11 @@ export class GameComponent implements AfterViewInit {
     if (this.runningGame) {
       this.runningGame.handleMouseUp(event);
     }
-    console.log('up', event)
   }
 
   mouseDown(event: MouseEvent): void {
     if (this.runningGame) {
       this.runningGame.handleMouseDown(event)
     }
-    console.log('down', event)
   }
 }

@@ -9,13 +9,16 @@ import { Camera } from "./ui_models/camera";
 
 export class Game {
 
+    // loding checks
     private loaded: boolean = false;
     private loadedMap: boolean = false;
     private loadedPlayers: boolean = false;
+    private mouseSetUp: boolean = false;
 
-    private running: boolean;
+
     private view: 'map' | 'base';
-
+    
+    
     private clickMovmentTreshold: number = 10;
     private ignoreNextClick: boolean = false;
     private mousePressed: boolean = false;
@@ -23,17 +26,20 @@ export class Game {
     private mouseDownEvent: MouseEvent | undefined;
     private mouseX: number = 0;
     private mouseY: number = 0;
-    private preMoveCameraX: number = 0;
-    private preMoveCameraY: number = 0;
+    private preMoveCameraX: number | undefined;
+    private preMoveCameraY: number | undefined;
     private canvas: ElementRef
     private camera: Camera;
-
+    
     private ws: SocketHandlerService;
     
+    // game data
     private id: string;
+    private running: boolean;
     private host: string;
     private playerIds: string[];
 
+    // loop timers
     private _lastDrawTimestamp: number;
     private _lastUpdateTimestamp: number;
     private _drawLoopTime: number = 1;
@@ -79,7 +85,9 @@ export class Game {
         this.checkLoaded();
     }
     private checkLoaded(): void {
-        this.loaded = this.loadedMap && this.loadedPlayers;
+        this.loaded = this.loadedMap && 
+            this.loadedPlayers &&
+            this.mouseSetUp;
     }
 
     private initLoops(): void {
@@ -157,6 +165,7 @@ export class Game {
         this.mouseDownEvent = event;
         console.log('down')
     }
+    
     handleMouseUp(event: MouseEvent): void {
         console.log('up')
         
@@ -173,6 +182,8 @@ export class Game {
                 return;
             }
             this.mousePressed = false;
+            this.mouseDownEvent = undefined;
+            this.preMoveCameraX = undefined;
         }
         this.ignoreNextClick = true;
     }
@@ -187,23 +198,24 @@ export class Game {
 
     setupMouse(): void {
         this.canvas.nativeElement.addEventListener("mousemove", (event: MouseEvent) => this.onMouseMove(event));
+        this.mouseSetUp = true;
+        this.checkLoaded()
     }
 
-    handleDrag(x: number, y: number, dist?: number): void {
-        if (this.mouseDownEvent) {
-            this.camera.goalX = this.preMoveCameraX + (this.mouseDownEvent.screenX - x);
-            this.camera.goalY = this.preMoveCameraY + (this.mouseDownEvent.screenY - y);
+    handleCameraDrag(): void {
+        if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
+            const startX = (this.mouseDownEvent.offsetX / window.innerWidth) * 1600;
+            const startY = (this.mouseDownEvent.offsetY / window.innerHeight) * 900;
+            this.camera.goalX = this.preMoveCameraX + (startX - this.mouseX);
+            this.camera.goalY = this.preMoveCameraY + (startY - this.mouseY);
         }
     }
 
     onMouseMove(event: MouseEvent) { 
-        this.mouseX = (event.screenX / window.innerWidth) * 1600;
-        this.mouseY = (event.screenY / window.innerHeight) * 900;
-        
+        this.mouseX = (event.offsetX / window.innerWidth) * 1600;
+        this.mouseY = (event.offsetY / window.innerHeight) * 900;
         if (this.mousePressed && this.mouseDownEvent) {
-            const clickX = (this.mouseDownEvent.screenX / window.innerWidth) * 1600;
-            const clickY = (this.mouseDownEvent.screenY / window.innerHeight) * 900;
-            this.handleDrag(this.mouseX, this.mouseY);
+             this.handleCameraDrag();
         }
     }
     
