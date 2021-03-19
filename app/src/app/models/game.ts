@@ -6,6 +6,8 @@ import { MapPacket } from "./packets/map.packet";
 import { PlayersPacket } from "./packets/players.packet";
 import { GameMap } from "./game_models/map.game";
 import { Camera } from "./ui_models/camera";
+import { Army } from "./game_models/army.game";
+import { ArmyPacket } from "./packets/army.packet";
 
 export class Game {
 
@@ -14,7 +16,7 @@ export class Game {
     private loadedMap: boolean = false;
     private loadedPlayers: boolean = false;
     private mouseSetUp: boolean = false;
-
+    private loadedArmies: boolean = false;
 
     private view: 'map' | 'base';
     
@@ -23,6 +25,8 @@ export class Game {
     private ignoreNextClick: boolean = false;
     private mousePressed: boolean = false;
     // private mousePressedTime: number;
+    
+    // camera
     private mouseDownEvent: MouseEvent | undefined;
     private mouseX: number = 0;
     private mouseY: number = 0;
@@ -30,6 +34,7 @@ export class Game {
     private preMoveCameraY: number | undefined;
     private canvas: ElementRef
     private camera: Camera;
+    private cameraZoom: number = 1;
     
     private ws: SocketHandlerService;
     
@@ -38,6 +43,7 @@ export class Game {
     private running: boolean;
     private host: string;
     private playerIds: string[];
+    private armies: Map<string, Army[]>; // player_id -> player's armies
 
     // loop timers
     private _lastDrawTimestamp: number;
@@ -63,6 +69,7 @@ export class Game {
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450);
         // this.camera.setGoal(0, 3800)
+        this.armies = new Map();
     }
 
     async start(): Promise<void> {
@@ -70,12 +77,29 @@ export class Game {
         this.ws.setCotext('game', this);
         this.ws.getMap(this.id);
         this.ws.getPlayers(this.id);
+        this.ws.getArmies(this.id);
         this.setupMouse()
     }
 
     setPlayers(players: PlayersPacket): void {
         this.loadedPlayers = true;
         this.checkLoaded();
+    }
+
+    async setArmies(packet: ArmyPacket[]) {
+        console.log('packet', packet)
+        for (const armyPacket of packet) {
+            const army = new Army(armyPacket);
+            await army.load();
+            if (!this.armies.get(armyPacket.player_id)) {
+                this.armies.set(armyPacket.player_id, [army]);
+            } else {
+                this.armies.get(armyPacket.player_id)?.push(army);
+            }
+        }
+        this.loadedArmies = true;
+        this.checkLoaded()
+        console.log(this.armies)
     }
 
     async setMap(map: MapPacket) {
@@ -87,7 +111,8 @@ export class Game {
     private checkLoaded(): void {
         this.loaded = this.loadedMap && 
             this.loadedPlayers &&
-            this.mouseSetUp;
+            this.mouseSetUp &&
+            this.loadedArmies;
     }
 
     private initLoops(): void {
@@ -111,6 +136,7 @@ export class Game {
         }
         while(1) {
             this._lastDrawTimestamp = new Date().getTime();
+            canvasContext.scale(1/this.cameraZoom, 1/this.cameraZoom)
             // draw code here
             // clear
             this.clearCanvas(canvasContext)
@@ -119,15 +145,16 @@ export class Game {
             switch (this.view) {
                 case 'map':
                     this.map.draw(canvasContext); 
+                    this.armies.forEach((armies: Army[]) => armies.map((army: Army) => army.draw(canvasContext)));
                     break;
-                case 'base':
-                
+                case 'base':     
                     break;
                 default:
                     break;
-            }
-            // end draw code
+                }
+                        // end draw code
             this.camera.adjust(canvasContext, !this.mousePressed);
+            canvasContext.scale(this.cameraZoom, this.cameraZoom);
             const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
             // console.log(this._drawLoopTime - deltaTime)
             await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
@@ -206,8 +233,8 @@ export class Game {
         if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
             const startX = (this.mouseDownEvent.offsetX / window.innerWidth) * 1600;
             const startY = (this.mouseDownEvent.offsetY / window.innerHeight) * 900;
-            this.camera.goalX = this.preMoveCameraX + (startX - this.mouseX);
-            this.camera.goalY = this.preMoveCameraY + (startY - this.mouseY);
+            this.camera.goalX = this.preMoveCameraX + (startX - this.mouseX) * this.cameraZoom;
+            this.camera.goalY = this.preMoveCameraY + (startY - this.mouseY) * this.cameraZoom;
         }
     }
 
@@ -218,6 +245,5 @@ export class Game {
              this.handleCameraDrag();
         }
     }
-    
 
 }

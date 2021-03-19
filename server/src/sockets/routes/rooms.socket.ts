@@ -113,6 +113,7 @@ export function rooms(socket) {
                     return insert(conf.tables.player, player);
                 }));
                 await game.generateMap();
+                await game.generateStartingArmies();
                 SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game);
             }
         }

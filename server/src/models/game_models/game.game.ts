@@ -1,10 +1,13 @@
-import { insert } from "../../db/database.handler";
+import { fetch, insert } from "../../db/database.handler";
 import { Tile } from "./tile.game";
 import * as conf from '../../db/database.config.json';
 import { Export } from "./core/export.item";
 import { GameItem } from "../db_items/game.item";
 import { v4 as uuidv4 } from 'uuid';
 import random from 'random'
+import { Army } from "./army.game";
+import { GamePacket } from "../packets/game.packet";
+import { PlayerItem } from "../db_items/player.item";
 const seedrandom = require('seedrandom')
 
 export class Game implements Export {
@@ -17,7 +20,8 @@ export class Game implements Export {
 
     map_radius: number;
 
-    board: Map<number, Tile[]>;
+    board: Map<number, Tile[]>; // column no. -> column tiles
+    armies: Map<string, Army[]>; // player_id -> player armies
 
     constructor(data: any) {
         this.id = data.id;
@@ -29,6 +33,16 @@ export class Game implements Export {
         this.map_radius = data.map_radius ? data.map_radius : 3;
 
         this.board = new Map();
+        this.armies = new Map();
+        random.use(seedrandom(this.seed));
+    }
+    exportPacket() {
+        return {
+            id: this.id,
+            host: this.host,
+            players: this.players,
+            running: this.running
+        } as GamePacket;
     }
 
     exportItem(): GameItem {
@@ -45,6 +59,23 @@ export class Game implements Export {
     
     generateSeed(): void {
         this.seed = uuidv4().replace('-', '');
+    }
+
+    async generateStartingArmies(): Promise<void> {
+        for (const user_id of this.players) {
+            const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: this.id, user_id: user_id}));
+            const player = players.pop();
+            if (player) {
+                const army = new Army({
+                    player_id: player.id,
+                    x: random.int(-this.map_radius + 1, this.map_radius -1),
+                    y: random.int(-this.map_radius + 1, this.map_radius -1),
+                    name: `${player.id}'s army`,
+                });
+                await army.saveItem();
+                this.armies.set(player.id as string, [army]);
+            }
+        }
     }
 
     async generateMap(): Promise<void> {
@@ -82,7 +113,6 @@ export class Game implements Export {
     }
 
     private randomizeMapLandscape(board: Map<number, Tile[]>): void {
-        random.use(seedrandom(this.seed));
         const normal = random.normal(0, 3);
         for (const row of board.values()) {
             for (const tile of row) {

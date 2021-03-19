@@ -43,3 +43,36 @@ export async function innerJoin<T>(t1: string, t2: string, t1key: string, t2key:
 export async function leftJoin<T>(t1: string, t2: string, t1key: string, t2key: string, filter: DbItem): Promise<T[]> {
 	return query<T>('SELECT * FROM ' + t1 + ' AS t1 LEFT JOIN ' + t2 + ' as t2 ON t1.' + t1key + ' = t2.' + t2key + ' WHERE ' + filter.whereString() + ';');
 }
+
+// export function escape(str: string): string {
+// 	if (!str) {
+// 	  return '';
+// 	}
+	
+// 	let replacer = (char: string) : string => {
+// 	  switch (char) {
+// 		case '\0':
+// 		  	return '\\0';
+// 		case '\x08':
+// 		  	return '\\b';
+// 		case '\x09':
+// 		  	return '\\t';
+// 		case '\x1a':
+// 		 	return '\\z';
+// 		case '\n':
+// 		 	return '\\n';
+// 		case '\r':
+// 		  	return '\\r';
+// 		case '\"':
+// 		case '\'':
+// 		case '\\':
+// 		case '%':
+// 			// prepends a backslash to backslash, percent, and double/single quotes
+// 			return '\\' + char;
+// 		default:
+// 			return char;
+// 	  }
+// 	};
+  
+// 	return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, replacer);
+//   }

@@ -2,6 +2,26 @@ import { Drawable } from "../core/drawable.abstract";
 import { TilePacket } from "../packets/tile.packet";
 
 export class Tile implements Drawable {
+    // pixel coordinates of hex corners in the image
+    //     1   2
+    // 0           3
+    //     5   4
+    private static hexBorders: [number, number][]= [
+        [150, 342],
+        [203, 297],
+        [308, 297],
+        [360, 342],
+        [308, 388],
+        [203, 388],
+    ];
+    public static hexMiddle: [number, number] = [255, 342];
+    public static hexWidth: number = Tile.hexBorders[3][0] - Tile.hexBorders[0][0];
+    public static hexHeight: number = Tile.hexBorders[5][1] - Tile.hexBorders[1][1]; 
+    public static hexXoffset: number = Tile.hexBorders[2][0] - Tile.hexBorders[0][0];
+    public static hexYoffset: number = Tile.hexBorders[1][1] - Tile.hexBorders[0][1];
+    
+    private img: HTMLImageElement;
+    
     id: string;
     game_id: string;
     x: number;
@@ -11,16 +31,6 @@ export class Tile implements Drawable {
     building: string | null;
     
     
-    // pixel coordinates of hex corners in the image
-    //     1   2
-    // 0           3
-    //     5   4
-    private hexBorders: [number, number][];
-    private img: HTMLImageElement;
-    private hexWidth: number;
-    private hexHeight: number;
-    private hexXoffset: number;
-    private hexYoffset: number;
 
     constructor(tile: TilePacket) {
         this.img = new Image();
@@ -32,18 +42,6 @@ export class Tile implements Drawable {
         this.tile_type = tile.tile_type;
         this.orientation = tile.orientation;
         this.building = tile.building;
-        this.hexBorders = [
-            [150, 342],
-            [203, 297],
-            [308, 297],
-            [360, 342],
-            [308, 388],
-            [203, 388],
-        ];
-        this.hexWidth = this.hexBorders[3][0] - this.hexBorders[0][0];
-        this.hexHeight = this.hexBorders[5][1] - this.hexBorders[1][1]; 
-        this.hexXoffset = this.hexBorders[2][0] - this.hexBorders[0][0];
-        this.hexYoffset = this.hexBorders[1][1] - this.hexBorders[0][1];
     }
 
     async load(): Promise<void> {
@@ -72,14 +70,14 @@ export class Tile implements Drawable {
 
     calcImageXOffset(): number {
         let offset = 0;
-        offset += this.x * this.hexXoffset;
+        offset += this.x * Tile.hexXoffset;
         return offset;
     }
 
     calcImageYOffset(): number {
         let offset = 0;
-        offset += this.y * this.hexHeight;
-        offset += Math.abs(this.x * this.hexYoffset);
+        offset += this.y * Tile.hexHeight;
+        offset += Math.abs(this.x * Tile.hexYoffset);
         return offset;
     }
 

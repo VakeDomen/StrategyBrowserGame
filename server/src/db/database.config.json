@@ -3,7 +3,9 @@
     "player": "players",
     "user": "users",
     "game": "games",
-    "tile": "tiles"
+    "tile": "tiles",
+    "army": "army",
+    "battalion": "battalion"
   },
   "log": true
 }

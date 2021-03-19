@@ -11,6 +11,9 @@ import { PlayersPacket } from '../../models/packets/players.packet';
 import { PlayerPacket } from '../../models/packets/player.packet';
 import { Tile } from '../../models/game_models/tile.game';
 import { TilePacket } from '../../models/packets/tile.packet';
+import { ArmyItem } from '../../models/db_items/army.item';
+import { Army } from '../../models/game_models/army.game';
+import { ArmyPacket } from '../../models/packets/army.packet';
 
 export function applyGameSockets(socket) {
     
@@ -33,7 +36,7 @@ export function applyGameSockets(socket) {
                 game_id: game.id,
                 radius: game.map_radius,
                 // tiles: tiles
-                tiles: tiles
+                tiles: tiles.map((tile: TileItem) => new Tile(tile).exportPacket())
             } as MapPacket);
         } else {
             socket.emit('GAME_NOT_EXIST', null);
@@ -47,6 +50,30 @@ export function applyGameSockets(socket) {
             const players: PlayerItem[] = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game_id}));
             const packet: PlayerPacket[] = players.map((player: PlayerItem) => player as PlayerPacket);
             socket.emit('GET_PLAYERS', packet);
+        } else {
+            socket.emit('GAME_NOT_EXIST', null);
+        }
+    });
+
+    socket.on('GET_ARMIES', async (game_id: string) => {
+        const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
+        const game = games.pop();
+        if (game) {
+            const players: PlayerItem[] = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game_id}));
+            const playerArmies: ArmyItem[][] = await Promise.all(players.map(async (player: PlayerItem) => {
+                return await fetch<ArmyItem>(conf.tables.army, new ArmyItem({player_id: player.id}));
+            }));
+            const armies: Army[] = [];
+            for (const playerArmy of playerArmies) {
+                for (const army of playerArmy) {
+                    armies.push(new Army(army));
+                }
+            }
+            console.log('armies', playerArmies, armies)
+            await Promise.all(armies.map((army: Army) => army.loadBattalions()));
+
+            const packet: ArmyPacket[] = armies.map((army: Army) =>  army.exportPacket());
+            socket.emit('GET_ARMIES', packet);
         } else {
             socket.emit('GAME_NOT_EXIST', null);
         }

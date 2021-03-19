@@ -11,6 +11,7 @@ import { MapPacket } from '../models/packets/map.packet';
 import { PlayersPacket } from '../models/packets/players.packet';
 import { CacheService } from './cache.service';
 import { StartGamePacket } from '../models/packets/start-game.packet';
+import { ArmyPacket } from '../models/packets/army.packet';
 
 
 @Injectable({
@@ -191,6 +192,7 @@ export class SocketHandlerService {
   initGame(): void {
     this.ws.listen('GET_MAP').subscribe((resp: MapPacket[]) => this.contexts['game'].setMap(resp));
     this.ws.listen('GET_PLAYERS').subscribe((resp: PlayersPacket[]) => this.contexts['game'].setPlayers(resp));
+    this.ws.listen('GET_ARMIES').subscribe((resp: ArmyPacket[]) => this.contexts['game'].setArmies(resp));
   }
 
   getMap(id: string): void {
@@ -199,5 +201,9 @@ export class SocketHandlerService {
 
   getPlayers(id: string): void {
     this.ws.emit('GET_PLAYERS', id);
+  }
+
+  getArmies(id: string): void {
+    this.ws.emit('GET_ARMIES', id);
   }
 }
