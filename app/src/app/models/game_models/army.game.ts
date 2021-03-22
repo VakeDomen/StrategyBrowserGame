@@ -34,6 +34,22 @@ export class Army implements Drawable{
             this.calcImageXOffset() - this.imgWidth / 4, 
             this.calcImageYOffset() - this.imgHeight / 2
         ];
+        if (this.isSelected) {
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.ellipse(
+                offsets[0] + this.imgWidth / 4,
+                offsets[1] + this.imgHeight / 2,
+                15, 
+                45, 
+                Math.PI / 2, 
+                0, 
+                2 * Math.PI
+            );
+            ctx.fill();
+            ctx.fillStyle = 'black';
+        }
+
         ctx.drawImage(
             this.img, 
             ...offsets, 
