@@ -83,10 +83,7 @@ export class Game {
             // update code here
             if (!this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
                 // console.log("no hover")
-                this.map.findHover(
-                    this.mouseX + this.camera.x - 800, 
-                    this.mouseY + this.camera.y - 450
-                );
+                this.map.findHover(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
             }
             
             // end update code
@@ -238,8 +235,10 @@ export class Game {
         if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
             return;
         }
-        const tile = this.findClickedTile();
+        const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
         if (tile) {
+            console.log(tile.x, tile.y)
+            this.map.selectTile(tile);
             return;
         }
     }
@@ -281,8 +280,8 @@ export class Game {
         }
     }
 
-    private findClickedTile(): Tile | undefined {
-        return this.map.findClick(this.mouseX, this.mouseY);
+    private findClickedTile(x: number, y: number): Tile | undefined {
+        return this.map.findClick(x, y);
     }
 
     getCamera(): Camera {

@@ -30,6 +30,8 @@ export class Tile implements Drawable {
     orientation: number;
     building: string | null;
     isHovered: boolean;
+    isSelected: boolean;
+
 
     constructor(tile: TilePacket) {
         this.img = new Image();
@@ -42,7 +44,9 @@ export class Tile implements Drawable {
         this.orientation = tile.orientation;
         this.building = tile.building;
         this.isHovered = false;
+        this.isSelected = false;
     }
+    
 
     
 
@@ -53,9 +57,32 @@ export class Tile implements Drawable {
     draw(ctx: CanvasRenderingContext2D): void {
         const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
+        if (this.isSelected) {
+            ctx.globalAlpha = 1;
+            // ctx.filter = "brightness(50%)";
+
+        }
         ctx.drawImage(this.img, ...offsets);
-        if (this.isHovered) {
+        if (this.isSelected) {
+            ctx.globalAlpha = 0.5;
+            // ctx.filter = "brightness(100%)";
+        }
+        if (this.isHovered || this.isSelected) {
             ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+            ctx.fillStyle = '#f00';
+            ctx.beginPath();
+            ctx.moveTo(
+                this.calcImageXOffset() + Tile.hexBorders[0][0], 
+                this.calcImageYOffset() + Tile.hexBorders[0][1]
+            );
+            for (let i = 1 ; i < Tile.hexBorders.length ; i++) {
+                ctx.lineTo(
+                    this.calcImageXOffset() + Tile.hexBorders[i][0], 
+                    this.calcImageYOffset() + Tile.hexBorders[i][1]
+                );
+            }
+            ctx.closePath();
+            ctx.stroke();
         }
 		ctx.strokeStyle = color;
     }
@@ -78,6 +105,11 @@ export class Tile implements Drawable {
         offset += this.y * Tile.hexHeight;
         offset += Math.abs(this.x * Tile.hexYoffset);
         return offset;
+    }
+
+    setSelected(b: boolean): void {
+        console.log(`Tile ${this.x} | ${this.y} selected: ${b}`)
+        this.isSelected = b;
     }
 
     getAssetRoute(type: number): string {

@@ -58,4 +58,11 @@ export class Camera {
         this.jumpNextFrame = true;
         this.zoom = zoom;
     }
+
+    pixelToCoordinate(x: number, y: number): [number, number] {
+        return [
+            ((x * this.zoom) + this.x - (800 * this.zoom)), 
+            ((y * this.zoom) + this.y - (450 * this.zoom)) 
+        ];
+    }
 }
