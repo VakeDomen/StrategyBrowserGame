@@ -213,13 +213,13 @@ export class Game {
     handleMouseUp(event: MouseEvent): void {
         if (this.mouseDownEvent) {
             const dist = this.distToMouse(
-                (this.mouseDownEvent.screenX / window.innerWidth) * 1600,
-                (this.mouseDownEvent.screenY / window.innerHeight) * 900
+                (this.mouseDownEvent.x / window.innerWidth) * 1600,
+                (this.mouseDownEvent.y / window.innerHeight) * 900
             );
             // drag
-            if (dist < this.clickMovmentTreshold) {
+            if (dist > this.clickMovmentTreshold) {
                 // this.handleClick();
-                return;
+                // return;
             }
             // click
             else {
@@ -239,6 +239,7 @@ export class Game {
         if (tile) {
             console.log(tile.x, tile.y)
             this.map.selectTile(tile);
+            this.GUI?.tileSelected(tile);
             return;
         }
     }
@@ -274,7 +275,7 @@ export class Game {
     private onMouseMove(event: MouseEvent) { 
         this.mouseX = (event.offsetX / window.innerWidth) * 1600;
         this.mouseY = (event.offsetY / window.innerHeight) * 900;
-        if (this.mousePressed && this.mouseDownEvent) {
+        if (this.mousePressed && this.mouseDownEvent && !this.GUI?.isHovered) {
             this.handleCameraDrag();
             return;
         }

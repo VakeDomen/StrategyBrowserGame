@@ -1,6 +1,6 @@
 import { Game } from "../../game";
 import { GUI } from "../GUI";
-import { Button } from "./button.ui";
+import { Button } from "../core/button.ui";
 
 export class CameraFocusButton implements Button {
 

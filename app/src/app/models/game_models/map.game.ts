@@ -8,8 +8,10 @@ export class GameMap implements Drawable {
     radius: number;
     tiles: Tile[];
     sortedTilesByCoords: Tile[];
+    
 
     private selectedTile: Tile | undefined;
+    private globalAlpha: number = 1;
 
     constructor(data: MapPacket) {
         this.radius = data.radius;
@@ -34,11 +36,10 @@ export class GameMap implements Drawable {
     }
 
     async draw(ctx: CanvasRenderingContext2D): Promise<void> {
-        // ctx.globalAlpha = 1;
+        ctx.globalAlpha = this.globalAlpha;
         for (const tile of this.sortedTilesByCoords) {
             tile.draw(ctx);
         }
-        // ctx.globalAlpha = 1;
     }
 
     getTile(x: number, y: number): Tile | undefined {
@@ -51,6 +52,7 @@ export class GameMap implements Drawable {
     }
 
     selectTile(tile: Tile): void {
+        this.globalAlpha = 0.5;
         if (this.selectedTile) {
             this.selectedTile.setSelected(false);
         }
@@ -71,6 +73,12 @@ export class GameMap implements Drawable {
         this.tiles.map((tile: Tile) => {
             tile.isHovered = tile.isPointOnTile(x, y);
         });
+    }
+    
+    unselectTile(): void {
+        this.selectedTile?.setSelected(false);
+        this.globalAlpha = 1;
+        this.selectedTile = undefined;
     }
 
 }

@@ -59,17 +59,14 @@ export class Tile implements Drawable {
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
         if (this.isSelected) {
             ctx.globalAlpha = 1;
-            // ctx.filter = "brightness(50%)";
-
         }
         ctx.drawImage(this.img, ...offsets);
         if (this.isSelected) {
             ctx.globalAlpha = 0.5;
-            // ctx.filter = "brightness(100%)";
         }
         if (this.isHovered || this.isSelected) {
             ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
-            ctx.fillStyle = '#f00';
+            ctx.fillStyle = 'black';
             ctx.beginPath();
             ctx.moveTo(
                 this.calcImageXOffset() + Tile.hexBorders[0][0], 
