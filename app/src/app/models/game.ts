@@ -9,6 +9,7 @@ import { Camera } from "./ui_models/camera";
 import { Army } from "./game_models/army.game";
 import { ArmyPacket } from "./packets/army.packet";
 import { GUI } from "./ui_models/GUI";
+import { Tile } from "./game_models/tile.game";
 
 export class Game {
 
@@ -53,7 +54,7 @@ export class Game {
     private _lastDrawTimestamp: number;
     private _lastUpdateTimestamp: number;
     private _drawLoopTime: number = 1;
-    private _updateLoopTime: number = 100;
+    private _updateLoopTime: number = 5;
 
     private map: GameMap;
 
@@ -80,7 +81,14 @@ export class Game {
         while(this.running) {
             this._lastUpdateTimestamp = new Date().getTime();
             // update code here
-
+            if (!this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
+                // console.log("no hover")
+                this.map.findHover(
+                    this.mouseX + this.camera.x - 800, 
+                    this.mouseY + this.camera.y - 450
+                );
+            }
+            
             // end update code
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
@@ -108,7 +116,6 @@ export class Game {
             const zoom = this.cameraZoom;
             canvasContext.scale(1 / zoom, 1 / zoom)
             // draw code here
-            // clear
             this.clearCanvas(canvasContext)
             switch (this.view) {
                 case 'map':
@@ -166,11 +173,6 @@ export class Game {
         this.checkLoaded();
     }
     private checkLoaded(): void {
-        console.log(this.loadedMap ,
-            this.loadedPlayers,
-            this.mouseSetUp,
-            this.loadedArmies ,
-            this.loadedGUI)
         this.loaded = this.loadedMap && 
             this.loadedPlayers &&
             this.mouseSetUp &&
@@ -194,10 +196,6 @@ export class Game {
     }
 
     private drawUI(ctx: CanvasRenderingContext2D): void {
-        if (!this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
-            // console.log("no hover")
-            
-        }
         if(this.GUI) {
             this.GUI.draw(ctx);
         }
@@ -240,6 +238,10 @@ export class Game {
         if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
             return;
         }
+        const tile = this.findClickedTile();
+        if (tile) {
+            return;
+        }
     }
 
     private distToMouse(x: number, y: number): number {
@@ -261,12 +263,12 @@ export class Game {
 
     private handleCameraDrag(): void {
         if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
-            const startX = (this.mouseDownEvent.offsetX / window.innerWidth) * 1600;
-            const startY = (this.mouseDownEvent.offsetY / window.innerHeight) * 900;
+            const startX = (this.mouseDownEvent.x / window.innerWidth) * 1600;
+            const startY = (this.mouseDownEvent.y / window.innerHeight) * 900;
             this.camera.setGoal(
                 this.preMoveCameraX + (startX - this.mouseX) * this.cameraZoom,
                 this.preMoveCameraY + (startY - this.mouseY) * this.cameraZoom
-            )
+            );
         }
     }
 
@@ -277,6 +279,10 @@ export class Game {
             this.handleCameraDrag();
             return;
         }
+    }
+
+    private findClickedTile(): Tile | undefined {
+        return this.map.findClick(this.mouseX, this.mouseY);
     }
 
     getCamera(): Camera {

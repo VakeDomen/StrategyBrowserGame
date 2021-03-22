@@ -11,7 +11,7 @@
         <table class = "table">
             <thead>
                <tr >
-                  <th>ID</th>
+                  <th>Name</th>
                   <th>Host</th>
                   <th>Players</th>
                   <th>In progress</th>
@@ -20,7 +20,7 @@
             </thead>
             <tbody>
                <tr *ngFor="let game of startedGames" class='gray-hover' (click)=goToGame(game.id)>
-                    <td>{{game.id}}</td>
+                    <td>{{game.name}}</td>
                     <td>{{userById(game.host)}}</td>
                     <td>{{game.players.length}}</td>
                     <td>{{game.running ? 'true' : 'false'}}</td>
@@ -53,7 +53,7 @@
         <table class = "table">
             <thead>
                <tr >
-                  <th>ID</th>
+                  <th>Name</th>
                   <th>Host</th>
                   <th>Players</th>
                   <th>In progress</th>
@@ -63,7 +63,7 @@
             </thead>
             <tbody>
                <tr *ngFor="let game of games" class='gray-hover' (click)=goToRoom(game.id)>
-                    <td>{{game.id}}</td>
+                    <td>{{game.name ? game.name : game.id}}</td>
                     <td>{{userById(game.host)}}</td>
                     <td>{{game.players.length}}</td>
                     <td>{{game.running ? 'true' : 'false'}}</td>

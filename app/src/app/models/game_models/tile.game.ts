@@ -29,6 +29,7 @@ export class Tile implements Drawable {
     tile_type: number;
     orientation: number;
     building: string | null;
+    isHovered: boolean;
 
     constructor(tile: TilePacket) {
         this.img = new Image();
@@ -40,7 +41,10 @@ export class Tile implements Drawable {
         this.tile_type = tile.tile_type;
         this.orientation = tile.orientation;
         this.building = tile.building;
+        this.isHovered = false;
     }
+
+    
 
     async load(): Promise<void> {
         await this.img.onload;
@@ -50,7 +54,9 @@ export class Tile implements Drawable {
         const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
         ctx.drawImage(this.img, ...offsets);
-        // ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+        if (this.isHovered) {
+            ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+        }
 		ctx.strokeStyle = color;
     }
 
@@ -94,5 +100,51 @@ export class Tile implements Drawable {
             default:
                 return '../../../assets/tiles/grass_E.png';
         }
+    }
+
+    isPointOnTile(x: number, y: number): boolean {
+        let normX = x - this.calcImageXOffset();
+        let normY = y - this.calcImageYOffset();
+        // too much to left/right
+        if (normX < Tile.hexBorders[0][0] || normX > Tile.hexBorders[3][0]) {
+            return false;
+        }
+        // too much up/down
+        if (normY < Tile.hexBorders[1][1] || normY > Tile.hexBorders[5][1]) {
+            return false;
+        }
+        // middle square (1 -> 2 -> 4 -> 5)
+        if (normX < Tile.hexBorders[2][0] && normX > Tile.hexBorders[1][0]) {
+            return true;
+        }
+        const hoverDiff = 5;
+        // left triangles
+        if (normX <= Tile.hexBorders[1][0]) {
+            // set point 0 as center of coordinate system
+            normX -= Tile.hexBorders[0][0];
+            normY -= Tile.hexBorders[0][1];
+            // top left trinagle (diagonal -> x = y) is under?
+            if (normY > 0) {
+                return normX > (normY + hoverDiff);
+            }
+            if (normY < 0) {
+                return normX > -(normY - hoverDiff);
+            }
+            console.log('LEFT TRIANGLES BUT NOT HANDLED!!')
+        }
+        // right triangles
+        if (normX >= Tile.hexBorders[2][0]) {
+            normX -= Tile.hexBorders[3][0];
+            normY -= Tile.hexBorders[3][1];
+            // top left trinagle (diagonal -> x = y) is under?
+            if (normY > 0) {
+                return -normX > (normY + hoverDiff);
+            }
+            if (normY < 0) {
+                return -normX > -(normY - hoverDiff);
+            }
+            console.log('RIGHT TRIANGLES BUT NOT HANDLED!!') 
+        }
+        return true;
     }
 }

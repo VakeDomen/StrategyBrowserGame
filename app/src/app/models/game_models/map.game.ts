@@ -46,4 +46,19 @@ export class GameMap implements Drawable {
         return undefined;
     }
 
+    findClick(x: number, y: number): Tile | undefined {
+        for (const tile of this.tiles) {
+            if (tile.isPointOnTile(x, y)) {
+                return tile;
+            }
+        }
+        return undefined;
+    }
+
+    findHover(x: number, y: number): void {
+        this.tiles.map((tile: Tile) => {
+            tile.isHovered = tile.isPointOnTile(x, y);
+        });
+    }
+
 }
