@@ -7,11 +7,12 @@ export class Army implements Drawable{
     x: number;
     y: number;
     name: string;
-
     battalions: Battalion[];
 
+    private isHovered: boolean = false;
+    private isSelected: boolean = false;
+    
     private img: HTMLImageElement;
-
     private imgWidth: number = 212;
     private imgHeight: number = 218;
     
@@ -33,8 +34,12 @@ export class Army implements Drawable{
             this.calcImageXOffset() - this.imgWidth / 4, 
             this.calcImageYOffset() - this.imgHeight / 2
         ];
-        ctx.drawImage(this.img, ...offsets, this.imgWidth / 2, this.imgHeight / 2);
-        
+        ctx.drawImage(
+            this.img, 
+            ...offsets, 
+            this.imgWidth / 2, 
+            this.imgHeight / 2
+        );
     }
 
     async load(): Promise<void> {
@@ -58,4 +63,18 @@ export class Army implements Drawable{
         return '../../../assets/army/warrior1.png';
     }
 
+    isPointOnArmy(x: number, y: number): boolean {
+        return x > this.calcImageXOffset() - this.imgWidth / 4 && 
+            x < this.calcImageXOffset() - this.imgWidth / 4  + this.imgWidth / 2 &&
+            y > this.calcImageYOffset() - this.imgHeight / 2 && 
+            y < this.calcImageYOffset() - this.imgHeight / 2 + this.imgHeight / 2;
+    }
+
+    setSelected(b: boolean): void {
+        console.log(`Army ${this.x} | ${this.y} selected: ${b}`)
+        this.isSelected = b;
+    }
+    setHovered(b: boolean): void {
+        this.isHovered = b;
+    }
 }

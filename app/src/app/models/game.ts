@@ -10,6 +10,7 @@ import { Army } from "./game_models/army.game";
 import { ArmyPacket } from "./packets/army.packet";
 import { GUI } from "./ui_models/GUI";
 import { Tile } from "./game_models/tile.game";
+import { PlayerPacket } from "./packets/player.packet";
 
 export class Game {
 
@@ -45,9 +46,11 @@ export class Game {
     
     // game data
     private id: string;
+    private myId: string;
+    private me: PlayerPacket;
     private running: boolean;
     private host: string;
-    private playerIds: string[];
+    private players: PlayerPacket[];
     private armies: Map<string, Army[]>; // player_id -> player's armies
 
     // loop timers
@@ -57,17 +60,20 @@ export class Game {
     private _updateLoopTime: number = 5;
 
     private map: GameMap;
+    private selectedArmy: Army | undefined;
 
 
-    constructor(data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef) {
+    constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef) {
         console.log('Initializing game...')
+        this.myId = myId;
+        this.me = {} as PlayerPacket;
         this.loaded = false;
         this.canvas = canvas;
         this.guiCanvas = gui;
         this.ws = ws;
         this.id = data.id;
         this.host = data.host;
-        this.playerIds = data.players;
+        this.players = [];
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
         this._lastUpdateTimestamp = new Date().getTime();
@@ -81,10 +87,17 @@ export class Game {
         while(this.running) {
             this._lastUpdateTimestamp = new Date().getTime();
             // update code here
-            if (!this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
-                // console.log("no hover")
-                this.map.findHover(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+            if (this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
+                const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
+                await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
+                continue;
             }
+            if (this.findHoverArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY))) {
+                const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
+                await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
+                continue;
+            }
+            this.map.findHover(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
             
             // end update code
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
@@ -144,7 +157,15 @@ export class Game {
         this.setupMouse()
     }
 
-    setPlayers(players: PlayersPacket): void {
+    setPlayers(players: PlayerPacket[]): void {
+        this.players = players;
+        console.log(players)
+        for (const player of players) {
+            if (player.user_id == this.myId) {
+                this.me = player;
+                break;
+            }
+        }
         this.loadedPlayers = true;
         this.checkLoaded();
     }
@@ -235,9 +256,15 @@ export class Game {
         if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
             return;
         }
+        const army = this.findClickedArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+        if (army) {
+            army.setSelected(true);
+            this.GUI?.armySelected(army);
+            this.selectedArmy = army;
+            return;
+        }
         const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
         if (tile) {
-            console.log(tile.x, tile.y)
             this.map.selectTile(tile);
             this.GUI?.tileSelected(tile);
             return;
@@ -284,6 +311,38 @@ export class Game {
     private findClickedTile(x: number, y: number): Tile | undefined {
         return this.map.findClick(x, y);
     }
+    
+    private findClickedArmy(x: number, y: number): Army | undefined {
+        for (const armies of this.armies.values()) {
+            if (armies) {
+                for (const army of armies) {
+                    if (army.isPointOnArmy(x, y)) {
+                        return army
+                    }
+                }
+            }
+        }
+        return undefined;
+    }
+
+    private findHoverArmy(x: number, y: number): boolean {
+        let found = false;
+        for (const armies of this.armies.values()) {
+            if (armies) {
+                for (const army of armies) {
+                    const hover = army.isPointOnArmy(x, y);
+                    found = (found || hover);
+                    army.setHovered(hover);
+                }
+            }
+        }
+        return found;
+    }
+    
+    undeselctArmy(): void {
+        this.selectedArmy?.setSelected(false);
+        this.selectedArmy = undefined;
+    }
 
     getCamera(): Camera {
         return this.camera;
@@ -291,6 +350,10 @@ export class Game {
 
     getZoomOptions(): number[] {
         return this.cameraZoomOptions;
+    }
+
+    getSelectedArmy(): Army | undefined {
+        return this.selectedArmy;
     }
 
     setZoom(zoom: number): void {

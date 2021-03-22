@@ -81,4 +81,7 @@ export class GameMap implements Drawable {
         this.selectedTile = undefined;
     }
 
+    getSelectedTile(): Tile | undefined {
+        return this.selectedTile;
+    }
 }

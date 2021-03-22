@@ -36,11 +36,14 @@ export class CameraFocusButton implements Button {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
+        const tile = this.game.getMap().getSelectedTile();
+        const army = this.game.getSelectedArmy();
+        
         let img;
-        if (this.isClicked) {
+        if (this.isClicked && (tile || army)) {
             img = this.bghover;
         } else {
-            if (this.hovered) {
+            if (this.hovered && (tile || army)) {
                 ctx.fillStyle = 'white';
                 ctx.fillRect(            
                     CameraFocusButton.xOffset - 1, 
@@ -50,6 +53,9 @@ export class CameraFocusButton implements Button {
                 );
             }
             img = this.bg;
+        }
+        if (!(tile || army)) {
+            ctx.globalAlpha = 0.3;
         }
         ctx.drawImage(
             img, 
@@ -65,6 +71,9 @@ export class CameraFocusButton implements Button {
             CameraFocusButton.width - 10, 
             CameraFocusButton.height - 10
         );
+        if (!tile) {
+            ctx.globalAlpha = 1;
+        }
     }
     checkHover(x: number, y: number): boolean {
         this.hovered = x >= CameraFocusButton.xOffset && 
@@ -79,7 +88,11 @@ export class CameraFocusButton implements Button {
     }
 
     handleClick(): boolean {
-        const tile = this.game.getMap().getTile(0, this.game.getMap().radius - 1);
+        let tile = this.game.getMap().getSelectedTile();
+        const army = this.game.getSelectedArmy();
+        if (!tile && army) {
+            tile = this.game.getMap().getTile(army.x, army.y);
+        }
         if (tile) {
             this.game.getCamera().setGoal(...tile.calcCenter());
             return true;

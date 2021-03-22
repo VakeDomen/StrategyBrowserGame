@@ -22,6 +22,7 @@ export class GameComponent implements AfterViewInit {
   constructor(
     private route: ActivatedRoute,
     private ws: SocketHandlerService,
+    private auth: AuthService,
   ) { }
 
   ngAfterViewInit(): void {
@@ -42,13 +43,12 @@ export class GameComponent implements AfterViewInit {
   }
 
   bootstrapGame(): void {
-    console.log(!!this.canvas && !!this.game && !!this.gui)
-    if (!!this.canvas && !!this.game && !!this.gui) {
+    if (!!this.canvas && !!this.game && !!this.gui && this.auth.getId()) {
       this.canvas.nativeElement.width = 1600;
       this.canvas.nativeElement.height = 900;
       this.gui.nativeElement.width = 1600;
       this.gui.nativeElement.height = 900;
-      const game = new Game(this.game, this.ws, this.canvas, this.gui);
+      const game = new Game(this.auth.getId() as string, this.game, this.ws, this.canvas, this.gui);
       game.start();
       this.runningGame = game;
     }
