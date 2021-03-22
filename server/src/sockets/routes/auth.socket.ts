@@ -61,12 +61,22 @@ export function appendAuth (socket) {
         const users: User[] = await fetch<User>(conf.tables.user, new User({id: id}));
         const user = users.pop();
         if (!user) {
+            socket.emit('USER_NOT_EXIST');
             return;
         }
-        if (!SocketHandler.playerConnectionMap.get(id) || SocketHandler.playerConnectionMap.get(id) != socket) {
-            SocketHandler.login(socket, id);
+        const success = SocketHandler.login(socket, id);
+        console.log(success);
+        if (success || SocketHandler.playerConnectionMap.get(id) != socket) {
+            SocketHandler.playerConnectionMap.set(id, socket);
             socket.emit('GREET', 'Hello ' + user.username + '! Join a room or host a game!');
-
+            console.log('emiting pong')
+            socket.emit('PONG', {
+                success: success,
+                id: id,
+                username: user.username
+            } as LoginPacket)
+        } else {
+            socket.emit('UNAUTHORIZED', null);
         }
     });
 

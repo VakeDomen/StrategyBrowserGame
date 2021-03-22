@@ -6,6 +6,7 @@ import { PlayerItem } from '../../models/db_items/player.item';
 import { insert, fetch } from '../../db/database.handler';
 import * as conf from '../../db/database.config.json';
 import { StartGamePacket } from '../../models/packets/start-game.packet';
+import { GamePacket } from '../../models/packets/game.packet';
 
 export function rooms(socket) {
     
@@ -36,6 +37,30 @@ export function rooms(socket) {
             game.players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
         }));
         socket.emit('STARTED_GAMES', games);
+    });
+
+    socket.on('GET_GAME', async (id: string) => {
+        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionPlayerMap.get(socket)}));
+        if (!players) {
+            socket.emit('PLAYER_NOT_EXIST', null);
+            return;
+        }
+        const games: GameItem[] = await Promise.all(players.map(async (player: PlayerItem) => {
+            return (await fetch<GameItem>(conf.tables.game, new GameItem({id: player.game_id}))).pop()
+        })) as GameItem[];
+        const game = games.filter((game) => !!game && game.id == id).pop();
+        if (!game) {
+            socket.emit('GAME_NOT_EXIST', null);
+            return;
+        }
+        const gamePlayers = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
+        socket.emit('GET_GAME', {
+            id: id,
+            host: game.host,
+            name: game.name,
+            players: gamePlayers.map((player: PlayerItem) => player.id),
+            running: game.running
+        } as GamePacket);
     })
 
     socket.on('LOBBY_HOST_GAME', async (mode: string) => {

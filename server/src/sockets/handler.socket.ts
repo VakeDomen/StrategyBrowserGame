@@ -35,9 +35,9 @@ export class SocketHandler {
     }
 
     static login(socket: Socket, player: string): boolean {
-        if (this.playerConnectionMap.get(player)) {
-            return false;
-        }
+        // if (this.playerConnectionMap.get(player)) {
+        //     return false;
+        // }
         this.playerConnectionMap.set(player, socket);
         this.connectionPlayerMap.set(socket, player);
         return true;
