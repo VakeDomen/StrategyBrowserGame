@@ -90,8 +90,6 @@ export class CacheService {
   }
 
   getPlayerById(id: string): PlayerPacket | undefined {
-    console.log(this.players)
-    
     return this.players.get(id);
   }
 }

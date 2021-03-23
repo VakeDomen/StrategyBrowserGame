@@ -74,6 +74,10 @@ export class GameMap implements Drawable {
             tile.isHovered = tile.isPointOnTile(x, y);
         });
     }
+
+    getRandomTile(): Tile {
+        return this.tiles[Math.floor(Math.random() * this.tiles.length)];
+    }
     
     unselectTile(): void {
         this.selectedTile?.setSelected(false);

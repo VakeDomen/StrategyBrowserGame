@@ -12,6 +12,7 @@ import { PlayersPacket } from '../models/packets/players.packet';
 import { CacheService } from './cache.service';
 import { StartGamePacket } from '../models/packets/start-game.packet';
 import { ArmyPacket } from '../models/packets/army.packet';
+import { ArmyMovementPacket } from '../models/packets/army-movement.packet';
 
 
 @Injectable({
@@ -218,6 +219,19 @@ export class SocketHandlerService {
     this.ws.listen('GET_PLAYERS').subscribe((resp: PlayersPacket[]) => this.contexts['game'].setPlayers(resp));
     this.ws.listen('GET_ARMIES').subscribe((resp: ArmyPacket[]) => this.contexts['game'].setArmies(resp));
     this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
+    this.ws.listen('QUEUED_EVENT').subscribe((resp: any) => {
+      this.toastr.success('new event!!!');
+      console.log(resp)
+    });
+
+    this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: any) => {
+      this.toastr.success('army moved!!!');
+      console.log(resp)
+    });
+  }
+
+  moveArmy(armyPacket: ArmyMovementPacket): void {
+    this.ws.emit('ARMY_MOVE', armyPacket);
   }
 
   getMap(id: string): void {

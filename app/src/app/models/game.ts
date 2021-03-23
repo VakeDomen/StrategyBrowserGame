@@ -12,6 +12,7 @@ import { Tile } from "./game_models/tile.game";
 import { PlayerPacket } from "./packets/player.packet";
 import { UserPacket } from "./packets/user.packet";
 import { CacheService } from "../services/cache.service";
+import { ArmyMovementPacket } from "./packets/army-movement.packet";
 
 export class Game {
 
@@ -31,7 +32,6 @@ export class Game {
     
     private clickMovmentTreshold: number = 10;
     private mousePressed: boolean = false;
-    // private mousePressedTime: number;
     
     // camera
     private mouseDownEvent: MouseEvent | undefined;
@@ -338,6 +338,18 @@ export class Game {
         this.selectedArmy?.setSelected(false);
         this.selectedArmy = army;
         this.selectedArmy.setSelected(true);
+    }
+
+    moveArmy(army: Army): void {
+        const tile: Tile = this.map.getRandomTile();
+        const packet: ArmyMovementPacket = { 
+            game_id: this.cache.getGameId() as string,
+            army_id: army.id,
+            x: tile.x,
+            y: tile.y
+        };
+        console.log('sending packet', packet)
+        this.ws.moveArmy(packet);
     }
 
     getCamera(): Camera {

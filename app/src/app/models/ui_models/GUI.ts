@@ -144,7 +144,7 @@ export class GUI implements Drawable {
         if (this.selectedArmyOverview) {
             this.selectedArmyOverview.setArmy(army);
         } else {
-            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this.cache, this, army);
+            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this.cache,this.game, this, army);
         }
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }

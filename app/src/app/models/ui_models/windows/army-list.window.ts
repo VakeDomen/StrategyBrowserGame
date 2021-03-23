@@ -45,8 +45,8 @@ export class ArmyListWindow extends Window {
                     super.hoverX &&
                     super.hoverY &&
                     super.hoverX > super.x + (Window.HEADER_START_WIDTH / 2) - 3 &&
-                    super.hoverY > super.y + Window.HEADER_HEIGHT + i * 20 &&
                     super.hoverX < super.x + (Window.HEADER_START_WIDTH / 2) - 3 + super.width - Window.HEADER_END_WIDTH + 6 &&
+                    super.hoverY > super.y + Window.HEADER_HEIGHT + i * 20 &&
                     super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
                 ) {
                     const pre = ctx.fillStyle;
@@ -73,7 +73,6 @@ export class ArmyListWindow extends Window {
         if (!this.armies) {
             return;
         }
-        console.log(`clicked on ${x} ${y}`);
         for (let i = 0 ; i < this.armies.length ; i++) {
             const army = this.armies[i];
             if (

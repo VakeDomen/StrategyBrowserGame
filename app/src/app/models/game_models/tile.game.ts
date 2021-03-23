@@ -69,13 +69,13 @@ export class Tile implements Drawable {
             ctx.fillStyle = 'black';
             ctx.beginPath();
             ctx.moveTo(
-                this.calcImageXOffset() + Tile.hexBorders[0][0], 
+                this.calcImageXOffset() + Tile.hexBorders[0][0] + 2, 
                 this.calcImageYOffset() + Tile.hexBorders[0][1]
             );
             for (let i = 1 ; i < Tile.hexBorders.length ; i++) {
                 ctx.lineTo(
-                    this.calcImageXOffset() + Tile.hexBorders[i][0], 
-                    this.calcImageYOffset() + Tile.hexBorders[i][1]
+                    this.calcImageXOffset() + Tile.hexBorders[i][0] + 1, 
+                    this.calcImageYOffset() + Tile.hexBorders[i][1] - 1
                 );
             }
             ctx.closePath();
