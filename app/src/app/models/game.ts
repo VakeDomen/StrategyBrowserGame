@@ -11,6 +11,9 @@ import { ArmyPacket } from "./packets/army.packet";
 import { GUI } from "./ui_models/GUI";
 import { Tile } from "./game_models/tile.game";
 import { PlayerPacket } from "./packets/player.packet";
+import { UserPacket } from "./packets/user.packet";
+import { AuthService } from "../services/auth.service";
+import { CacheService } from "../services/cache.service";
 
 export class Game {
 
@@ -21,6 +24,7 @@ export class Game {
     private mouseSetUp: boolean = false;
     private loadedArmies: boolean = false;
     private loadedGUI: boolean = false;
+    private loadedUsers: boolean = false;
 
     private view: 'map' | 'base';
     private canvas: ElementRef
@@ -43,13 +47,10 @@ export class Game {
     private cameraZoomOptions: number[] = [1, 2, 4];
     
     private ws: SocketHandlerService;
+    private cache: CacheService;
     
     // game data
-    private id: string;
-    private myId: string;
-    private me: PlayerPacket;
     private running: boolean;
-    private host: string;
     private players: PlayerPacket[];
     private armies: Map<string, Army[]>; // player_id -> player's armies
 
@@ -63,16 +64,16 @@ export class Game {
     private selectedArmy: Army | undefined;
 
 
-    constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef) {
+    constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef, cache: CacheService) {
         console.log('Initializing game...')
-        this.myId = myId;
-        this.me = {} as PlayerPacket;
+        this.cache = cache;
+        this.cache.setMyUserId(myId);
+        this.cache.setGameId(data.id);
+        this.cache.setHostId(data.host);
         this.loaded = false;
         this.canvas = canvas;
         this.guiCanvas = gui;
         this.ws = ws;
-        this.id = data.id;
-        this.host = data.host;
         this.players = [];
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
@@ -150,23 +151,31 @@ export class Game {
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);
-        this.ws.getMap(this.id);
-        this.ws.getPlayers(this.id);
-        this.ws.getArmies(this.id);
+        this.ws.getMap(this.cache.getGameId());
+        this.ws.getPlayers(this.cache.getGameId());
+        this.ws.getArmies(this.cache.getGameId());
+        this.ws.getGameUsers(this.cache.getGameId());
         this.setupUI();
         this.setupMouse()
     }
 
     setPlayers(players: PlayerPacket[]): void {
         this.players = players;
-        console.log(players)
         for (const player of players) {
-            if (player.user_id == this.myId) {
-                this.me = player;
-                break;
+            if (player.user_id == this.cache.getMyUserId()) {
+                this.cache.setMe(player);
             }
+            this.cache.savePlayer(player);
         }
         this.loadedPlayers = true;
+        this.checkLoaded();
+    }
+    
+    setUsers(users: UserPacket[]): void {
+        for (const user of users) {
+            this.cache.saveUser(user);
+        }
+        this.loadedUsers = true;
         this.checkLoaded();
     }
 
@@ -195,7 +204,8 @@ export class Game {
             this.loadedPlayers &&
             this.mouseSetUp &&
             this.loadedArmies && 
-            this.loadedGUI;
+            this.loadedGUI &&
+            this.loadedUsers;
     }
 
     private initLoops(): void {
@@ -282,7 +292,7 @@ export class Game {
     }
 
     private async setupUI(): Promise<void> {
-        this.GUI = new GUI(this);
+        this.GUI = new GUI(this, this.cache);
         await this.GUI.load();
         this.loadedGUI = true;
         this.checkLoaded()
@@ -370,4 +380,5 @@ export class Game {
     getMap(): GameMap {
         return this.map;
     }
+
 }

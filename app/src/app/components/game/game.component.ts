@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { GamePacket } from 'src/app/models/packets/game.packet';
 import { Game } from 'src/app/models/game';
+import { CacheService } from 'src/app/services/cache.service';
 
 @Component({
   selector: 'app-game',
@@ -23,6 +24,7 @@ export class GameComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private ws: SocketHandlerService,
     private auth: AuthService,
+    private cache: CacheService,
   ) { }
 
   ngAfterViewInit(): void {
@@ -48,7 +50,7 @@ export class GameComponent implements AfterViewInit {
       this.canvas.nativeElement.height = 900;
       this.gui.nativeElement.width = 1600;
       this.gui.nativeElement.height = 900;
-      const game = new Game(this.auth.getId() as string, this.game, this.ws, this.canvas, this.gui);
+      const game = new Game(this.auth.getId() as string, this.game, this.ws, this.canvas, this.gui, this.cache);
       game.start();
       this.runningGame = game;
     }

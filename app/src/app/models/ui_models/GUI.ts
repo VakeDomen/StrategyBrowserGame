@@ -7,13 +7,13 @@ import { Camera } from "./camera";
 import { Tile } from "../game_models/tile.game";
 import { Army } from "../game_models/army.game";
 import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window copy";
+import { CacheService } from "src/app/services/cache.service";
 
 export class GUI implements Drawable {
 
     private game: Game;
+    private cache: CacheService;
 
-    redUiBox: HTMLImageElement;
-    redUiBoxClicked: HTMLImageElement;
     isHovered: boolean = false;
 
     private cameraZoomButton: CameraZoomButton;
@@ -21,20 +21,16 @@ export class GUI implements Drawable {
     private selectedTileOverview: SelectedTileOverviewWindow | undefined;
     private selectedArmyOverview: SelectedArmyOverviewWindow | undefined;
 
-    constructor(game: Game) {
+    constructor(game: Game, cache: CacheService) {
+        this.cache = cache
         this.game = game;
-        this.redUiBox = new Image()
-        this.redUiBoxClicked = new Image()
-        this.redUiBox.src = "../../../assets/ui/red.png";
-        this.redUiBoxClicked.src = "../../../assets/ui/red_clicked.png";
         this.cameraZoomButton = new CameraZoomButton(game);
         this.cameraFocusButton = new CameraFocusButton(game);
+        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
     async load(): Promise<void> {
         await Promise.all([
-            this.redUiBox.onload,
-            this.redUiBoxClicked.onload,
             this.cameraZoomButton.load(),
             this.cameraFocusButton.load(),
         ]);
@@ -53,25 +49,25 @@ export class GUI implements Drawable {
 
     checkHover(x: number, y: number, mousePressed?: boolean): boolean {
         if (this.cameraZoomButton.checkHover(x, y)) {
-            this.cameraZoomButton.setClicked(!!mousePressed);
+            this.cameraZoomButton.isClicked = !!mousePressed;
             this.isHovered = true;
             return true;
         }
         if (this.cameraFocusButton.checkHover(x, y)) {
-            this.cameraFocusButton.setClicked(!!mousePressed);
+            this.cameraFocusButton.isClicked = !!mousePressed;
             this.isHovered = true;
             return true;
         }
         if (this.selectedTileOverview) {
             if (this.selectedTileOverview.checkHover(x, y)) {
-                this.selectedTileOverview.setClicked(!!mousePressed);
+                this.selectedTileOverview.isClicked = !!mousePressed;
                 this.isHovered = true;
                 return true;
             }
         }
         if (this.selectedArmyOverview) {
             if (this.selectedArmyOverview.checkHover(x, y)) {
-                this.selectedArmyOverview.setClicked(!!mousePressed);
+                this.selectedArmyOverview.isClicked = !!mousePressed;
                 this.isHovered = true;
                 return true;
             }
@@ -109,13 +105,15 @@ export class GUI implements Drawable {
         if (this.selectedArmyOverview) {
             this.selectedArmyOverview.setArmy(army);
         } else {
-            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this.game, this, army);
+            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this.cache, this, army);
         }
+        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
     armyUnselected(): void {
         this.game.undeselctArmy();
         this.selectedArmyOverview = undefined;
+        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
     tileSelected(tile: Tile): void {
@@ -125,11 +123,13 @@ export class GUI implements Drawable {
         } else {
             this.selectedTileOverview = new SelectedTileOverviewWindow(this.game, this, tile);
         }
+        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
     tileUnselected(): void {
         this.game.getMap().unselectTile();
         this.selectedTileOverview = undefined;
+        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
 }

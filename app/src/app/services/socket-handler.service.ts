@@ -217,6 +217,7 @@ export class SocketHandlerService {
     this.ws.listen('GET_MAP').subscribe((resp: MapPacket[]) => this.contexts['game'].setMap(resp));
     this.ws.listen('GET_PLAYERS').subscribe((resp: PlayersPacket[]) => this.contexts['game'].setPlayers(resp));
     this.ws.listen('GET_ARMIES').subscribe((resp: ArmyPacket[]) => this.contexts['game'].setArmies(resp));
+    this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
   }
 
   getMap(id: string): void {
@@ -229,5 +230,9 @@ export class SocketHandlerService {
 
   getArmies(id: string): void {
     this.ws.emit('GET_ARMIES', id);
+  }
+
+  getGameUsers(id: string): void {
+    this.ws.emit('GET_GAME_USERS', id);
   }
 }
