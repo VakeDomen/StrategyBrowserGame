@@ -6,8 +6,10 @@ import { SelectedTileOverviewWindow } from "./windows/selected-tile-overview.win
 import { Camera } from "./camera";
 import { Tile } from "../game_models/tile.game";
 import { Army } from "../game_models/army.game";
-import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window copy";
+import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window";
 import { CacheService } from "src/app/services/cache.service";
+import { ArmyListButton } from "./buttons/army-list.button";
+import { ArmyListWindow } from "./windows/army-list.window";
 
 export class GUI implements Drawable {
 
@@ -16,10 +18,15 @@ export class GUI implements Drawable {
 
     isHovered: boolean = false;
 
+    // buttons
     private cameraZoomButton: CameraZoomButton;
     private cameraFocusButton: CameraFocusButton;
+    private armyListButton: ArmyListButton;
+
+    // windows
     private selectedTileOverview: SelectedTileOverviewWindow | undefined;
     private selectedArmyOverview: SelectedArmyOverviewWindow | undefined;
+    private armyListWindow: ArmyListWindow | undefined;
 
     constructor(game: Game, cache: CacheService) {
         this.cache = cache
@@ -27,6 +34,7 @@ export class GUI implements Drawable {
         this.cameraZoomButton = new CameraZoomButton(game);
         this.cameraFocusButton = new CameraFocusButton(game);
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
+        this.armyListButton = new ArmyListButton(cache, this);
     }
 
     async load(): Promise<void> {
@@ -39,11 +47,16 @@ export class GUI implements Drawable {
     draw(ctx: CanvasRenderingContext2D): void {
         this.cameraZoomButton.draw(ctx);   
         this.cameraFocusButton.draw(ctx); 
+        this.armyListButton.draw(ctx);
+
         if (this.selectedTileOverview) {
             this.selectedTileOverview.draw(ctx);  
         }
         if (this.selectedArmyOverview) {
             this.selectedArmyOverview.draw(ctx);  
+        }
+        if (this.armyListWindow) {
+            this.armyListWindow.draw(ctx);
         }
     }
 
@@ -55,6 +68,11 @@ export class GUI implements Drawable {
         }
         if (this.cameraFocusButton.checkHover(x, y)) {
             this.cameraFocusButton.isClicked = !!mousePressed;
+            this.isHovered = true;
+            return true;
+        }
+        if (this.armyListButton.checkHover(x, y)) {
+            this.armyListButton.isClicked = !!mousePressed;
             this.isHovered = true;
             return true;
         }
@@ -72,11 +90,22 @@ export class GUI implements Drawable {
                 return true;
             }
         }
+        if (this.armyListWindow) {
+            if (this.armyListWindow.checkHover(x, y)) {
+                this.armyListWindow.isClicked == !!mousePressed;
+                this.isHovered = true;
+                return true;
+            }
+        }
         this.isHovered = false;
         return false;
     }
 
     checkClick(x: number, y: number, mousePressed?: boolean): boolean {
+        if (this.armyListButton.checkHover(x, y)) {
+            this.armyListButton.handleClick();
+            return true;
+        }
         if (this.cameraZoomButton.checkHover(x, y)) {
             this.cameraZoomButton.handleClick();
             return true;
@@ -97,7 +126,17 @@ export class GUI implements Drawable {
                 return true;
             }
         }
+        if (this.armyListWindow) {
+            if (this.armyListWindow.checkHover(x, y)) {
+                this.armyListWindow.handleClick(x, y);
+                return true;
+            }
+        }
         return false;
+    }
+
+    createArmyListWindow(armies: Army[] | undefined): void {
+        this.armyListWindow = new ArmyListWindow(armies, this, this.game);
     }
 
     armySelected(army: Army): void {

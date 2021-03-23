@@ -87,10 +87,13 @@ export class Army implements Drawable{
     }
 
     setSelected(b: boolean): void {
-        console.log(`Army ${this.x} | ${this.y} selected: ${b}`)
         this.isSelected = b;
     }
     setHovered(b: boolean): void {
         this.isHovered = b;
+    }
+
+    getSelected(): boolean {
+        return this.isSelected;
     }
 }

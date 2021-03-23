@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Army } from '../models/game_models/army.game';
 import { PlayerPacket } from '../models/packets/player.packet';
 import { UserPacket } from '../models/packets/user.packet';
 
@@ -11,16 +12,37 @@ export class CacheService {
   private myUserId: string;  
   private hostId: string;
   private me: PlayerPacket;
-  private users: Map<string, UserPacket>;
-  private players: Map<string, PlayerPacket>
+  private users: Map<string, UserPacket>; // userId
+  private players: Map<string, PlayerPacket> // playerId
+  private armies: Map<string, Army[]> // playerId
 
   constructor() {
     this.users = new Map();
     this.players = new Map();
+    this.armies = new Map()
     this.gameId = '';
     this.hostId = '';
     this.myUserId = '';
     this.me = {} as PlayerPacket;
+  }
+
+  getAllArmies(): Army[] {
+    let arm: Army[] = [];
+    for (const armies of this.armies.values()) {
+      arm = arm.concat(armies);
+    }
+    return arm;
+  }
+  getPlayerArmies(playerId: string): Army[] | undefined {
+    return this.armies.get(playerId);
+  }
+
+  saveArmy(army: Army): void {
+    if (!this.armies.get(army.player_id)) {
+      this.armies.set(army.player_id, [army]);
+    } else {
+        this.armies.get(army.player_id)?.push(army);
+    }
   }
 
   setHostId(id: string): void {

@@ -105,7 +105,6 @@ export class Tile implements Drawable {
     }
 
     setSelected(b: boolean): void {
-        console.log(`Tile ${this.x} | ${this.y} selected: ${b}`)
         this.isSelected = b;
     }
 

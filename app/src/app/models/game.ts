@@ -3,7 +3,6 @@ import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { ElementRef } from "@angular/core";
 import { LoadingSpinner } from "./ui_models/loading";
 import { MapPacket } from "./packets/map.packet";
-import { PlayersPacket } from "./packets/players.packet";
 import { GameMap } from "./game_models/map.game";
 import { Camera } from "./ui_models/camera";
 import { Army } from "./game_models/army.game";
@@ -12,7 +11,6 @@ import { GUI } from "./ui_models/GUI";
 import { Tile } from "./game_models/tile.game";
 import { PlayerPacket } from "./packets/player.packet";
 import { UserPacket } from "./packets/user.packet";
-import { AuthService } from "../services/auth.service";
 import { CacheService } from "../services/cache.service";
 
 export class Game {
@@ -32,7 +30,6 @@ export class Game {
     private GUI: GUI | undefined;
     
     private clickMovmentTreshold: number = 10;
-    private ignoreNextClick: boolean = false;
     private mousePressed: boolean = false;
     // private mousePressedTime: number;
     
@@ -51,8 +48,6 @@ export class Game {
     
     // game data
     private running: boolean;
-    private players: PlayerPacket[];
-    private armies: Map<string, Army[]>; // player_id -> player's armies
 
     // loop timers
     private _lastDrawTimestamp: number;
@@ -74,14 +69,12 @@ export class Game {
         this.canvas = canvas;
         this.guiCanvas = gui;
         this.ws = ws;
-        this.players = [];
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
         this._lastUpdateTimestamp = new Date().getTime();
         this.view = 'map';
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450, this);
-        this.armies = new Map();
     }
 
     private async updateLoop(): Promise<void> {
@@ -131,7 +124,7 @@ export class Game {
             switch (this.view) {
                 case 'map':
                     this.map.draw(canvasContext); 
-                    this.armies.forEach((armies: Army[]) => armies.map((army: Army) => army.draw(canvasContext)));
+                    this.cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
                     break;
                 case 'base':     
                     break;
@@ -160,7 +153,6 @@ export class Game {
     }
 
     setPlayers(players: PlayerPacket[]): void {
-        this.players = players;
         for (const player of players) {
             if (player.user_id == this.cache.getMyUserId()) {
                 this.cache.setMe(player);
@@ -183,11 +175,7 @@ export class Game {
         for (const armyPacket of packet) {
             const army = new Army(armyPacket);
             await army.load();
-            if (!this.armies.get(armyPacket.player_id)) {
-                this.armies.set(armyPacket.player_id, [army]);
-            } else {
-                this.armies.get(armyPacket.player_id)?.push(army);
-            }
+            this.cache.saveArmy(army);
         }
         this.loadedArmies = true;
         this.checkLoaded()
@@ -323,13 +311,9 @@ export class Game {
     }
     
     private findClickedArmy(x: number, y: number): Army | undefined {
-        for (const armies of this.armies.values()) {
-            if (armies) {
-                for (const army of armies) {
-                    if (army.isPointOnArmy(x, y)) {
-                        return army
-                    }
-                }
+        for (const army of this.cache.getAllArmies()) {
+            if (army.isPointOnArmy(x, y)) {
+                return army
             }
         }
         return undefined;
@@ -337,14 +321,10 @@ export class Game {
 
     private findHoverArmy(x: number, y: number): boolean {
         let found = false;
-        for (const armies of this.armies.values()) {
-            if (armies) {
-                for (const army of armies) {
-                    const hover = army.isPointOnArmy(x, y);
-                    found = (found || hover);
-                    army.setHovered(hover);
-                }
-            }
+        for (const army of this.cache.getAllArmies()) {
+            const hover = army.isPointOnArmy(x, y);
+            found = (found || hover);
+            army.setHovered(hover);
         }
         return found;
     }
@@ -352,6 +332,12 @@ export class Game {
     undeselctArmy(): void {
         this.selectedArmy?.setSelected(false);
         this.selectedArmy = undefined;
+    }
+
+    setSelectedArmy(army: Army): void {
+        this.selectedArmy?.setSelected(false);
+        this.selectedArmy = army;
+        this.selectedArmy.setSelected(true);
     }
 
     getCamera(): Camera {

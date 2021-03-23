@@ -11,6 +11,8 @@ export class Window implements Drawable {
     private _visible: boolean;
     private _isClicked: boolean;
     private _isHovered: boolean;
+    private _hoverX: number | undefined;
+    private _hoverY: number | undefined;
 
     private _x: number;
     private _y: number;
@@ -55,12 +57,11 @@ export class Window implements Drawable {
         this._width = width;
         this._height = height;
         this._title = title;
-        if (!color) {
+        if (!color || color > 4) {
             color = 0;
         }
         this.spritesheet = new Image();
         this.background = [...this.getBackground(color)];
-        // color = 0;
         this.headerStart = [this.spritesheet, ...this.getHeaderStart(color)];
         this.headerMiddle = [this.spritesheet, ...this.getHeaderMiddle(color)];
         this.headerClose = [this.spritesheet, ...this.getHeaderEnd(color)];
@@ -69,7 +70,7 @@ export class Window implements Drawable {
         this.spritesheet.src = "../../../assets/ui/spritesheet.png";
     }
 
-    handleClick(x: number, y: number): void {
+    protected handleClose(x: number, y: number): void {
         if (
             x > this.x + this.width - Window.HEADER_END_WIDTH &&
             y > this.y &&
@@ -80,8 +81,22 @@ export class Window implements Drawable {
         }
     }
 
+    protected handleBodyClick(x: number, y: number): void {
+        return;
+    }
+
+    handleClick(x: number, y: number): void {
+        this.handleClose(x, y);
+        this.handleBodyClick(x, y);
+    }
+
     checkHover(x: number, y: number): boolean {
-        return x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        this.isHovered = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        if (this.isHovered) {
+            this.hoverX = x;
+            this.hoverY = y;
+        }
+        return this.isHovered;
     }
 
     setClicked(b: boolean) {
@@ -314,5 +329,17 @@ export class Window implements Drawable {
     }
     public set originY(value: number) {
         this._originY = value;
+    }
+    public get hoverX(): number | undefined {
+        return this._hoverX;
+    }
+    public set hoverX(value: number | undefined) {
+        this._hoverX = value;
+    }
+    public get hoverY(): number | undefined {
+        return this._hoverY;
+    }
+    public set hoverY(value: number | undefined) {
+        this._hoverY = value;
     }
 }

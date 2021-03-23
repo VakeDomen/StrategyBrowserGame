@@ -16,7 +16,7 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
     private user: UserPacket | undefined;
 
     constructor(cache: CacheService, gui: GUI, army: Army) {
-        super(-300, 690, 300, 150, `${unescape(army.name)} (${army.x} | ${army.y})`, 4);
+        super(-300, 690, 250, 150, `${unescape(army.name)} (${army.x} | ${army.y})`, 4);
         super.goalX = 10;
         this.army = army;
         this.cache = cache;

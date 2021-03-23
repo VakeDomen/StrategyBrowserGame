@@ -144,7 +144,7 @@ export class Button implements Drawable {
 
     checkHover(x: number, y: number): boolean {
         this._hovered = x >= this._x && 
-            x <= this._x + this._x + this._width && 
+            x <= this._x + this._width && 
             y >= this._y &&
             y <= this._y + this._height;
         return this._hovered;
