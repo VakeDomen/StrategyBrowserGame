@@ -12,12 +12,15 @@ import { ArmyPacket } from '../../models/packets/army.packet';
 import { UserPacket } from '../../models/packets/user.packet';
 import { UserItem } from '../../models/db_items/user.item';
 import { User } from '../../models/game_models/user.game';
+import { ArmyMovementPacket } from '../../models/packets/army-movement.packet';
+import { playersOfSocket } from '../../helpers/user.helper';
+import { ArmyMoveEvent } from '../../models/events/army-move.event';
+import { SocketHandler } from '../handler.socket';
 
 export function applyGameSockets(socket) {
     
     socket.on('GET_MAP', async (game_id: string) => {
         const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
-        console.log(games);
         const game = games.pop();
         if (game) {
             const tiles: TileItem[] = await fetch<TileItem>(conf.tables.tile, new TileItem({game_id: game.id}));
@@ -58,9 +61,7 @@ export function applyGameSockets(socket) {
                     armies.push(new Army(army));
                 }
             }
-            console.log('armies', playerArmies, armies)
             await Promise.all(armies.map((army: Army) => army.loadBattalions()));
-
             const packet: ArmyPacket[] = armies.map((army: Army) =>  army.exportPacket());
             socket.emit('GET_ARMIES', packet);
         } else {
@@ -89,5 +90,41 @@ export function applyGameSockets(socket) {
         socket.emit('GET_GAME_USERS', packet);
     });
 
-    
+    socket.on('ARMY_MOVE', async (packet: ArmyMovementPacket) => {
+        const players = await playersOfSocket(socket);
+        if (!players) {
+            return;
+        }
+        let player: PlayerItem | undefined;
+        for (const pl of players) {
+            if (pl.game_id == packet.game_id) {
+                player = pl;
+                break;
+            }
+        }
+        if (!player) {
+            socket.emit('PLAYER_NOT_EXIST', null); 
+            return;
+        }
+        const army = await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: packet.army_id, player_id: player.id}));
+        if (!army) {
+            socket.emit('ARMY_NOT_EXIST', null); 
+            return;
+        }
+        const evetTrigger = new Date();
+        evetTrigger.setSeconds(evetTrigger.getSeconds() + 5);
+        const event = new ArmyMoveEvent({
+            game_id: packet.game_id,
+            type: 'ARMY_MOVE',
+            player_id: player.id,
+            trigger_time: evetTrigger.getTime(),
+            body: packet
+        });
+        const game = SocketHandler.getGameById(packet.game_id);
+        if (game) {
+            event.saveItem();
+            game.pushEvent(event);
+            socket.emit('QUEUED_EVENT', event.exportPacket());
+        } 
+    });
 }

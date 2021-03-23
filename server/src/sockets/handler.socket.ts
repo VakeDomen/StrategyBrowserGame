@@ -10,18 +10,19 @@ import * as conf from '../db/database.config.json';
 import { GameItem } from '../models/db_items/game.item';
 import { PlayerItem } from '../models/db_items/player.item';
 import { applyGameSockets } from './routes/game.socket';
+import { GamePacket } from '../models/packets/game.packet';
 
 export class SocketHandler {
 
     static io: Server;
 
-    // connected sockets of players
+    // connected sockets of users
     // Map<key: string, value: Socket>
-    static playerConnectionMap = new Map<string, Socket>();
+    static usersConnectionMap = new Map<string, Socket>();
     // Map<key: Socket, value: string>
-    static connectionPlayerMap = new Map<Socket, string>();
+    static connectionUserMap = new Map<Socket, string>();
 
-    static games: Game[] = [];
+    private static games: Game[] = [];
 
     static async init(io) {
         this.io = io;
@@ -34,39 +35,42 @@ export class SocketHandler {
         });
     }
 
-    static login(socket: Socket, player: string): boolean {
-        // if (this.playerConnectionMap.get(player)) {
-        //     return false;
-        // }
-        this.playerConnectionMap.set(player, socket);
-        this.connectionPlayerMap.set(socket, player);
+    static login(socket: Socket, userId: string): boolean {
+        this.usersConnectionMap.set(userId, socket);
+        this.connectionUserMap.set(socket, userId);
+        this.joinGameRooms(socket, userId);
         return true;
     }
 
     static logoutBySocket(socket: Socket): void {
-        const player = this.connectionPlayerMap.get(socket);
+        const player = this.connectionUserMap.get(socket);
         if (player) {
-            this.playerConnectionMap.delete(player);
-            this.connectionPlayerMap.delete(socket);
+            this.usersConnectionMap.delete(player);
+            this.connectionUserMap.delete(socket);
             this.removePlayerFromGames(player);
         }
     }
 
+    static async joinGameRooms(socket: Socket, userId: string) {
+        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: userId}));
+        players.forEach((player: PlayerItem) => {
+            socket.join(player.game_id);
+        });
+        
+    }
+
     static removePlayerFromGames(player: string): void {
         for (const game of this.games) {
-            if (game.host === player) {
-                this.closeGame(game);
-            }
             if (game.players.includes(player)) {
                 game.players.splice(game.players.indexOf(player), 1);
-                SocketHandler.broadcast('LOBBY_GAMES', SocketHandler.games);
+                SocketHandler.broadcast('LOBBY_GAMES', SocketHandler.getGamesPackets());
             }
         }
     }
 
     static getGameById(id: string): Game | undefined {
         for (const game of this.games) {
-            if (game.id === id) {
+            if (game.id == id) {
                 return game;
             }    
         }
@@ -74,7 +78,7 @@ export class SocketHandler {
 
     static closeGame(game: Game): void {
         for (const player of game.players) {
-            const socket = this.playerConnectionMap.get(player)
+            const socket = this.usersConnectionMap.get(player)
             if (socket) {
                 socket.emit('GAME_CLOSED', game.id);
             }
@@ -83,7 +87,7 @@ export class SocketHandler {
     }
 
     static emitToPlayer(recipient: string, key: string, value: any): void {
-        const socket = this.playerConnectionMap.get(recipient);
+        const socket = this.usersConnectionMap.get(recipient);
         if (socket) {
             socket.emit(key, value);
         }
@@ -91,6 +95,18 @@ export class SocketHandler {
 
     static broadcast(key: string, value: any): void {
         this.io.emit(key, value);
+    }
+
+    static broadcastToGame(gameId: string, key: string, value: any): void {
+        this.io.to(gameId).emit(key, value);
+    }
+
+    static addGame(game: Game): void {
+        this.games.push(game);
+    }
+
+    static getGamesPackets(): GamePacket[] {
+        return this.games.map((game: Game) => game.exportPacket());
     }
 
     private static async prefillGames(): Promise<void> {

@@ -9,6 +9,8 @@ import { Army } from "./army.game";
 import { GamePacket } from "../packets/game.packet";
 import { PlayerItem } from "../db_items/player.item";
 import { UserItem } from "../db_items/user.item";
+import { EventHandler } from "../../helpers/event.handler";
+import { Event } from "../events/core/event";
 const seedrandom = require('seedrandom')
 
 export class Game implements Export {
@@ -23,6 +25,7 @@ export class Game implements Export {
 
     board: Map<number, Tile[]>; // column no. -> column tiles
     armies: Map<string, Army[]>; // player_id -> player armies
+    eventHandler: EventHandler;
 
     constructor(data: any) {
         this.id = data.id;
@@ -35,6 +38,8 @@ export class Game implements Export {
 
         this.board = new Map();
         this.armies = new Map();
+        this.eventHandler = new EventHandler(this);
+        this.eventHandler.start();
         random.use(seedrandom(this.seed));
     }
     exportPacket() {
@@ -56,6 +61,10 @@ export class Game implements Export {
             running: true,
             map_radius: this.map_radius,
         });
+    }
+
+    pushEvent(event: Event): void {
+        this.eventHandler.push(event);
     }
     
     generateSeed(): void {

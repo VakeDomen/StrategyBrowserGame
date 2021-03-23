@@ -4,7 +4,6 @@ import { CredentialsPacket } from '../../models/packets/credentials.packet';
 import { SocketHandler } from '../handler.socket';
 import * as conf from '../../db/database.config.json';
 import { LoginPacket } from '../../models/packets/login.packet';
-import { on } from 'node:events';
 
 export function appendAuth (socket) {
 
@@ -65,11 +64,9 @@ export function appendAuth (socket) {
             return;
         }
         const success = SocketHandler.login(socket, id);
-        console.log(success);
-        if (success || SocketHandler.playerConnectionMap.get(id) != socket) {
-            SocketHandler.playerConnectionMap.set(id, socket);
+        if (success || SocketHandler.usersConnectionMap.get(id) != socket) {
+            SocketHandler.usersConnectionMap.set(id, socket);
             socket.emit('GREET', 'Hello ' + user.username + '! Join a room or host a game!');
-            console.log('emiting pong')
             socket.emit('PONG', {
                 success: success,
                 id: id,
@@ -83,4 +80,6 @@ export function appendAuth (socket) {
     socket.on('disconnect', async () => {
         SocketHandler.logoutBySocket(socket);
     });
+
+    
 }

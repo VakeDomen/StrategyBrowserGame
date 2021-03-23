@@ -20,6 +20,7 @@ exports.up = function(db, callback) {
     db.createTable.bind(db, 'tiles', tiles),
     db.createTable.bind(db, 'army', army),
     db.createTable.bind(db, 'battalion', battalion),
+    db.createTable.bind(db, 'events', events),
   ], callback);
 };
 
@@ -176,6 +177,36 @@ const battalion = {
     size: {
       type: 'int',
     },
+  },
+  ifNotExists: true
+}
+
+const events = {
+  columns: {
+    id: {
+      type: 'string',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    game_id: {
+      type: 'string',
+    },
+    player_id: {
+      type: 'string',
+    },
+    event_type: {
+      type: 'string',
+    },
+    trigger_time: {
+      type: 'bigint',
+      length: 20
+    },
+    body: {
+      type: 'string',
+    },
+    handled: {
+      type: 'boolean',
+    }
   },
   ifNotExists: true
 }

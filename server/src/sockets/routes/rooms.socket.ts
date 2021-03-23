@@ -11,21 +11,20 @@ import { GamePacket } from '../../models/packets/game.packet';
 export function rooms(socket) {
     
     socket.on('LOBBY_GAMES', async (futureFilter: any) => {
-        console.log(SocketHandler.games)
-        socket.emit('LOBBY_GAMES', SocketHandler.games);
+        socket.emit('LOBBY_GAMES', SocketHandler.getGamesPackets());
     });
 
     socket.on('LOBBY_GAME', (id: string) => {
-        for (const game of SocketHandler.games) {
-            if (game.id === id) {
-                socket.emit('LOBBY_GAME', game);
-                break;
-            }
+        const game = SocketHandler.getGameById(id);
+        if (game) {
+            socket.emit('LOBBY_GAME', game.exportPacket());
+        } else {
+            socket.emit('GAME_NOT_EXIST', null);
         }
     });
 
     socket.on('STARTED_GAMES', async () => {
-        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionPlayerMap.get(socket)}));
+        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionUserMap.get(socket)}));
         let games: GameItem[] = [];
         if (players) {
             games = await Promise.all(players.map(async (player: PlayerItem) => {
@@ -40,7 +39,7 @@ export function rooms(socket) {
     });
 
     socket.on('GET_GAME', async (id: string) => {
-        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionPlayerMap.get(socket)}));
+        const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionUserMap.get(socket)}));
         if (!players) {
             socket.emit('PLAYER_NOT_EXIST', null);
             return;
@@ -66,24 +65,23 @@ export function rooms(socket) {
     socket.on('LOBBY_HOST_GAME', async (mode: string) => {
         const game = new Game({
             id: uuidv4(),
-            host: SocketHandler.connectionPlayerMap.get(socket),
-            players: [SocketHandler.connectionPlayerMap.get(socket)],
+            host: SocketHandler.connectionUserMap.get(socket),
+            players: [SocketHandler.connectionUserMap.get(socket)],
             running: false,
         });
         socket.join(game.id);
-        SocketHandler.games.push(game);
-        SocketHandler.broadcast('LOBBY_GAMES', SocketHandler.games);
+        SocketHandler.addGame(game);
+        SocketHandler.broadcast('LOBBY_GAMES', SocketHandler.getGamesPackets());
     });
 
     socket.on('LOBBY_JOIN_GAME', (id: string) => {
-        const user = SocketHandler.connectionPlayerMap.get(socket);
+        const user = SocketHandler.connectionUserMap.get(socket);
         if (user) {
-            for (const game of SocketHandler.games) {
-                if (game.id === id && user !== game.host) {
-                    game.players.push(user);
-                    socket.join(game.id);
-                    SocketHandler.io.to(game.id).emit('LOBBY_JOIN_GAME', game);
-                }
+            const game = SocketHandler.getGameById(id)
+            if (game && user !== game.host) {
+                game.players.push(user);
+                socket.join(game.id);
+                SocketHandler.io.to(game.id).emit('LOBBY_JOIN_GAME', game);
             }
         }
         if (!user) {
@@ -92,7 +90,7 @@ export function rooms(socket) {
     });
 
     socket.on('LOBBY_LEAVE_GAME', (id: string) => {
-        const player = SocketHandler.connectionPlayerMap.get(socket);
+        const player = SocketHandler.connectionUserMap.get(socket);
         const game = SocketHandler.getGameById(id);
         if (player && game) {
             SocketHandler.removePlayerFromGames(player);
@@ -108,7 +106,7 @@ export function rooms(socket) {
     });
 
     socket.on('LOBBY_START_GAME', async (startGamePacket: StartGamePacket) => {
-        const player = SocketHandler.connectionPlayerMap.get(socket);
+        const player = SocketHandler.connectionUserMap.get(socket);
         const game = SocketHandler.getGameById(startGamePacket.id);
         if (player && game) {
             if (player === game.host) {
