@@ -1,5 +1,5 @@
 import { fetch, insert } from '../../db/database.handler';
-import { User } from '../../models/db_items/user.item';
+import { UserItem } from '../../models/db_items/user.item';
 import { CredentialsPacket } from '../../models/packets/credentials.packet';
 import { SocketHandler } from '../handler.socket';
 import * as conf from '../../db/database.config.json';
@@ -10,7 +10,7 @@ export function appendAuth (socket) {
 
     // socket must emit a name of player
     socket.on('LOGIN', async (credentials: CredentialsPacket) => {
-        const users: User[] = await fetch<User>(conf.tables.user, new User(credentials));
+        const users: UserItem[] = await fetch<UserItem>(conf.tables.user, new UserItem(credentials));
         const user = users.pop();
         const packet: LoginPacket = {
             success: false,
@@ -29,7 +29,7 @@ export function appendAuth (socket) {
     });
 
     socket.on('REGISTER', async (credentials: CredentialsPacket) => {
-        const existing: User[] = await fetch<User>(conf.tables.user, new User({username: credentials.username}));
+        const existing: UserItem[] = await fetch<UserItem>(conf.tables.user, new UserItem({username: credentials.username}));
         if (existing.length > 0) {
             socket.emit('LOGIN', {
                 success: false,
@@ -38,8 +38,8 @@ export function appendAuth (socket) {
             } as LoginPacket);
             return;
         }
-        await insert<User>(conf.tables.user, new User(credentials).generateId());
-        const users: User[] = await fetch<User>(conf.tables.user, new User(credentials));
+        await insert<UserItem>(conf.tables.user, new UserItem(credentials).generateId());
+        const users: UserItem[] = await fetch<UserItem>(conf.tables.user, new UserItem(credentials));
         const user = users.pop();
         const packet: LoginPacket = {
             success: false,
@@ -58,7 +58,7 @@ export function appendAuth (socket) {
     });
     
     socket.on('PING', async (id: string) => {
-        const users: User[] = await fetch<User>(conf.tables.user, new User({id: id}));
+        const users: UserItem[] = await fetch<UserItem>(conf.tables.user, new UserItem({id: id}));
         const user = users.pop();
         if (!user) {
             socket.emit('USER_NOT_EXIST');

@@ -1,5 +1,5 @@
 import { DbItem } from './core/db.item';
-export class User extends DbItem {
+export class UserItem extends DbItem {
 	
 	username: string;
 	password: string;

@@ -8,6 +8,7 @@ import random from 'random'
 import { Army } from "./army.game";
 import { GamePacket } from "../packets/game.packet";
 import { PlayerItem } from "../db_items/player.item";
+import { UserItem } from "../db_items/user.item";
 const seedrandom = require('seedrandom')
 
 export class Game implements Export {
@@ -63,6 +64,7 @@ export class Game implements Export {
 
     async generateStartingArmies(): Promise<void> {
         for (const user_id of this.players) {
+            const user = (await fetch<UserItem>(conf.tables.user, new UserItem({id: user_id}))).pop();
             const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: this.id, user_id: user_id}));
             const player = players.pop();
             if (player) {
@@ -70,7 +72,7 @@ export class Game implements Export {
                     player_id: player.id,
                     x: random.int(-this.map_radius + 1, this.map_radius -1),
                     y: random.int(-this.map_radius + 1, this.map_radius -1),
-                    name: `${player.id}'s army`,
+                    name: `${user?.username}'s army`,
                 });
                 await army.saveItem();
                 this.armies.set(player.id as string, [army]);
