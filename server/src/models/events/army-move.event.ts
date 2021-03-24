@@ -5,25 +5,67 @@ import { ArmyItem } from "../db_items/army.item";
 import { SocketHandler } from "../../sockets/handler.socket";
 import { UserItem } from "../db_items/user.item";
 import { PlayerItem } from "../db_items/player.item";
+import { ArmyMoveEventPacket } from "../packets/move-army.event.packet";
+import { TileItem } from "../db_items/tile.item";
 
 export class ArmyMoveEvent extends Event {
+    nextTiles: [number, number][];
+    army_id: string;
+
     constructor(data) {
         super(data);
+        this.event_type = 'ARMY_MOVE';
+        this.army_id = data.army_id;
+        this.nextTiles = data.nextTiles;
     }
 
     async trigger(): Promise<Event | undefined> {
-        const body: any = JSON.parse(JSON.stringify(this.body));
-        const army = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: body.army_id}))).pop();
+        const army = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: this.army_id}))).pop();
         if (army) {
-            const initiator: PlayerItem | undefined = (await fetch<PlayerItem>(conf.tables.player, new PlayerItem({id: body.player_id}))).pop();
+            const initiator: PlayerItem | undefined = (await fetch<PlayerItem>(conf.tables.player, new PlayerItem({id: this.player_id}))).pop();
             if (initiator) {
-                army.x = body.x;
-                army.y = body.y;
+                const newCoords = this.nextTiles.shift();
+                if (newCoords) {
+                    army.x = newCoords[0];
+                    army.y = newCoords[1];
+                }
+                const packet: ArmyMoveEventPacket = {
+                    id: this.id,
+                    event_type: this.event_type,
+                    trigger_time: this.trigger_time,
+                    army_id: this.army_id,
+                    x: army.x,
+                    y: army.y,
+                }
                 await update(conf.tables.army, new ArmyItem(army));
-                const socket = SocketHandler.usersConnectionMap.get(initiator.user_id);
-                SocketHandler.broadcastToGame(body.game_id, 'ARMY_MOVE_EVENT', body);
+                SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }
         }
-        return;
+        return await this.chainEvent();
+    }
+
+    private async chainEvent(): Promise<ArmyMoveEvent | undefined> {
+        if (this.nextTiles.length) {
+            const eventTrigger = new Date();
+            eventTrigger.setSeconds(eventTrigger.getSeconds() + 5);
+            const event = new ArmyMoveEvent({
+                game_id: this.game_id,
+                player_id: this.player_id,
+                army_id: this.army_id,
+                event_type: this.event_type,
+                trigger_time: eventTrigger.getTime(),
+                nextTiles: this.nextTiles,
+            });
+            await event.saveItem()
+            return event;
+        }
+        return undefined;
+    }
+
+    setBody() {
+        this.body = JSON.stringify({
+            nextTiles: this.nextTiles,
+            army_id: this.army_id
+        })
     }
 }

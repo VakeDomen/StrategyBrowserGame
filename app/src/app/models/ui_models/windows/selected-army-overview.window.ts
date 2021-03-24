@@ -4,6 +4,7 @@ import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
 import { PlayerPacket } from "../../packets/player.packet";
 import { UserPacket } from "../../packets/user.packet";
+import { MoveArmyButton } from "../buttons/move-army.button";
 import { Button } from "../core/button.ui";
 import { Window } from "../core/window.ui";
 import { GUI } from "../GUI";
@@ -28,14 +29,7 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
         this.gui = gui;
         this.player = this.cache.getPlayerById(this.army.player_id);
         this.user = this.cache.getUserById(this.player?.user_id as string);
-        this.moveButton = new Button(
-            this.x + 10,
-            this.y + 40,
-            30,
-            30,
-            3,
-            "../../../assets/ui/move.png"
-        )
+        this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, army);
     }
 
     setArmy(army: Army): void {
@@ -65,14 +59,13 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
 
     }
 
-    handleBodyClick(x: number, y: number) {
-        if (
-            x > this.moveButton.x && 
-            x < this.moveButton.x + this.moveButton.width && 
-            y > this.moveButton.y && 
-            y < this.moveButton.y + this.moveButton.height
-        ) {
-            this.game.moveArmy(this.army);
+    checkBodyHover(x: number, y: number): void {
+        this.moveButton.checkHover(x, y);
+    }
+
+    handleBodyClick(x: number, y: number): void {
+        if (this.moveButton.checkHover(x, y)) {
+            this.moveButton.handleClick();
         }
     }
 

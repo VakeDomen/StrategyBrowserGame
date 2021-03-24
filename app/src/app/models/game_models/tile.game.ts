@@ -1,4 +1,5 @@
 import { Drawable } from "../core/drawable.abstract";
+import { Game } from "../game";
 import { TilePacket } from "../packets/tile.packet";
 
 export class Tile implements Drawable {
@@ -19,7 +20,7 @@ export class Tile implements Drawable {
     public static hexHeight: number = Tile.hexBorders[5][1] - Tile.hexBorders[1][1]; 
     public static hexXoffset: number = Tile.hexBorders[2][0] - Tile.hexBorders[0][0];
     public static hexYoffset: number = Tile.hexBorders[1][1] - Tile.hexBorders[0][1];
-    
+
     private img: HTMLImageElement;
     
     id: string;
@@ -31,6 +32,7 @@ export class Tile implements Drawable {
     building: string | null;
     isHovered: boolean;
     isSelected: boolean;
+    transparent: boolean;
 
 
     constructor(tile: TilePacket) {
@@ -45,6 +47,7 @@ export class Tile implements Drawable {
         this.building = tile.building;
         this.isHovered = false;
         this.isSelected = false;
+        this.transparent = false;
     }
     
 
@@ -57,15 +60,15 @@ export class Tile implements Drawable {
     draw(ctx: CanvasRenderingContext2D): void {
         const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
-        if (this.isSelected) {
-            ctx.globalAlpha = 1;
-        }
-        ctx.drawImage(this.img, ...offsets);
-        if (this.isSelected) {
+        this.transparent = Game.state === 'army_movement_select' && !Game.path?.includes(this);
+        if (this.transparent) {
             ctx.globalAlpha = 0.5;
-        }
+        } 
+        ctx.drawImage(this.img, ...offsets);
+        ctx.globalAlpha = 1;
+        
         if (this.isHovered || this.isSelected) {
-            ctx.fillText(`${this.x} ${this.y}`, offsets[0]+235, offsets[1]+356);
+            ctx.fillText(`${this.x} ${this.y}`, offsets[0] + 235, offsets[1] + 356);
             ctx.fillStyle = 'black';
             ctx.beginPath();
             ctx.moveTo(

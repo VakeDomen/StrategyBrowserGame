@@ -22,10 +22,11 @@ export class Event implements Export, Save {
         this.player_id = data.player_id;
         this.event_type = data.event_type;
         this.trigger_time = data.trigger_time;
-        this.body = data.body ? JSON.parse(JSON.stringify(data.body)) : undefined;
+        this.body = "";
     }
     async saveItem(): Promise<void> {
         const item = this.exportItem();
+        this.setBody();
         if (!item.id) {
             item.generateId();
             this.id = item.id as string;
@@ -34,6 +35,10 @@ export class Event implements Export, Save {
             await update(conf.tables.event, item);
         }
 
+    }
+
+    protected setBody() {
+        this.body = '';
     }
     exportItem(): DbItem {
         const item = new EventItem(this);

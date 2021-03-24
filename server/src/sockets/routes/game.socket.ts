@@ -118,11 +118,13 @@ export function applyGameSockets(socket) {
             type: 'ARMY_MOVE',
             player_id: player.id,
             trigger_time: evetTrigger.getTime(),
-            body: packet
+            army_id: packet.army_id,
+            nextTiles: packet.tiles
         });
         const game = SocketHandler.getGameById(packet.game_id);
         if (game) {
             event.saveItem();
+            console.log(event)
             game.pushEvent(event);
             socket.emit('QUEUED_EVENT', event.exportPacket());
         } 

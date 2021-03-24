@@ -34,8 +34,11 @@ export class Army implements Drawable{
             this.calcImageXOffset() - this.imgWidth / 4, 
             this.calcImageYOffset() - this.imgHeight / 2
         ];
-        if (this.isSelected) {
+        if (this.isSelected || this.isHovered) {
             ctx.fillStyle = 'white';
+            if (this.isHovered && !this.isSelected) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            }
             ctx.beginPath();
             ctx.ellipse(
                 offsets[0] + this.imgWidth / 4,
@@ -80,10 +83,11 @@ export class Army implements Drawable{
     }
 
     isPointOnArmy(x: number, y: number): boolean {
-        return x > this.calcImageXOffset() - this.imgWidth / 4 && 
+        this.isHovered = x > this.calcImageXOffset() - this.imgWidth / 4 && 
             x < this.calcImageXOffset() - this.imgWidth / 4  + this.imgWidth / 2 &&
             y > this.calcImageYOffset() - this.imgHeight / 2 && 
             y < this.calcImageYOffset() - this.imgHeight / 2 + this.imgHeight / 2;
+        return this.isHovered;
     }
 
     setSelected(b: boolean): void {

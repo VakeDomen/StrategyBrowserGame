@@ -1,3 +1,4 @@
+import { Tile } from "src/app/models/game_models/tile.game";
 import { DigraphCoordinates } from "./coordinates.digraph";
 import { HeuristicFunction } from "./heuristic.function";
 import { DigraphNode } from "./node.digraph";
@@ -13,11 +14,11 @@ export class EuclidianHeuristicFunction implements HeuristicFunction {
     }
 
     public getEstimate(node1: DigraphNode, node2: DigraphNode): number {
-        const point1: [number, number] | undefined = this.coordinates.get(node1);
-        const point2: [number, number] | undefined = this.coordinates.get(node2);
+        const point1: [[number, number], Tile] | undefined = this.coordinates.get(node1);
+        const point2: [[number, number], Tile] | undefined = this.coordinates.get(node2);
         let dist: number = 99;
         if (point1 && point2) {
-            let dist: number = this.distanceBetweenPoints(point1, point2);
+            let dist: number = this.distanceBetweenPoints(point1[1].calcCenter(), point2[1].calcCenter());
             const x: number = node2.getX() - node1.getX();
             const y: number = node2.getY() - node1.getY();
             const choice1 = EuclidianHeuristicFunction.choose(this.deleted, node1.getX() + x, node1.getY());

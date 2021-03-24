@@ -84,7 +84,7 @@ export class ArmyListWindow extends Window {
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
                this.gui.armySelected(army);
-               this.game.setSelectedArmy(army);
+               Game.selectedArmy = army;
             }
         }
     } 

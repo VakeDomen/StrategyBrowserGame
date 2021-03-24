@@ -224,10 +224,7 @@ export class SocketHandlerService {
       console.log(resp)
     });
 
-    this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: any) => {
-      this.toastr.success('army moved!!!');
-      console.log(resp)
-    });
+    this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: ArmyMovementPacket) => this.contexts['game'].updateArmy(resp));
   }
 
   moveArmy(armyPacket: ArmyMovementPacket): void {

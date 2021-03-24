@@ -150,7 +150,7 @@ export class GUI implements Drawable {
     }
 
     armyUnselected(): void {
-        this.game.undeselctArmy();
+        Game.selectedArmy = undefined;
         this.selectedArmyOverview = undefined;
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
@@ -160,7 +160,7 @@ export class GUI implements Drawable {
         if (this.selectedTileOverview) {
             this.selectedTileOverview.setTile(tile);
         } else {
-            this.selectedTileOverview = new SelectedTileOverviewWindow(this.game, this, tile);
+            this.selectedTileOverview = new SelectedTileOverviewWindow(this, tile);
         }
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }

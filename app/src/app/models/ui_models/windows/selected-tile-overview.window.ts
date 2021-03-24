@@ -8,14 +8,12 @@ export class SelectedTileOverviewWindow extends Window implements Drawable {
 
     private gui: GUI;
     private tile: Tile;
-    private game: Game;
 
 
-    constructor(game: Game, gui: GUI, tile: Tile) {
+    constructor(gui: GUI, tile: Tile) {
         super(-300, 690, 250, 150, `Tile (${tile.x} | ${tile.y})`, 2);
         super.goalX = 10;
         this.tile = tile;
-        this.game = game;
         this.gui = gui;
     }
 

@@ -13,7 +13,7 @@ export class CameraFocusButton extends Button {
 
     handleClick(): boolean {
         let tile = this.game.getMap().getSelectedTile();
-        const army = this.game.getSelectedArmy();
+        const army = Game.selectedArmy;
         if (!tile && army) {
             tile = this.game.getMap().getTile(army.x, army.y);
         }

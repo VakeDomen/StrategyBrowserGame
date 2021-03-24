@@ -37,6 +37,15 @@ export class CacheService {
     return this.armies.get(playerId);
   }
 
+  getArmy(id: string): Army | undefined {
+    for (const army of this.getAllArmies()) {
+      if (army.id == id) {
+        return army;
+      }
+    }
+    return undefined;
+  }
+
   saveArmy(army: Army): void {
     if (!this.armies.get(army.player_id)) {
       this.armies.set(army.player_id, [army]);

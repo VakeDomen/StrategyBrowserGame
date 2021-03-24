@@ -27,7 +27,7 @@ export class EventHandler {
                 const minValue = this.heap.minValue();
                 if (minValue && minValue < start) {
                     const event = this.heap.pop();
-                    console.log(`[Game: ${this.game.id}] Triggering event ${event.id}`)
+                    console.log(`[Game: ${this.game.id}] Triggering event ${event.event_type} [${event.id}]`)
                     const chainEvent = await event.trigger();
                     if (chainEvent) {
                         this.heap.push(chainEvent);
@@ -44,7 +44,7 @@ export class EventHandler {
     }
 
     push(event: Event): void {
-        console.log(`[Game: ${this.game.id}] Got new event (${event.id})!`)
+        console.log(`[Game: ${this.game.id}] Got new event ${event.event_type} (${event.id})!`)
         this.heap.push(event);
     }
 }

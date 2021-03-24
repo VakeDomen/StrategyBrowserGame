@@ -1,5 +1,6 @@
 import { PathfindingAgent } from "src/app/services/a_star_pathfinding/agent.pathfinding";
 import { Drawable } from "../core/drawable.abstract";
+import { Game } from "../game";
 import { MapPacket } from "../packets/map.packet";
 import { TilePacket } from "../packets/tile.packet";
 import { Tile } from "./tile.game";
@@ -12,7 +13,6 @@ export class GameMap implements Drawable {
     
 
     private selectedTile: Tile | undefined;
-    private globalAlpha: number = 1;
     private pathfinder: PathfindingAgent;
 
     constructor(data: MapPacket) {
@@ -30,7 +30,6 @@ export class GameMap implements Drawable {
         if (this.tiles) {
             return this.tiles.sort((a: Tile, b: Tile) => a.calcImageYOffset() - b.calcImageYOffset());
         }
-        
         return [];
     }
 
@@ -39,7 +38,6 @@ export class GameMap implements Drawable {
     }
 
     async draw(ctx: CanvasRenderingContext2D): Promise<void> {
-        ctx.globalAlpha = this.globalAlpha;
         for (const tile of this.sortedTilesByCoords) {
             tile.draw(ctx);
         }
@@ -55,7 +53,6 @@ export class GameMap implements Drawable {
     }
 
     selectTile(tile: Tile): void {
-        this.globalAlpha = 0.5;
         if (this.selectedTile) {
             this.selectedTile.setSelected(false);
         }
@@ -74,7 +71,22 @@ export class GameMap implements Drawable {
 
     findHover(x: number, y: number): void {
         this.tiles.map((tile: Tile) => {
-            tile.isHovered = tile.isPointOnTile(x, y);
+            const hover = tile.isPointOnTile(x, y);
+            // on hover change
+            if (Game.state === 'army_movement_select' && Game.selectedArmy && hover !== tile.isHovered) {
+                // if now hovered -> calc path
+                if (hover) {
+                    const start = this.getTile(
+                        Game.selectedArmy.x, 
+                        Game.selectedArmy.y,
+                    );
+                    if (start) {
+                        Game.path = this.pathfinder.findPath(start, tile);
+                    }
+                        
+                }
+            }
+            tile.isHovered = hover;
         });
     }
 
@@ -84,7 +96,6 @@ export class GameMap implements Drawable {
     
     unselectTile(): void {
         this.selectedTile?.setSelected(false);
-        this.globalAlpha = 1;
         this.selectedTile = undefined;
     }
 

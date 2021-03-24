@@ -1,4 +1,5 @@
 import { Drawable } from "../../core/drawable.abstract";
+import { Game } from "../../game";
 
 export class Window implements Drawable {
     
@@ -78,6 +79,7 @@ export class Window implements Drawable {
             y < this.y + Window.HEADER_HEIGHT
         ) {
             this.onClose()
+            Game.state = 'view';
         }
     }
 
@@ -90,12 +92,17 @@ export class Window implements Drawable {
         this.handleBodyClick(x, y);
     }
 
+    checkBodyHover(x: number, y: number): void {
+        return;
+    }
+
     checkHover(x: number, y: number): boolean {
         this.isHovered = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
         if (this.isHovered) {
             this.hoverX = x;
             this.hoverY = y;
         }
+        this.checkBodyHover(x, y);
         return this.isHovered;
     }
 

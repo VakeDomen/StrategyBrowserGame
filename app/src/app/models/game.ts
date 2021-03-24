@@ -13,8 +13,13 @@ import { PlayerPacket } from "./packets/player.packet";
 import { UserPacket } from "./packets/user.packet";
 import { CacheService } from "../services/cache.service";
 import { ArmyMovementPacket } from "./packets/army-movement.packet";
+import { EventPacket } from "./packets/event.packet";
+import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
 
 export class Game {
+    static state: 'loading' | 'view' | 'army_movement_select';
+    static path: Tile[] | undefined;
+    private static _selectedArmy: Army | undefined;
 
     // loding checks
     private loaded: boolean = false;
@@ -56,7 +61,6 @@ export class Game {
     private _updateLoopTime: number = 5;
 
     private map: GameMap;
-    private selectedArmy: Army | undefined;
 
 
     constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef, cache: CacheService) {
@@ -73,6 +77,7 @@ export class Game {
         this._lastDrawTimestamp = new Date().getTime();
         this._lastUpdateTimestamp = new Date().getTime();
         this.view = 'map';
+        Game.state = 'loading';
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450, this);
     }
@@ -194,6 +199,9 @@ export class Game {
             this.loadedArmies && 
             this.loadedGUI &&
             this.loadedUsers;
+        if (this.loaded) {
+            Game.state = 'view';
+        }
     }
 
     private initLoops(): void {
@@ -251,22 +259,32 @@ export class Game {
     }
 
     private handleClick(): void {
-        if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
-            return;
+        if(Game.state === 'view') {
+            if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
+                return;
+            }
+            const army = this.findClickedArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+            if (army) {
+                army.setSelected(true);
+                this.GUI?.armySelected(army);
+                Game.selectedArmy = army;
+                return;
+            }
+            const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+            if (tile) {
+                this.map.selectTile(tile);
+                this.GUI?.tileSelected(tile);
+                return;
+            }
+        } else if (Game.state === 'army_movement_select') {
+            if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
+                return;
+            }
+            if (Game.selectedArmy && Game.path) {
+                this.moveArmy();
+            }
         }
-        const army = this.findClickedArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
-        if (army) {
-            army.setSelected(true);
-            this.GUI?.armySelected(army);
-            this.selectedArmy = army;
-            return;
-        }
-        const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
-        if (tile) {
-            this.map.selectTile(tile);
-            this.GUI?.tileSelected(tile);
-            return;
-        }
+        
     }
 
     private distToMouse(x: number, y: number): number {
@@ -328,28 +346,29 @@ export class Game {
         }
         return found;
     }
-    
-    undeselctArmy(): void {
-        this.selectedArmy?.setSelected(false);
-        this.selectedArmy = undefined;
+
+    updateArmy(packet: ArmyMoveEventPacket): void {
+        const army = this.cache.getArmy(packet.army_id);
+        console.log('move event', packet)
+        if (army) {
+            army.x = packet.x;
+            army.y = packet.y;
+        }
     }
 
-    setSelectedArmy(army: Army): void {
-        this.selectedArmy?.setSelected(false);
-        this.selectedArmy = army;
-        this.selectedArmy.setSelected(true);
-    }
 
-    moveArmy(army: Army): void {
-        const tile: Tile = this.map.getRandomTile();
-        const packet: ArmyMovementPacket = { 
-            game_id: this.cache.getGameId() as string,
-            army_id: army.id,
-            x: tile.x,
-            y: tile.y
-        };
-        console.log('sending packet', packet)
-        this.ws.moveArmy(packet);
+    moveArmy(): void {
+        if (Game.selectedArmy && Game.path) {
+            Game.path.shift();
+            const packet: ArmyMovementPacket = { 
+                game_id: this.cache.getGameId() as string,
+                army_id: Game.selectedArmy.id,
+                tiles: Game.path.map((tile: Tile) => [tile.x, tile.y])
+            };
+            this.ws.moveArmy(packet);
+            Game.path = undefined;
+            Game.selectedArmy = undefined;
+        }
     }
 
     getCamera(): Camera {
@@ -358,10 +377,6 @@ export class Game {
 
     getZoomOptions(): number[] {
         return this.cameraZoomOptions;
-    }
-
-    getSelectedArmy(): Army | undefined {
-        return this.selectedArmy;
     }
 
     setZoom(zoom: number): void {
@@ -377,6 +392,15 @@ export class Game {
 
     getMap(): GameMap {
         return this.map;
+    }
+
+    public static get selectedArmy(): Army | undefined {
+        return Game._selectedArmy;
+    }
+    public static set selectedArmy(value: Army | undefined) {
+        Game._selectedArmy?.setSelected(false);
+        Game._selectedArmy = value;
+        Game._selectedArmy?.setSelected(true);
     }
 
 }

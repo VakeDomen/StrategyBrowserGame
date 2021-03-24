@@ -8,5 +8,5 @@
     "battalion": "battalion",
     "event": "events"
   },
-  "log": true
+  "log": false
 }

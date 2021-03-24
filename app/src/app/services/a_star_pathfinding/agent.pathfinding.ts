@@ -25,12 +25,16 @@ export class PathfindingAgent {
         this.initGraph();
     }
 
-
-    public findPath(start: Tile, end: Tile): DigraphNode[] {
+    public findPath(start: Tile, end: Tile): Tile[] {
         const n1 = this.findNode(start);
         const n2 = this.findNode(end);
         if (n1 && n2) {
-            return AStarPathFinder.search(n1, n2, this.weightFunction, this.hf);
+            return AStarPathFinder.search(
+                n1, 
+                n2, 
+                this.weightFunction, 
+                this.hf
+            ).map((node: DigraphNode) => node.getTile());
         } else {
             console.log('path nodes do not exist')
             return [];
@@ -49,7 +53,7 @@ export class PathfindingAgent {
     private createWeightFunction(): void {
         this.weightFunction = new DigraphWeightFuntion();
         for(const node of this.graph) {
-            const p1: [number, number] | undefined = this.coordinates.get(node);
+            const p1: [[number, number], Tile] | undefined = this.coordinates.get(node);
             for(const child of node.getChildren()) {
                 const p2 = this.coordinates.get(child);
                 this.weightFunction.set(node, child, this.weightDiagonal(node, child));
@@ -60,7 +64,7 @@ export class PathfindingAgent {
     private createDigraphCoords(): void {
         this.coordinates = new DigraphCoordinates();
         for(const node of this.graph) {
-            this.coordinates.put(node, [node.getX(), node.getY()]);
+            this.coordinates.put(node, [node.getX(), node.getY()], node.getTile());
         }
     }
 
@@ -74,11 +78,12 @@ export class PathfindingAgent {
     }
 
     protected weightDiagonal(head: DigraphNode, tail: DigraphNode): number {
-        const x: number = Math.abs(head.getX()-tail.getX());
-        const y: number = Math.abs(head.getY()-tail.getY());
-        //we don't want diagonals
-        if(x+y == 2) return 99;
-        else return 10;
+        // const x: number = Math.abs(head.getX()-tail.getX());
+        // const y: number = Math.abs(head.getY()-tail.getY());
+        // //we don't want diagonals
+        // if(x+y == 2) return 99;
+        // else return 10;
+        return 10;
     }
 
     private findNeighbours(node: DigraphNode): DigraphNode[] {
@@ -97,10 +102,17 @@ export class PathfindingAgent {
         const x2: number = n2.getTile().x;
         const y2: number = n2.getTile().y;
         // return ((x1 == x2 && Math.abs(y1 - y2) == 1) || (y1 == y2 && Math.abs(x1 - x2) == 1));
+        if (x1 > 0) {
+            return (
+                (x1 == x2 && Math.abs(y1 - y2) == 1) ||
+                (x1 + 1 == x2 && [-1, 0].includes((y2 - y1))) ||
+                (x1 - 1 == x2 && [1, 0].includes((y2 - y1))) 
+            )
+        }
         return (
             (x1 == x2 && Math.abs(y1 - y2) == 1) ||
-            (x1 == (x2 + 1) && [-1, 0].includes((y1 - y2))) ||
-            (x1 == (x2 - 1) && [ 1, 0].includes((y1 - y2))) 
+            (x1 + 1 == x2 && [1, 0].includes((y2 - y1))) ||
+            (x1 - 1 == x2 && [-1, 0].includes((y2 - y1))) 
         )
     }
 
