@@ -1,3 +1,4 @@
+import { PathfindingAgent } from "src/app/services/a_star_pathfinding/agent.pathfinding";
 import { Drawable } from "../core/drawable.abstract";
 import { MapPacket } from "../packets/map.packet";
 import { TilePacket } from "../packets/tile.packet";
@@ -12,6 +13,7 @@ export class GameMap implements Drawable {
 
     private selectedTile: Tile | undefined;
     private globalAlpha: number = 1;
+    private pathfinder: PathfindingAgent;
 
     constructor(data: MapPacket) {
         this.radius = data.radius;
@@ -21,6 +23,7 @@ export class GameMap implements Drawable {
             this.tiles = [];
         }
         this.sortedTilesByCoords = this.sortTilesByCoords();
+        this.pathfinder = new PathfindingAgent(this.tiles);
     }
 
     private sortTilesByCoords(): Tile[] {
