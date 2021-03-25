@@ -31,8 +31,7 @@ export class Tile implements Drawable {
     tile_type: number;
     orientation: number;
     building: string | null;
-    isHovered: boolean;
-    isSelected: boolean;
+    hovered: boolean;
     transparent: boolean;
 
 
@@ -46,9 +45,14 @@ export class Tile implements Drawable {
         this.tile_type = tile.tile_type;
         this.orientation = tile.orientation;
         this.building = tile.building;
-        this.isHovered = false;
-        this.isSelected = false;
+        this.hovered = false;
         this.transparent = false;
+    }
+    update(x: number, y: number): void {}
+
+
+    handleClick(x: number, y: number): boolean {
+        return this.hovered;
     }
     
 
@@ -68,7 +72,7 @@ export class Tile implements Drawable {
         ctx.drawImage(this.img, ...offsets);
         ctx.globalAlpha = 1;
         
-        if (this.isHovered || this.isSelected) {
+        if (this.hovered || Cache.selectedTile == this) {
             ctx.fillText(`${this.x} ${this.y}`, offsets[0] + 235, offsets[1] + 356);
             ctx.fillStyle = 'black';
             ctx.beginPath();
@@ -108,10 +112,6 @@ export class Tile implements Drawable {
         return offset;
     }
 
-    setSelected(b: boolean): void {
-        this.isSelected = b;
-    }
-
     getAssetRoute(type: number): string {
         switch (type) {
             case 1:
@@ -134,7 +134,7 @@ export class Tile implements Drawable {
         }
     }
 
-    isPointOnTile(x: number, y: number): boolean {
+    checkHover(x: number, y: number): boolean {
         let normX = x - this.calcImageXOffset();
         let normY = y - this.calcImageYOffset();
         // too much to left/right

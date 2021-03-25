@@ -1,21 +1,15 @@
 import { Cache } from "src/app/services/cache.service";
-import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
 import { Window } from "../core/window.ui";
-import { GUI } from "../GUI";
 
 export class ArmyListWindow extends Window {
 
     private armies: Army[] | undefined;
-    private gui: GUI;
-    private game: Game;
 
-    constructor(armies: Army[] | undefined, gui: GUI, game: Game) {
+    constructor(armies: Army[] | undefined) {
         super(-300, 180, 250, 500, `Army list (${armies ? armies.length : 0})`, 4);
         super.goalX = 10;
-        this.game = game;
         this.armies = armies;
-        this.gui = gui;
     }
 
     drawBody(ctx: CanvasRenderingContext2D): void {
@@ -41,7 +35,7 @@ export class ArmyListWindow extends Window {
                 );
                 ctx.fillStyle = pre;
             }
-            if (super.isHovered) {
+            if (super.hovered) {
                 if (
                     super.hoverX &&
                     super.hoverY &&
@@ -85,7 +79,6 @@ export class ArmyListWindow extends Window {
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
                 Cache.selectedArmy = army;
-                this.gui.armySelected(army);
             }
         }
     } 

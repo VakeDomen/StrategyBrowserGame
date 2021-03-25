@@ -11,15 +11,24 @@ export class CameraFocusButton extends Button {
         this.game = game;
     }
 
+    update(x: number, y: number): void {
+        this.checkHover(x, y);
+        this.disabled = !(Cache.selectedTile || Cache.selectedArmy);
+    }
+
     handleClick(): boolean {
-        let tile = this.game.getMap().getSelectedTile();
-        const army = Cache.selectedArmy;
-        if (!tile && army) {
-            tile = this.game.getMap().getTile(army.x, army.y);
-        }
-        if (tile) {
-            this.game.getCamera().setGoal(...tile.calcCenter());
-            return true;
+        if (this.hovered) {
+            const army = Cache.selectedArmy;
+            if (army) {
+                const tile = this.game.getMap().getTile(army.x, army.y);
+                this.game.getCamera().setGoal(...tile?.calcCenter() as [number, number]);
+                return true;
+            }
+            let tile = Cache.selectedTile;
+            if (tile) {
+                this.game.getCamera().setGoal(...tile.calcCenter());
+                return true;
+            }
         }
         return false;
     }

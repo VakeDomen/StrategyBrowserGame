@@ -1,29 +1,39 @@
 import { Cache } from "src/app/services/cache.service";
-import { Drawable } from "../../core/drawable.abstract";
-import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
 import { PlayerPacket } from "../../packets/player.packet";
 import { UserPacket } from "../../packets/user.packet";
 import { MoveArmyButton } from "../buttons/move-army.button";
 import { Button } from "../core/button.ui";
 import { Window } from "../core/window.ui";
-import { GUI } from "../GUI";
 
-export class SelectedArmyOverviewWindow extends Window implements Drawable {
+export class SelectedArmyOverviewWindow extends Window {
 
-    private gui: GUI;
     private player: PlayerPacket | undefined;
     private user: UserPacket | undefined;
 
     private moveButton: Button;
 
-    constructor(gui: GUI) {
-        super(-300, 690, 250, 150, `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`, 4);
+    constructor() {
+        super(-250, 690, 250, 150, `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`, 4);
         super.goalX = 10;
-        this.gui = gui;
         this.player = Cache.getPlayerById(Cache.selectedArmy?.player_id as string);
         this.user = Cache.getUserById(this.player?.user_id as string);
         this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, Cache.selectedArmy as Army);
+    }
+
+    update(x: number, y: number): void {
+        if (Cache.selectedArmy) {
+            this.goalX = 10;
+            this.refresh()
+        } else {
+            this.goalX = this.originX;
+        }
+        this.checkHover(x, y);
+        this.moveButton.update(x, y);
+    }
+
+    onClose(): void {
+        Cache.selectedArmy = undefined;
     }
 
     refresh(): void {
@@ -49,6 +59,11 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
 
     }
 
+    handleBodyClick(x: number, y: number) {
+        this.moveButton.handleClick();
+    }
+            
+
     drawActions(ctx: CanvasRenderingContext2D): void {
         if (Cache.selectedArmy?.player_id === Cache.getMe().id) {
             this.moveButton.x = this.x + 10;
@@ -58,19 +73,9 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
 
     }
 
-    checkBodyHover(x: number, y: number): void {
-        this.moveButton.checkHover(x, y);
-    }
-
-    handleBodyClick(x: number, y: number): void {
-        if (this.moveButton.checkHover(x, y)) {
-            this.moveButton.handleClick();
-        }
-    }
-
     animationCompleted(): void {
         if (this.x == this.originX && this.y == this.originY) {
-            this.gui.armyUnselected();
+            Cache.selectedArmy = undefined;
         }
     }
 }

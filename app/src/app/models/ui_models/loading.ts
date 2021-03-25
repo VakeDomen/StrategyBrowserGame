@@ -8,6 +8,15 @@ export class LoadingSpinner implements Drawable {
     constructor(canvas: any) {
         this.canvas = canvas;
     }
+    protected checkHover(x: number, y: number): boolean {
+        return false;
+    }
+
+    handleClick(x: number, y: number): boolean {
+        return false;
+    }
+
+    update(x: number, y: number): void {}
 
     draw(ctx: CanvasRenderingContext2D): void {
         ctx.save();

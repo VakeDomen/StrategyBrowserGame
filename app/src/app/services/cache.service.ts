@@ -11,7 +11,8 @@ export class Cache {
 
   static path: Tile[] | undefined;
   private static _selectedArmy: Army | undefined;
-
+  private static _selectedTile: Tile | undefined;
+  
   private static gameId: string;
   private static myUserId: string;  
   private static hostId: string;
@@ -111,7 +112,19 @@ export class Cache {
     return Cache._selectedArmy;
   }
   public static set selectedArmy(value: Army | undefined) {
+    if (value != undefined) {
+      this.selectedTile = undefined
+    }
     Cache._selectedArmy = value;
   }
 
+  public static get selectedTile(): Tile | undefined {
+    return Cache._selectedTile;
+  }
+  public static set selectedTile(value: Tile | undefined) {
+    if (value != undefined) {
+      this.selectedArmy = undefined
+    }
+    Cache._selectedTile = value;
+  }
 }

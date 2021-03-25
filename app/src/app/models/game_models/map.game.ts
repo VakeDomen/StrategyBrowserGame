@@ -13,8 +13,9 @@ export class GameMap implements Drawable {
     sortedTilesByCoords: Tile[];
     
 
-    private selectedTile: Tile | undefined;
+    // private selectedTile: Tile | undefined;
     private pathfinder: PathfindingAgent;
+    private hovered: boolean = false;
 
     constructor(data: MapPacket) {
         this.radius = data.radius;
@@ -25,6 +26,10 @@ export class GameMap implements Drawable {
         }
         this.sortedTilesByCoords = this.sortTilesByCoords();
         this.pathfinder = new PathfindingAgent(this.tiles);
+    }
+    update(x: number, y: number): void {
+        this.checkHover(x, y);
+        this.tiles.forEach((tile: Tile) => tile.update(x, y));
     }
 
     private sortTilesByCoords(): Tile[] {
@@ -53,28 +58,20 @@ export class GameMap implements Drawable {
         return undefined;
     }
 
-    selectTile(tile: Tile): void {
-        if (this.selectedTile) {
-            this.selectedTile.setSelected(false);
-        }
-        tile.setSelected(true);
-        this.selectedTile = tile;
+    getHovered(): Tile | undefined {
+        return this.tiles[this.tiles.map((tile: Tile) => tile.hovered).indexOf(true)];
     }
 
-    findClick(x: number, y: number): Tile | undefined {
-        for (const tile of this.tiles) {
-            if (tile.isPointOnTile(x, y)) {
-                return tile;
-            }
-        }
-        return undefined;
+    handleClick(x: number, y: number): boolean {
+        return this.hovered;
     }
 
-    findHover(x: number, y: number): void {
-        this.tiles.map((tile: Tile) => {
-            const hover = tile.isPointOnTile(x, y);
+    checkHover(x: number, y: number): boolean {
+        this.hovered = this.tiles.map((tile: Tile) => {
+            const hover = tile.checkHover(x, y);
             // on hover change
-            if (Game.state === 'army_movement_select' && Cache.selectedArmy && hover !== tile.isHovered) {
+            if (Game.state === 'army_movement_select' && Cache.selectedArmy && hover !== tile.hovered) {
+                console.log('pathfinding')
                 // if now hovered -> calc path
                 if (hover) {
                     const start = this.getTile(
@@ -84,23 +81,16 @@ export class GameMap implements Drawable {
                     if (start) {
                         Cache.path = this.pathfinder.findPath(start, tile);
                     }
-                        
                 }
             }
-            tile.isHovered = hover;
-        });
+            tile.hovered = hover;
+            return tile.hovered;
+        }).includes(true);
+        return this.hovered;
+         
     }
 
     getRandomTile(): Tile {
         return this.tiles[Math.floor(Math.random() * this.tiles.length)];
-    }
-    
-    unselectTile(): void {
-        this.selectedTile?.setSelected(false);
-        this.selectedTile = undefined;
-    }
-
-    getSelectedTile(): Tile | undefined {
-        return this.selectedTile;
     }
 }

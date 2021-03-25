@@ -30,7 +30,7 @@ export class Game {
     private view: 'map' | 'base';
     private canvas: ElementRef
     private guiCanvas: ElementRef
-    private GUI: GUI | undefined;
+    private GUI: GUI;
     
     private clickMovmentTreshold: number = 10;
     private mousePressed: boolean = false;
@@ -67,6 +67,7 @@ export class Game {
         this.loaded = false;
         this.canvas = canvas;
         this.guiCanvas = gui;
+        this.GUI = new GUI(this);
         this.ws = ws;
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
@@ -81,18 +82,19 @@ export class Game {
         while(this.running) {
             this._lastUpdateTimestamp = new Date().getTime();
             // update code here
-            if (this.GUI?.checkHover(this.mouseX, this.mouseY, this.mousePressed)) {
-                const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
-                await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
-                continue;
+            switch (Game.state) {
+                case 'view':
+                    this.GUI.update(this.mouseX, this.mouseY);
+                    this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+                    this.updateArmies(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY))
+                    break;
+                case 'army_movement_select':
+                    this.GUI.update(this.mouseX, this.mouseY);
+                    this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+                    break;
+                default:
+                    break;
             }
-            if (this.findHoverArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY))) {
-                const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
-                await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
-                continue;
-            }
-            this.map.findHover(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
-            
             // end update code
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
@@ -255,23 +257,26 @@ export class Game {
 
     private handleClick(): void {
         if(Game.state === 'view') {
-            if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
+            // click on HUD
+            if (this.GUI.handleClick(this.mouseX, this.mouseY)) {
                 return;
             }
-            const army = this.findClickedArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+
+            // click on army
+            const army = this.findHoveredArmy();
             if (army) {
-                this.GUI?.armySelected(army);
                 Cache.selectedArmy = army;
                 return;
             }
-            const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+
+            // click on tile
+            const tile = this.map.getHovered();
             if (tile) {
-                this.map.selectTile(tile);
-                this.GUI?.tileSelected(tile);
+                Cache.selectedTile = tile;
                 return;
             }
         } else if (Game.state === 'army_movement_select') {
-            if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
+            if (this.GUI.handleClick(this.mouseX, this.mouseY)) {
                 return;
             }
             if (Cache.selectedArmy && Cache.path) {
@@ -292,7 +297,6 @@ export class Game {
     }
 
     private async setupUI(): Promise<void> {
-        this.GUI = new GUI(this);
         await this.GUI.load();
         this.loadedGUI = true;
         this.checkLoaded()
@@ -312,33 +316,18 @@ export class Game {
     private onMouseMove(event: MouseEvent) { 
         this.mouseX = (event.offsetX / window.innerWidth) * 1600;
         this.mouseY = (event.offsetY / window.innerHeight) * 900;
-        if (this.mousePressed && this.mouseDownEvent && !this.GUI?.isHovered) {
+        if (this.mousePressed && this.mouseDownEvent && !this.GUI.isHovered) {
             this.handleCameraDrag();
             return;
         }
     }
-
-    private findClickedTile(x: number, y: number): Tile | undefined {
-        return this.map.findClick(x, y);
-    }
     
-    private findClickedArmy(x: number, y: number): Army | undefined {
-        for (const army of Cache.getAllArmies()) {
-            if (army.isPointOnArmy(x, y)) {
-                return army
-            }
-        }
-        return undefined;
+    private findHoveredArmy(): Army | undefined {
+        return Cache.getAllArmies()[Cache.getAllArmies().map((army: Army) => army.hovered).indexOf(true)];
     }
 
-    private findHoverArmy(x: number, y: number): boolean {
-        let found = false;
-        for (const army of Cache.getAllArmies()) {
-            const hover = army.isPointOnArmy(x, y);
-            found = (found || hover);
-            army.setHovered(hover);
-        }
-        return found;
+    updateArmies(x: number, y: number): void {
+        Cache.getAllArmies().forEach((army: Army) => army.update(x, y));
     }
 
     updateArmy(packet: ArmyMoveEventPacket): void {

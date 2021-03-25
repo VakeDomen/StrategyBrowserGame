@@ -11,7 +11,7 @@ export class Window implements Drawable {
 
     private _visible: boolean;
     private _isClicked: boolean;
-    private _isHovered: boolean;
+    private _hovered: boolean;
     private _hoverX: number | undefined;
     private _hoverY: number | undefined;
 
@@ -48,7 +48,7 @@ export class Window implements Drawable {
     constructor(x: number, y: number, width: number, height: number, title: string, color?: number) {
         this._visible = true;
         this._isClicked = false;
-        this._isHovered = false;
+        this._hovered = false;
         this._x = x;
         this._y = y;
         this._originX = x;
@@ -71,6 +71,10 @@ export class Window implements Drawable {
         this.spritesheet.src = "../../../assets/ui/spritesheet.png";
     }
 
+    update(x: number, y: number): void {
+        this.checkHover(x, y);
+    }
+
     protected handleClose(x: number, y: number): void {
         if (
             x > this.x + this.width - Window.HEADER_END_WIDTH &&
@@ -87,23 +91,27 @@ export class Window implements Drawable {
         return;
     }
 
-    handleClick(x: number, y: number): void {
-        this.handleClose(x, y);
-        this.handleBodyClick(x, y);
+    handleClick(x: number, y: number): boolean {
+        if (this.hovered) {
+            this.handleClose(x, y);
+            this.handleBodyClick(x, y);
+            return true;
+        }
+        return false;
     }
 
-    checkBodyHover(x: number, y: number): void {
+    protected checkBodyHover(x: number, y: number): void {
         return;
     }
 
-    checkHover(x: number, y: number): boolean {
-        this.isHovered = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
-        if (this.isHovered) {
+    protected checkHover(x: number, y: number): boolean {
+        this.hovered = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        if (this.hovered) {
             this.hoverX = x;
             this.hoverY = y;
         }
         this.checkBodyHover(x, y);
-        return this.isHovered;
+        return this.hovered;
     }
 
     setClicked(b: boolean) {
@@ -319,11 +327,11 @@ export class Window implements Drawable {
     public set isClicked(value: boolean) {
         this._isClicked = value;
     }
-    public get isHovered(): boolean {
-        return this._isHovered;
+    public get hovered(): boolean {
+        return this._hovered;
     }
-    public set isHovered(value: boolean) {
-        this._isHovered = value;
+    public set hovered(value: boolean) {
+        this._hovered = value;
     }
     public get originX(): number {
         return this._originX;

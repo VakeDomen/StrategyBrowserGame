@@ -5,15 +5,15 @@ import { Button } from "../core/button.ui";
 
 export class MoveArmyButton extends Button {
 
-    private army: Army;
-
     constructor(x: number, y: number, width: number, height: number, army: Army) {
         super(x, y, width, height, 0,"../../../assets/ui/move.png");
-        this.army = army;
     }
 
-    handleClick(): void {
-        Game.state = 'army_movement_select';
-        Cache.selectedArmy = this.army;
+    handleClick(): boolean {
+        if (this.hovered) {
+            Game.state = 'army_movement_select';
+            return true;
+        }
+        return false;
     }
 }

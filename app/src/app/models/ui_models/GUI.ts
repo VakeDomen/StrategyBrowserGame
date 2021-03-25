@@ -8,7 +8,6 @@ import { Army } from "../game_models/army.game";
 import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window";
 import { Cache } from "src/app/services/cache.service";
 import { ArmyListButton } from "./buttons/army-list.button";
-import { ArmyListWindow } from "./windows/army-list.window";
 
 export class GUI implements Drawable {
 
@@ -17,156 +16,90 @@ export class GUI implements Drawable {
     isHovered: boolean = false;
 
     // buttons
-    private cameraZoomButton: CameraZoomButton;
-    private cameraFocusButton: CameraFocusButton;
-    private armyListButton: ArmyListButton;
-
+    private buttons: Array<Drawable>;
+    
     // windows
-    private selectedTileOverview: SelectedTileOverviewWindow | undefined;
-    private selectedArmyOverview: SelectedArmyOverviewWindow | undefined;
-    private armyListWindow: ArmyListWindow | undefined;
-
+    private windows: Array<Drawable>;
+    
     constructor(game: Game) {
         this.game = game;
-        this.cameraZoomButton = new CameraZoomButton(game);
-        this.cameraFocusButton = new CameraFocusButton(game);
-        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-        this.armyListButton = new ArmyListButton(this);
+        const cameraZoomButton = new CameraZoomButton(game);
+        const cameraFocusButton = new CameraFocusButton(game);
+        cameraFocusButton.disabled = !(Cache.selectedTile || Cache.selectedArmy);
+        const armyListButton = new ArmyListButton(this);
+        this.buttons = [
+            cameraZoomButton,
+            cameraFocusButton,
+            armyListButton,
+        ]
+        const selectedArmyWindow = 
+        this.windows = [
+            new SelectedArmyOverviewWindow(),
+            new SelectedTileOverviewWindow()
+        ];
+    }
+    
+    async load(): Promise<void> {
+        // await Promise.all([
+        //     this.cameraZoomButton.load(),
+        //     this.cameraFocusButton.load(),
+        // ]);
     }
 
-    async load(): Promise<void> {
-        await Promise.all([
-            this.cameraZoomButton.load(),
-            this.cameraFocusButton.load(),
-        ]);
+    update(x: number, y: number): void {
+        for (const window of this.windows) {
+            if (window) {
+                window.update(x, y);
+            } 
+        }
+        for (const button of this.buttons) {
+            if (button) {
+                button.update(x, y);
+            }
+        }    
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        this.cameraZoomButton.draw(ctx);   
-        this.cameraFocusButton.draw(ctx); 
-        this.armyListButton.draw(ctx);
-
-        if (this.selectedTileOverview) {
-            this.selectedTileOverview.draw(ctx);  
+        for (const window of this.windows) {
+            if (window) {
+                window.draw(ctx);
+            } 
         }
-        if (this.selectedArmyOverview) {
-            this.selectedArmyOverview.draw(ctx);  
-        }
-        if (this.armyListWindow) {
-            this.armyListWindow.draw(ctx);
-        }
-    }
-
-    checkHover(x: number, y: number, mousePressed?: boolean): boolean {
-        if (this.cameraZoomButton.checkHover(x, y)) {
-            this.cameraZoomButton.isClicked = !!mousePressed;
-            this.isHovered = true;
-            return true;
-        }
-        if (this.cameraFocusButton.checkHover(x, y)) {
-            this.cameraFocusButton.isClicked = !!mousePressed;
-            this.isHovered = true;
-            return true;
-        }
-        if (this.armyListButton.checkHover(x, y)) {
-            this.armyListButton.isClicked = !!mousePressed;
-            this.isHovered = true;
-            return true;
-        }
-        if (this.selectedTileOverview) {
-            if (this.selectedTileOverview.checkHover(x, y)) {
-                this.selectedTileOverview.isClicked = !!mousePressed;
-                this.isHovered = true;
-                return true;
+        for (const button of this.buttons) {
+            if (button) {
+                button.draw(ctx);
             }
         }
-        if (this.selectedArmyOverview) {
-            if (this.selectedArmyOverview.checkHover(x, y)) {
-                this.selectedArmyOverview.isClicked = !!mousePressed;
-                this.isHovered = true;
-                return true;
+    }
+
+
+
+    handleClick(x: number, y: number, mousePressed?: boolean): boolean {
+        const buttons = this.buttons.map((button: Drawable) => {
+            return button.handleClick(x, y);
+        });
+        const windows = this.windows.map((window: Drawable) => {
+            return window.handleClick(x, y);
+        });
+        return buttons.includes(true) || windows.includes(true);;
+    }
+
+    removeWindow(toRemove: Drawable): void {
+        for (let window of this.windows) {
+            if (toRemove === window) {
+                delete this.windows[this.windows.indexOf(toRemove)];
             }
         }
-        if (this.armyListWindow) {
-            if (this.armyListWindow.checkHover(x, y)) {
-                this.armyListWindow.isClicked == !!mousePressed;
-                this.isHovered = true;
-                return true;
+        for (let button of this.buttons) {
+            if (toRemove === button) {
+                delete this.buttons[this.buttons.indexOf(toRemove)];
             }
         }
-        this.isHovered = false;
-        return false;
     }
 
-    checkClick(x: number, y: number, mousePressed?: boolean): boolean {
-        if (this.armyListButton.checkHover(x, y)) {
-            this.armyListButton.handleClick();
-            return true;
-        }
-        if (this.cameraZoomButton.checkHover(x, y)) {
-            this.cameraZoomButton.handleClick();
-            return true;
-        }
-        if (this.cameraFocusButton.checkHover(x, y)) {
-            this.cameraFocusButton.handleClick();
-            return true;
-        }
-        if (this.selectedTileOverview) {
-            if (this.selectedTileOverview.checkHover(x, y)) {
-                this.selectedTileOverview.handleClick(x, y);
-                return true;
-            }
-        }
-        if (this.selectedArmyOverview) {
-            if (this.selectedArmyOverview.checkHover(x, y)) {
-                this.selectedArmyOverview.handleClick(x, y);
-                return true;
-            }
-        }
-        if (this.armyListWindow) {
-            if (this.armyListWindow.checkHover(x, y)) {
-                this.armyListWindow.handleClick(x, y);
-                return true;
-            }
-        }
-        return false;
+    addWindow(window: Drawable): void {
+        this.windows.push(window);
     }
 
-    createArmyListWindow(armies: Army[] | undefined): void {
-        this.armyListWindow = new ArmyListWindow(armies, this, this.game);
-    }
-
-    armySelected(army: Army): void {
-        this.tileUnselected();
-        Cache.selectedArmy = army;
-        if (this.selectedArmyOverview) {
-            this.selectedArmyOverview.refresh();
-        } else {
-            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this);
-        }
-        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-    }
-
-    armyUnselected(): void {
-        Cache.selectedArmy = undefined;
-        this.selectedArmyOverview = undefined;
-        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-    }
-
-    tileSelected(tile: Tile): void {
-        this.armyUnselected();
-        if (this.selectedTileOverview) {
-            this.selectedTileOverview.setTile(tile);
-        } else {
-            this.selectedTileOverview = new SelectedTileOverviewWindow(this, tile);
-        }
-        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-    }
-
-    tileUnselected(): void {
-        this.game.getMap().unselectTile();
-        this.selectedTileOverview = undefined;
-        this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-    }
-
+    
 }

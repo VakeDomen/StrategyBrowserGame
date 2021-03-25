@@ -31,6 +31,10 @@ export class Button implements Drawable {
         this._backgroundClicked.src = this.getBackgroundClicked(color);
         this._icon.src = this.getIcon(iconPath);
     }
+    
+    update(x: number, y: number): void {
+        this.hovered = this.checkHover(x, y);
+    }
 
     async load(): Promise<void> {
         await Promise.all([
@@ -88,7 +92,7 @@ export class Button implements Drawable {
         if (!this._visible) {
             return;
         }
-        if (this.disabled) {
+        if (this._disabled) {
             ctx.globalAlpha = 0.6;
         }
 
@@ -142,7 +146,7 @@ export class Button implements Drawable {
         );
     }
 
-    checkHover(x: number, y: number): boolean {
+    protected checkHover(x: number, y: number): boolean {
         this._hovered = x >= this._x && 
             x <= this._x + this._width && 
             y >= this._y &&
@@ -150,8 +154,9 @@ export class Button implements Drawable {
         return this._hovered;
     }
 
-    handleClick(): void {
+    handleClick(): boolean {
         alert('clicked button');
+        return this.hovered;
     }
 
     public get disabled(): boolean {

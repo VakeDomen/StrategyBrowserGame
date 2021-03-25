@@ -10,8 +10,7 @@ export class Army implements Drawable{
     name: string;
     battalions: Battalion[];
 
-    private isHovered: boolean = false;
-    
+    private _hovered: boolean = false;    
     private img: HTMLImageElement;
     private imgWidth: number = 212;
     private imgHeight: number = 218;
@@ -29,14 +28,18 @@ export class Army implements Drawable{
         this.img.src = this.getAssetRoute();
         
     }
+    update(x: number, y: number): void {
+        this.checkHover(x, y);
+    }
+
     draw(ctx: CanvasRenderingContext2D): void {
         const offsets: [number, number] = [
             this.calcImageXOffset() - this.imgWidth / 4, 
             this.calcImageYOffset() - this.imgHeight / 2
         ];
-        if (Cache.selectedArmy == this || this.isHovered) {
+        if (Cache.selectedArmy == this || this.hovered) {
             ctx.fillStyle = 'white';
-            if (this.isHovered && Cache.selectedArmy != this) {
+            if (this.hovered && Cache.selectedArmy != this) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             }
             ctx.beginPath();
@@ -82,19 +85,26 @@ export class Army implements Drawable{
         return '../../../assets/army/warrior1.png';
     }
 
-    isPointOnArmy(x: number, y: number): boolean {
-        this.isHovered = x > this.calcImageXOffset() - this.imgWidth / 4 && 
+    checkHover(x: number, y: number): boolean {
+        this.hovered = x > this.calcImageXOffset() - this.imgWidth / 4 && 
             x < this.calcImageXOffset() - this.imgWidth / 4  + this.imgWidth / 2 &&
             y > this.calcImageYOffset() - this.imgHeight / 2 && 
             y < this.calcImageYOffset() - this.imgHeight / 2 + this.imgHeight / 2;
-        return this.isHovered;
-    }
-
-    setHovered(b: boolean): void {
-        this.isHovered = b;
+        return this.hovered;
     }
 
     getSelected(): boolean {
         return Cache.selectedArmy == this;
+    }
+
+    handleClick(x: number, y: number): boolean {
+        return this.hovered
+    }
+    
+    public get hovered(): boolean {
+        return this._hovered;
+    }
+    public set hovered(value: boolean) {
+        this._hovered = value;
     }
 }

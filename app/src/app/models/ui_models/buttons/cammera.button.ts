@@ -1,5 +1,4 @@
 import { Game } from "../../game";
-import { GUI } from "../GUI";
 import { Button } from "../core/button.ui";
 
 export class CameraZoomButton extends Button {
@@ -30,11 +29,15 @@ export class CameraZoomButton extends Button {
         );
     }
     
-    handleClick(): void {
-        const zoom = this.zoomOptions.shift();
-        if (zoom) {
-            this.zoomOptions.push(zoom);
-            this.game.setZoom(this.zoomOptions[0]);
+    handleClick(): boolean {
+        if (this.hovered) {
+            const zoom = this.zoomOptions.shift();
+            if (zoom) {
+                this.zoomOptions.push(zoom);
+                this.game.setZoom(this.zoomOptions[0]);
+            }
+            return true;
         }
+        return false;
     }
 }
