@@ -43,7 +43,7 @@ export class GameMap implements Drawable {
         await Promise.all(this.tiles.map((tile: Tile) => tile.load()));
     }
 
-    async draw(ctx: CanvasRenderingContext2D): Promise<void> {
+    draw(ctx: CanvasRenderingContext2D): void {
         for (const tile of this.sortedTilesByCoords) {
             tile.draw(ctx);
         }

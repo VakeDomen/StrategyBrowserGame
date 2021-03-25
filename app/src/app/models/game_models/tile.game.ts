@@ -63,7 +63,6 @@ export class Tile implements Drawable {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
         this.transparent = Game.state === 'army_movement_select' && !Cache.path?.includes(this);
         if (this.transparent) {
@@ -72,31 +71,29 @@ export class Tile implements Drawable {
         ctx.drawImage(this.img, ...offsets);
         ctx.globalAlpha = 1;
         
-        if (this.hovered || Cache.selectedTile == this) {
+        if ((this.hovered || Cache.selectedTile == this)) {
             ctx.fillText(`${this.x} ${this.y}`, offsets[0] + 235, offsets[1] + 356);
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.moveTo(
+            const path = new Path2D();
+            path.moveTo(
                 this.calcImageXOffset() + Tile.hexBorders[0][0] + 2, 
                 this.calcImageYOffset() + Tile.hexBorders[0][1]
             );
             for (let i = 1 ; i < Tile.hexBorders.length ; i++) {
-                ctx.lineTo(
+                path.lineTo(
                     this.calcImageXOffset() + Tile.hexBorders[i][0] + 1, 
                     this.calcImageYOffset() + Tile.hexBorders[i][1] - 1
                 );
             }
-            ctx.closePath();
-            ctx.stroke();
+            path.closePath();
+            ctx.stroke(path);
         }
-		ctx.strokeStyle = color;
     }
 
     calcCenter(): [number, number] {
         return [
             this.calcImageXOffset() + Tile.hexMiddle[0],
             this.calcImageYOffset() + Tile.hexMiddle[1],
-        ]
+        ];
     }
 
     calcImageXOffset(): number {

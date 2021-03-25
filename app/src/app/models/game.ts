@@ -14,6 +14,7 @@ import { UserPacket } from "./packets/user.packet";
 import { Cache } from "../services/cache.service";
 import { ArmyMovementPacket } from "./packets/army-movement.packet";
 import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
+import { EventPacket } from "./packets/event.packet";
 
 export class Game {
     static state: 'loading' | 'view' | 'army_movement_select';
@@ -105,7 +106,8 @@ export class Game {
         const spinner = new LoadingSpinner(this.canvas);
         const canvasContext = (<HTMLCanvasElement>this.canvas.nativeElement).getContext('2d');
         const guiContext = (<HTMLCanvasElement>this.guiCanvas.nativeElement).getContext('2d');
-        
+        canvasContext?.save();
+        guiContext?.save();
         if (!canvasContext || !guiContext) {
             return;
         }
@@ -116,33 +118,50 @@ export class Game {
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
             await this.delay(Math.max(deltaTime, this._updateLoopTime - deltaTime));
         }
-        while(1) {
-            this._lastDrawTimestamp = new Date().getTime();
-            this.clearCanvas(guiContext)
-            const zoom = this.cameraZoom;
-            canvasContext.scale(1 / zoom, 1 / zoom)
-            // draw code here
-            this.clearCanvas(canvasContext)
-            switch (this.view) {
-                case 'map':
-                    this.map.draw(canvasContext); 
-                    Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
-                    break;
-                case 'base':     
-                    break;
-                default:
-                    break;
-                }
-                        // end draw code
-            this.camera.adjust(canvasContext, !this.mousePressed);
-            canvasContext.scale(zoom, zoom);
-            this.drawUI(guiContext);
-            guiContext.scale(1, 1)
-            const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
-            await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
-        }
+
+        canvasContext.restore();
+        guiContext.restore();
+        // while(1) {
+        //     this._lastDrawTimestamp = new Date().getTime();
+            
+            
+        //     this.draw(canvasContext, guiContext);
+        //     break;
+        //     const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
+        //     await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
+        // }
+        this.draw(canvasContext, guiContext);
     }
 
+
+    async draw(canvasContext: CanvasRenderingContext2D, guiContext: CanvasRenderingContext2D) {
+        this.clearCanvas(guiContext)
+        const zoom = this.cameraZoom;
+        canvasContext.scale(1 / zoom, 1 / zoom)
+        // draw code here
+        this.clearCanvas(canvasContext)
+        switch (this.view) {
+            case 'map':
+                this.map.draw(canvasContext); 
+                Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
+                break;
+            case 'base':     
+                break;
+            default:
+                break;
+        }
+        // end draw code
+        this.camera.adjust(canvasContext, !this.mousePressed);
+        canvasContext.scale(zoom, zoom);
+        this.drawUI(guiContext);
+        guiContext.scale(1, 1)
+        
+        // FPS delay
+        const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
+        await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
+        window.requestAnimationFrame(() => this.draw(canvasContext, guiContext));
+    }
+    
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);
@@ -332,8 +351,10 @@ export class Game {
 
     updateArmy(packet: ArmyMoveEventPacket): void {
         const army = Cache.getArmy(packet.army_id);
-        console.log('move event', packet)
         if (army) {
+            if (packet.id == army.moveEvent?.id) {
+                army.moveEvent = undefined;
+            }
             army.x = packet.x;
             army.y = packet.y;
         }
@@ -351,6 +372,7 @@ export class Game {
             this.ws.moveArmy(packet);
             Cache.path = undefined;
             Cache.selectedArmy = undefined;
+            Game.state = 'view';
         }
     }
 
@@ -377,4 +399,22 @@ export class Game {
         return this.map;
     }
 
+    handleNewEvent(eventPacket: EventPacket): void {
+        console.log('new event packet', eventPacket);
+        switch (eventPacket.event_type) {
+            case 'ARMY_MOVE':
+                eventPacket.body = JSON.parse(eventPacket.body);
+                const army = Cache.getArmy(eventPacket.body.army_id);
+                if (army) {
+                    army.moveEvent = eventPacket;
+                } else {
+                    console.log('moving army not found!', eventPacket)
+                }
+
+                break;
+        
+            default:
+                break;
+        }
+    }
 }
