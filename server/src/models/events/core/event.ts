@@ -25,8 +25,8 @@ export class Event implements Export, Save {
         this.body = "";
     }
     async saveItem(): Promise<void> {
-        const item = this.exportItem();
         this.setBody();
+        const item = this.exportItem();
         if (!item.id) {
             item.generateId();
             this.id = item.id as string;
@@ -40,6 +40,7 @@ export class Event implements Export, Save {
     protected setBody() {
         this.body = '';
     }
+
     exportItem(): DbItem {
         const item = new EventItem(this);
         return item;

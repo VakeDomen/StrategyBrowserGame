@@ -124,7 +124,6 @@ export function applyGameSockets(socket) {
         const game = SocketHandler.getGameById(packet.game_id);
         if (game) {
             event.saveItem();
-            console.log(event)
             game.pushEvent(event);
             socket.emit('QUEUED_EVENT', event.exportPacket());
         } 

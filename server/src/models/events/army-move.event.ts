@@ -1,4 +1,4 @@
-import { fetch, update } from "../../db/database.handler";
+import { deleteItem, fetch, update } from "../../db/database.handler";
 import { Event } from "./core/event";
 import * as conf from "../../db/database.config.json";
 import { ArmyItem } from "../db_items/army.item";
@@ -7,6 +7,7 @@ import { UserItem } from "../db_items/user.item";
 import { PlayerItem } from "../db_items/player.item";
 import { ArmyMoveEventPacket } from "../packets/move-army.event.packet";
 import { TileItem } from "../db_items/tile.item";
+import { EventItem } from "../db_items/event.item";
 
 export class ArmyMoveEvent extends Event {
     nextTiles: [number, number][];
@@ -38,6 +39,7 @@ export class ArmyMoveEvent extends Event {
                     y: army.y,
                 }
                 await update(conf.tables.army, new ArmyItem(army));
+                await deleteItem(conf.tables.event, this.exportItem());
                 SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }
         }
@@ -56,7 +58,8 @@ export class ArmyMoveEvent extends Event {
                 trigger_time: eventTrigger.getTime(),
                 nextTiles: this.nextTiles,
             });
-            await event.saveItem()
+            await event.saveItem();
+            SocketHandler.broadcastToGame(this.game_id, 'QUEUED_EVENT', event.exportPacket());
             return event;
         }
         return undefined;
@@ -66,6 +69,6 @@ export class ArmyMoveEvent extends Event {
         this.body = JSON.stringify({
             nextTiles: this.nextTiles,
             army_id: this.army_id
-        })
+        });
     }
 }
