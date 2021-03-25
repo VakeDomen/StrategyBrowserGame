@@ -3,7 +3,7 @@ import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { GamePacket } from '../../models/packets/game.packet';
 import { AuthService } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
-import { CacheService } from 'src/app/services/cache.service';
+import { Cache } from 'src/app/services/cache.service';
 
 @Component({
   selector: 'app-lobby',
@@ -22,7 +22,6 @@ export class LobbyComponent implements AfterViewInit {
 
   constructor(
     private ws: SocketHandlerService,
-    private cache: CacheService,
     private auth: AuthService,
     private router: Router,
   ) {
@@ -61,7 +60,7 @@ export class LobbyComponent implements AfterViewInit {
   }
 
   userById(id: string): string {
-    const user = this.cache.getUserById(id);
+    const user = Cache.getUserById(id);
     if (user) {
       return user.username;
     }

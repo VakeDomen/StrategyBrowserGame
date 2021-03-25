@@ -1,4 +1,5 @@
 import { PathfindingAgent } from "src/app/services/a_star_pathfinding/agent.pathfinding";
+import { Cache } from "src/app/services/cache.service";
 import { Drawable } from "../core/drawable.abstract";
 import { Game } from "../game";
 import { MapPacket } from "../packets/map.packet";
@@ -73,15 +74,15 @@ export class GameMap implements Drawable {
         this.tiles.map((tile: Tile) => {
             const hover = tile.isPointOnTile(x, y);
             // on hover change
-            if (Game.state === 'army_movement_select' && Game.selectedArmy && hover !== tile.isHovered) {
+            if (Game.state === 'army_movement_select' && Cache.selectedArmy && hover !== tile.isHovered) {
                 // if now hovered -> calc path
                 if (hover) {
                     const start = this.getTile(
-                        Game.selectedArmy.x, 
-                        Game.selectedArmy.y,
+                        Cache.selectedArmy.x, 
+                        Cache.selectedArmy.y,
                     );
                     if (start) {
-                        Game.path = this.pathfinder.findPath(start, tile);
+                        Cache.path = this.pathfinder.findPath(start, tile);
                     }
                         
                 }

@@ -1,44 +1,48 @@
 import { Injectable } from '@angular/core';
 import { Army } from '../models/game_models/army.game';
+import { Tile } from '../models/game_models/tile.game';
 import { PlayerPacket } from '../models/packets/player.packet';
 import { UserPacket } from '../models/packets/user.packet';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CacheService {
+export class Cache {
 
-  private gameId: string;
-  private myUserId: string;  
-  private hostId: string;
-  private me: PlayerPacket;
-  private users: Map<string, UserPacket>; // userId
-  private players: Map<string, PlayerPacket> // playerId
-  private armies: Map<string, Army[]> // playerId
+  static path: Tile[] | undefined;
+  private static _selectedArmy: Army | undefined;
+
+  private static gameId: string;
+  private static myUserId: string;  
+  private static hostId: string;
+  private static me: PlayerPacket;
+  private static users: Map<string, UserPacket>; // userId
+  private static players: Map<string, PlayerPacket> // playerId
+  private static armies: Map<string, Army[]> // playerId
 
   constructor() {
-    this.users = new Map();
-    this.players = new Map();
-    this.armies = new Map()
-    this.gameId = '';
-    this.hostId = '';
-    this.myUserId = '';
-    this.me = {} as PlayerPacket;
+    Cache.users = new Map();
+    Cache.players = new Map();
+    Cache.armies = new Map()
+    Cache.gameId = '';
+    Cache.hostId = '';
+    Cache.myUserId = '';
+    Cache.me = {} as PlayerPacket;
   }
 
-  getAllArmies(): Army[] {
+  public static getAllArmies(): Army[] {
     let arm: Army[] = [];
-    for (const armies of this.armies.values()) {
+    for (const armies of Cache.armies.values()) {
       arm = arm.concat(armies);
     }
     return arm;
   }
-  getPlayerArmies(playerId: string): Army[] | undefined {
-    return this.armies.get(playerId);
+  public static getPlayerArmies(playerId: string): Army[] | undefined {
+    return Cache.armies.get(playerId);
   }
 
-  getArmy(id: string): Army | undefined {
-    for (const army of this.getAllArmies()) {
+  public static getArmy(id: string): Army | undefined {
+    for (const army of Cache.getAllArmies()) {
       if (army.id == id) {
         return army;
       }
@@ -46,59 +50,68 @@ export class CacheService {
     return undefined;
   }
 
-  saveArmy(army: Army): void {
-    if (!this.armies.get(army.player_id)) {
-      this.armies.set(army.player_id, [army]);
+  public static saveArmy(army: Army): void {
+    if (!Cache.armies.get(army.player_id)) {
+      Cache.armies.set(army.player_id, [army]);
     } else {
-        this.armies.get(army.player_id)?.push(army);
+        Cache.armies.get(army.player_id)?.push(army);
     }
   }
 
-  setHostId(id: string): void {
-    this.hostId = id;
+  public static setHostId(id: string): void {
+    Cache.hostId = id;
   }
 
-  getHostId(): string {
-    return this.hostId;
+  public static getHostId(): string {
+    return Cache.hostId;
   }
 
-  setMe(player: PlayerPacket) {
-    this.me = player;
+  public static setMe(player: PlayerPacket) {
+    Cache.me = player;
   }
 
-  getMe(): PlayerPacket {
-    return this.me;
+  public static getMe(): PlayerPacket {
+    return Cache.me;
   }
 
-  setMyUserId(id: string): void {
-    this.myUserId = id;
+  public static setMyUserId(id: string): void {
+    Cache.myUserId = id;
   }
 
-  getMyUserId(): string {
-    return this.myUserId;
+  public static getMyUserId(): string {
+    return Cache.myUserId;
   }
 
-  setGameId(id: string): void {
-    this.gameId = id;
+  public static setGameId(id: string): void {
+    Cache.gameId = id;
   }
 
-  getGameId(): string {
-    return this.gameId;
+  public static getGameId(): string {
+    return Cache.gameId;
   }
 
-  saveUser(user: UserPacket): void {
-    this.users.set(user.id, user);
+  public static saveUser(user: UserPacket): void {
+    Cache.users.set(user.id, user);
   }
 
-  getUserById(id: string): UserPacket | undefined {
-    return this.users.get(id);
+  public static getUserById(id: string): UserPacket | undefined {
+    return Cache.users.get(id);
   }
 
-  savePlayer(player: PlayerPacket): void {
-    this.players.set(player.id, player);
+  public static savePlayer(player: PlayerPacket): void {
+    Cache.players.set(player.id, player);
   }
 
-  getPlayerById(id: string): PlayerPacket | undefined {
-    return this.players.get(id);
+  public static getPlayerById(id: string): PlayerPacket | undefined {
+    return Cache.players.get(id);
   }
+
+  
+  public static get selectedArmy(): Army | undefined {
+    return Cache._selectedArmy;
+  }
+  public static set selectedArmy(value: Army | undefined) {
+    Cache._selectedArmy = value;
+  }
+
 }

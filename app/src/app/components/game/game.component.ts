@@ -4,7 +4,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { GamePacket } from 'src/app/models/packets/game.packet';
 import { Game } from 'src/app/models/game';
-import { CacheService } from 'src/app/services/cache.service';
+import { Cache } from 'src/app/services/cache.service';
 
 @Component({
   selector: 'app-game',
@@ -24,7 +24,7 @@ export class GameComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private ws: SocketHandlerService,
     private auth: AuthService,
-    private cache: CacheService,
+    private cache: Cache,
   ) { }
 
   ngAfterViewInit(): void {

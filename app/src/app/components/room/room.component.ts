@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
 import { SocketHandlerService } from 'src/app/services/socket-handler.service';
 import { ToastrService } from 'ngx-toastr';
-import { CacheService } from 'src/app/services/cache.service';
+import { Cache } from 'src/app/services/cache.service';
 import { StartGamePacket } from 'src/app/models/packets/start-game.packet';
 
 @Component({
@@ -25,7 +25,6 @@ export class RoomComponent implements OnInit {
     private ws: SocketHandlerService,
     private router: Router,
     private toastr: ToastrService,
-    private cache: CacheService,
   ) { }
 
   ngOnInit(): void {
@@ -75,7 +74,7 @@ export class RoomComponent implements OnInit {
 
 
   userById(id: string): string {
-    const user = this.cache.getUserById(id);
+    const user = Cache.getUserById(id);
     if (user) {
       return user.username;
     }

@@ -1,3 +1,4 @@
+import { Cache } from "src/app/services/cache.service";
 import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
 import { Window } from "../core/window.ui";
@@ -29,7 +30,7 @@ export class ArmyListWindow extends Window {
         }
         for (let i = 0 ; i < this.armies.length ; i++) {
             const army = this.armies[i];
-            if (army.getSelected()) {
+            if (army == Cache.selectedArmy) {
                 const pre = ctx.fillStyle;
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.fillRect(
@@ -83,8 +84,8 @@ export class ArmyListWindow extends Window {
                 super.hoverX < super.x + (Window.HEADER_START_WIDTH / 2) - 3 + super.width - Window.HEADER_END_WIDTH + 6 &&
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
-               this.gui.armySelected(army);
-               Game.selectedArmy = army;
+                Cache.selectedArmy = army;
+                this.gui.armySelected(army);
             }
         }
     } 

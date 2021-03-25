@@ -3,18 +3,16 @@ import { Game } from "../game";
 import { CameraZoomButton } from "./buttons/cammera.button";
 import { CameraFocusButton } from "./buttons/focus-cammera.button";
 import { SelectedTileOverviewWindow } from "./windows/selected-tile-overview.window";
-import { Camera } from "./camera";
 import { Tile } from "../game_models/tile.game";
 import { Army } from "../game_models/army.game";
 import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window";
-import { CacheService } from "src/app/services/cache.service";
+import { Cache } from "src/app/services/cache.service";
 import { ArmyListButton } from "./buttons/army-list.button";
 import { ArmyListWindow } from "./windows/army-list.window";
 
 export class GUI implements Drawable {
 
     private game: Game;
-    private cache: CacheService;
 
     isHovered: boolean = false;
 
@@ -28,13 +26,12 @@ export class GUI implements Drawable {
     private selectedArmyOverview: SelectedArmyOverviewWindow | undefined;
     private armyListWindow: ArmyListWindow | undefined;
 
-    constructor(game: Game, cache: CacheService) {
-        this.cache = cache
+    constructor(game: Game) {
         this.game = game;
         this.cameraZoomButton = new CameraZoomButton(game);
         this.cameraFocusButton = new CameraFocusButton(game);
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
-        this.armyListButton = new ArmyListButton(cache, this);
+        this.armyListButton = new ArmyListButton(this);
     }
 
     async load(): Promise<void> {
@@ -141,16 +138,17 @@ export class GUI implements Drawable {
 
     armySelected(army: Army): void {
         this.tileUnselected();
+        Cache.selectedArmy = army;
         if (this.selectedArmyOverview) {
-            this.selectedArmyOverview.setArmy(army);
+            this.selectedArmyOverview.refresh();
         } else {
-            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this.cache,this.game, this, army);
+            this.selectedArmyOverview = new SelectedArmyOverviewWindow(this);
         }
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }
 
     armyUnselected(): void {
-        Game.selectedArmy = undefined;
+        Cache.selectedArmy = undefined;
         this.selectedArmyOverview = undefined;
         this.cameraFocusButton.disabled = !(this.selectedArmyOverview || this.selectedTileOverview)
     }

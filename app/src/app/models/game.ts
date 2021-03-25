@@ -11,15 +11,12 @@ import { GUI } from "./ui_models/GUI";
 import { Tile } from "./game_models/tile.game";
 import { PlayerPacket } from "./packets/player.packet";
 import { UserPacket } from "./packets/user.packet";
-import { CacheService } from "../services/cache.service";
+import { Cache } from "../services/cache.service";
 import { ArmyMovementPacket } from "./packets/army-movement.packet";
-import { EventPacket } from "./packets/event.packet";
 import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
 
 export class Game {
     static state: 'loading' | 'view' | 'army_movement_select';
-    static path: Tile[] | undefined;
-    private static _selectedArmy: Army | undefined;
 
     // loding checks
     private loaded: boolean = false;
@@ -49,7 +46,6 @@ export class Game {
     private cameraZoomOptions: number[] = [1, 2, 4];
     
     private ws: SocketHandlerService;
-    private cache: CacheService;
     
     // game data
     private running: boolean;
@@ -63,12 +59,11 @@ export class Game {
     private map: GameMap;
 
 
-    constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef, cache: CacheService) {
+    constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef, cache: Cache) {
         console.log('Initializing game...')
-        this.cache = cache;
-        this.cache.setMyUserId(myId);
-        this.cache.setGameId(data.id);
-        this.cache.setHostId(data.host);
+        Cache.setMyUserId(myId);
+        Cache.setGameId(data.id);
+        Cache.setHostId(data.host);
         this.loaded = false;
         this.canvas = canvas;
         this.guiCanvas = gui;
@@ -129,7 +124,7 @@ export class Game {
             switch (this.view) {
                 case 'map':
                     this.map.draw(canvasContext); 
-                    this.cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
+                    Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
                     break;
                 case 'base':     
                     break;
@@ -149,20 +144,20 @@ export class Game {
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);
-        this.ws.getMap(this.cache.getGameId());
-        this.ws.getPlayers(this.cache.getGameId());
-        this.ws.getArmies(this.cache.getGameId());
-        this.ws.getGameUsers(this.cache.getGameId());
+        this.ws.getMap(Cache.getGameId());
+        this.ws.getPlayers(Cache.getGameId());
+        this.ws.getArmies(Cache.getGameId());
+        this.ws.getGameUsers(Cache.getGameId());
         this.setupUI();
         this.setupMouse()
     }
 
     setPlayers(players: PlayerPacket[]): void {
         for (const player of players) {
-            if (player.user_id == this.cache.getMyUserId()) {
-                this.cache.setMe(player);
+            if (player.user_id == Cache.getMyUserId()) {
+                Cache.setMe(player);
             }
-            this.cache.savePlayer(player);
+            Cache.savePlayer(player);
         }
         this.loadedPlayers = true;
         this.checkLoaded();
@@ -170,7 +165,7 @@ export class Game {
     
     setUsers(users: UserPacket[]): void {
         for (const user of users) {
-            this.cache.saveUser(user);
+            Cache.saveUser(user);
         }
         this.loadedUsers = true;
         this.checkLoaded();
@@ -180,7 +175,7 @@ export class Game {
         for (const armyPacket of packet) {
             const army = new Army(armyPacket);
             await army.load();
-            this.cache.saveArmy(army);
+            Cache.saveArmy(army);
         }
         this.loadedArmies = true;
         this.checkLoaded()
@@ -265,9 +260,8 @@ export class Game {
             }
             const army = this.findClickedArmy(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
             if (army) {
-                army.setSelected(true);
                 this.GUI?.armySelected(army);
-                Game.selectedArmy = army;
+                Cache.selectedArmy = army;
                 return;
             }
             const tile = this.findClickedTile(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
@@ -280,7 +274,7 @@ export class Game {
             if (this.GUI?.checkClick(this.mouseX, this.mouseY)) {
                 return;
             }
-            if (Game.selectedArmy && Game.path) {
+            if (Cache.selectedArmy && Cache.path) {
                 this.moveArmy();
             }
         }
@@ -298,7 +292,7 @@ export class Game {
     }
 
     private async setupUI(): Promise<void> {
-        this.GUI = new GUI(this, this.cache);
+        this.GUI = new GUI(this);
         await this.GUI.load();
         this.loadedGUI = true;
         this.checkLoaded()
@@ -329,7 +323,7 @@ export class Game {
     }
     
     private findClickedArmy(x: number, y: number): Army | undefined {
-        for (const army of this.cache.getAllArmies()) {
+        for (const army of Cache.getAllArmies()) {
             if (army.isPointOnArmy(x, y)) {
                 return army
             }
@@ -339,7 +333,7 @@ export class Game {
 
     private findHoverArmy(x: number, y: number): boolean {
         let found = false;
-        for (const army of this.cache.getAllArmies()) {
+        for (const army of Cache.getAllArmies()) {
             const hover = army.isPointOnArmy(x, y);
             found = (found || hover);
             army.setHovered(hover);
@@ -348,7 +342,7 @@ export class Game {
     }
 
     updateArmy(packet: ArmyMoveEventPacket): void {
-        const army = this.cache.getArmy(packet.army_id);
+        const army = Cache.getArmy(packet.army_id);
         console.log('move event', packet)
         if (army) {
             army.x = packet.x;
@@ -358,16 +352,16 @@ export class Game {
 
 
     moveArmy(): void {
-        if (Game.selectedArmy && Game.path) {
-            Game.path.shift();
+        if (Cache.selectedArmy && Cache.path) {
+            Cache.path.shift(); // remove the tile army is sitting on
             const packet: ArmyMovementPacket = { 
-                game_id: this.cache.getGameId() as string,
-                army_id: Game.selectedArmy.id,
-                tiles: Game.path.map((tile: Tile) => [tile.x, tile.y])
+                game_id: Cache.getGameId() as string,
+                army_id: Cache.selectedArmy.id,
+                tiles: Cache.path.map((tile: Tile) => [tile.x, tile.y])
             };
             this.ws.moveArmy(packet);
-            Game.path = undefined;
-            Game.selectedArmy = undefined;
+            Cache.path = undefined;
+            Cache.selectedArmy = undefined;
         }
     }
 
@@ -392,15 +386,6 @@ export class Game {
 
     getMap(): GameMap {
         return this.map;
-    }
-
-    public static get selectedArmy(): Army | undefined {
-        return Game._selectedArmy;
-    }
-    public static set selectedArmy(value: Army | undefined) {
-        Game._selectedArmy?.setSelected(false);
-        Game._selectedArmy = value;
-        Game._selectedArmy?.setSelected(true);
     }
 
 }

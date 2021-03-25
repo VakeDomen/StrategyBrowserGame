@@ -1,6 +1,7 @@
 import { Battalion } from './battalion.game';
 import { Drawable } from '../core/drawable.abstract';
 import { Tile } from './tile.game';
+import { Cache } from 'src/app/services/cache.service';
 export class Army implements Drawable{
     id: string;
     player_id: string;
@@ -10,7 +11,6 @@ export class Army implements Drawable{
     battalions: Battalion[];
 
     private isHovered: boolean = false;
-    private isSelected: boolean = false;
     
     private img: HTMLImageElement;
     private imgWidth: number = 212;
@@ -34,9 +34,9 @@ export class Army implements Drawable{
             this.calcImageXOffset() - this.imgWidth / 4, 
             this.calcImageYOffset() - this.imgHeight / 2
         ];
-        if (this.isSelected || this.isHovered) {
+        if (Cache.selectedArmy == this || this.isHovered) {
             ctx.fillStyle = 'white';
-            if (this.isHovered && !this.isSelected) {
+            if (this.isHovered && Cache.selectedArmy != this) {
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             }
             ctx.beginPath();
@@ -90,14 +90,11 @@ export class Army implements Drawable{
         return this.isHovered;
     }
 
-    setSelected(b: boolean): void {
-        this.isSelected = b;
-    }
     setHovered(b: boolean): void {
         this.isHovered = b;
     }
 
     getSelected(): boolean {
-        return this.isSelected;
+        return Cache.selectedArmy == this;
     }
 }

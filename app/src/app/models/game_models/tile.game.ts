@@ -1,3 +1,4 @@
+import { Cache } from "src/app/services/cache.service";
 import { Drawable } from "../core/drawable.abstract";
 import { Game } from "../game";
 import { TilePacket } from "../packets/tile.packet";
@@ -60,7 +61,7 @@ export class Tile implements Drawable {
     draw(ctx: CanvasRenderingContext2D): void {
         const color = ctx.fillStyle;
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
-        this.transparent = Game.state === 'army_movement_select' && !Game.path?.includes(this);
+        this.transparent = Game.state === 'army_movement_select' && !Cache.path?.includes(this);
         if (this.transparent) {
             ctx.globalAlpha = 0.5;
         } 

@@ -1,6 +1,6 @@
 import { Game } from "../../game";
-import { GUI } from "../GUI";
 import { Button } from "../core/button.ui";
+import { Cache } from "src/app/services/cache.service";
 
 export class CameraFocusButton extends Button {
 
@@ -13,7 +13,7 @@ export class CameraFocusButton extends Button {
 
     handleClick(): boolean {
         let tile = this.game.getMap().getSelectedTile();
-        const army = Game.selectedArmy;
+        const army = Cache.selectedArmy;
         if (!tile && army) {
             tile = this.game.getMap().getTile(army.x, army.y);
         }

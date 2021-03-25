@@ -9,7 +9,7 @@ import { LoginPacket } from '../models/packets/login.packet';
 import { UserPacket } from '../models/packets/user.packet';
 import { MapPacket } from '../models/packets/map.packet';
 import { PlayersPacket } from '../models/packets/players.packet';
-import { CacheService } from './cache.service';
+import { Cache } from './cache.service';
 import { StartGamePacket } from '../models/packets/start-game.packet';
 import { ArmyPacket } from '../models/packets/army.packet';
 import { ArmyMovementPacket } from '../models/packets/army-movement.packet';
@@ -27,7 +27,6 @@ export class SocketHandlerService {
     private auth: AuthService,
     private toastr: ToastrService,
     private router: Router,
-    private cache: CacheService,
   ) { 
     this.init();
   }
@@ -90,12 +89,12 @@ export class SocketHandlerService {
   }
 
   saveUser(user: UserPacket): void {
-    this.cache.saveUser(user);
+    Cache.saveUser(user);
   }
 
   saveUsers(users: UserPacket[]): void {
     for (const user of users) {
-      this.cache.saveUser(user);
+      Cache.saveUser(user);
     }
     if (this.contexts['lobby']) {
       this.contexts['lobby'].usersFetched();

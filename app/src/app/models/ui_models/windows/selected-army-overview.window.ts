@@ -1,4 +1,4 @@
-import { CacheService } from "src/app/services/cache.service";
+import { Cache } from "src/app/services/cache.service";
 import { Drawable } from "../../core/drawable.abstract";
 import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
@@ -12,32 +12,24 @@ import { GUI } from "../GUI";
 export class SelectedArmyOverviewWindow extends Window implements Drawable {
 
     private gui: GUI;
-    private game: Game; 
-    private army: Army;
-    private cache: CacheService;
     private player: PlayerPacket | undefined;
     private user: UserPacket | undefined;
 
     private moveButton: Button;
 
-    constructor(cache: CacheService, game: Game, gui: GUI, army: Army) {
-        super(-300, 690, 250, 150, `${unescape(army.name)} (${army.x} | ${army.y})`, 4);
+    constructor(gui: GUI) {
+        super(-300, 690, 250, 150, `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`, 4);
         super.goalX = 10;
-        this.army = army;
-        this.game = game;
-        this.cache = cache;
         this.gui = gui;
-        this.player = this.cache.getPlayerById(this.army.player_id);
-        this.user = this.cache.getUserById(this.player?.user_id as string);
-        this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, army);
+        this.player = Cache.getPlayerById(Cache.selectedArmy?.player_id as string);
+        this.user = Cache.getUserById(this.player?.user_id as string);
+        this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, Cache.selectedArmy as Army);
     }
 
-    setArmy(army: Army): void {
-        this.army.setSelected(false);
-        this.army = army;
-        super.title = `${unescape(army.name)} (${army.x} | ${army.y})`;
-        this.player = this.cache.getPlayerById(this.army.player_id);
-        this.user = this.cache.getUserById(this.player?.user_id as string);
+    refresh(): void {
+        super.title = `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`;
+        this.player = Cache.getPlayerById(Cache.selectedArmy?.player_id as string);
+        this.user = Cache.getUserById(this.player?.user_id as string);
     }
 
     drawBody(ctx: CanvasRenderingContext2D): void {
@@ -53,9 +45,16 @@ export class SelectedArmyOverviewWindow extends Window implements Drawable {
             this.y + Window.HEADER_HEIGHT + 15,
             this.width - Window.HEADER_START_WIDTH - Window.HEADER_END_WIDTH
         );
-        this.moveButton.x = this.x + 10;
-        this.moveButton.y = this.y + 40;
-        this.moveButton.draw(ctx);
+        this.drawActions(ctx);
+
+    }
+
+    drawActions(ctx: CanvasRenderingContext2D): void {
+        if (Cache.selectedArmy?.player_id === Cache.getMe().id) {
+            this.moveButton.x = this.x + 10;
+            this.moveButton.y = this.y + 40;
+            this.moveButton.draw(ctx);
+        }
 
     }
 

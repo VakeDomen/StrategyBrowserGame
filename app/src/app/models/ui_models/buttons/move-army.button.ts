@@ -1,3 +1,4 @@
+import { Cache } from "src/app/services/cache.service";
 import { Game } from "../../game";
 import { Army } from "../../game_models/army.game";
 import { Button } from "../core/button.ui";
@@ -13,6 +14,6 @@ export class MoveArmyButton extends Button {
 
     handleClick(): void {
         Game.state = 'army_movement_select';
-        Game.selectedArmy = this.army;
+        Cache.selectedArmy = this.army;
     }
 }
