@@ -3,6 +3,8 @@ import { Army } from "../../game_models/army.game";
 import { PlayerPacket } from "../../packets/player.packet";
 import { UserPacket } from "../../packets/user.packet";
 import { MoveArmyButton } from "../buttons/move-army.button";
+import { ShowArmyPathButton } from "../buttons/show-army-path.button";
+import { HideArmyPathButton } from "../buttons/hide-army-path.button";
 import { Button } from "../core/button.ui";
 import { Window } from "../core/window.ui";
 
@@ -12,6 +14,8 @@ export class SelectedArmyOverviewWindow extends Window {
     private user: UserPacket | undefined;
 
     private moveButton: Button;
+    private showPath: Button;
+    private hidePath: Button;
 
     constructor() {
         super(-250, 690, 250, 150, `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`, 4);
@@ -19,6 +23,8 @@ export class SelectedArmyOverviewWindow extends Window {
         this.player = Cache.getPlayerById(Cache.selectedArmy?.player_id as string);
         this.user = Cache.getUserById(this.player?.user_id as string);
         this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, Cache.selectedArmy as Army);
+        this.showPath = new ShowArmyPathButton(this.x + 50, this.y + 40, 40, 40);
+        this.hidePath = new HideArmyPathButton(this.x + 50, this.y + 40, 40, 40);
     }
 
     update(x: number, y: number): void {
@@ -30,6 +36,8 @@ export class SelectedArmyOverviewWindow extends Window {
         }
         this.checkHover(x, y);
         this.moveButton.update(x, y);
+        this.showPath.update(x, y);
+        this.hidePath.update(x, y);
     }
 
     onClose(): void {
@@ -61,6 +69,8 @@ export class SelectedArmyOverviewWindow extends Window {
 
     handleBodyClick(x: number, y: number) {
         this.moveButton.handleClick();
+        this.showPath.handleClick();
+        this.hidePath.handleClick();
     }
             
 
@@ -69,6 +79,12 @@ export class SelectedArmyOverviewWindow extends Window {
             this.moveButton.x = this.x + 10;
             this.moveButton.y = this.y + 40;
             this.moveButton.draw(ctx);
+            this.showPath.x = this.x + 50;
+            this.showPath.y = this.y + 40;
+            this.showPath.draw(ctx);
+            this.hidePath.x = this.x + 50;
+            this.hidePath.y = this.y + 40;
+            this.hidePath.draw(ctx);
         }
 
     }

@@ -81,7 +81,7 @@ export class GUI implements Drawable {
         const windows = this.windows.map((window: Drawable) => {
             return window.handleClick(x, y);
         });
-        return buttons.includes(true) || windows.includes(true);;
+        return buttons.includes(true) || windows.includes(true);
     }
 
     removeWindow(toRemove: Drawable): void {

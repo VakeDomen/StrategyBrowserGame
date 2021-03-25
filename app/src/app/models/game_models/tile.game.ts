@@ -64,7 +64,7 @@ export class Tile implements Drawable {
 
     draw(ctx: CanvasRenderingContext2D): void {
         const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
-        this.transparent = Game.state === 'army_movement_select' && !Cache.path?.includes(this);
+        this.transparent = this.shouldBeTransparent();
         if (this.transparent) {
             ctx.globalAlpha = 0.5;
         } 
@@ -72,7 +72,11 @@ export class Tile implements Drawable {
         ctx.globalAlpha = 1;
         
         if ((this.hovered || Cache.selectedTile == this)) {
-            ctx.fillText(`${this.x} ${this.y}`, offsets[0] + 235, offsets[1] + 356);
+            ctx.fillText(
+                `${this.x} | ${this.y}`, 
+                offsets[0] + Tile.hexBorders[5][0], 
+                offsets[1] + Tile.hexBorders[5][1] - 5
+            );
             const path = new Path2D();
             path.moveTo(
                 this.calcImageXOffset() + Tile.hexBorders[0][0] + 2, 
@@ -87,6 +91,18 @@ export class Tile implements Drawable {
             path.closePath();
             ctx.stroke(path);
         }
+    }
+
+    private shouldBeTransparent(): boolean {
+        return (
+            !!(
+                Game.state === 'army_movement_select' && 
+                !Cache.path?.includes(this)
+            ) || !!(
+                Game.state === 'path_view' &&
+                !Cache.path?.includes(this)
+            )
+        );
     }
 
     calcCenter(): [number, number] {

@@ -111,6 +111,7 @@ export class Cache {
   public static get selectedArmy(): Army | undefined {
     return Cache._selectedArmy;
   }
+
   public static set selectedArmy(value: Army | undefined) {
     if (value != undefined) {
       this.selectedTile = undefined

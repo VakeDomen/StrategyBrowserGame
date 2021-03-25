@@ -102,6 +102,14 @@ export class PathfindingAgent {
         const x2: number = n2.getTile().x;
         const y2: number = n2.getTile().y;
         // return ((x1 == x2 && Math.abs(y1 - y2) == 1) || (y1 == y2 && Math.abs(x1 - x2) == 1));
+        if (x1 == 0) {
+            return (
+                (x1 == x2 && Math.abs(y1 - y2) == 1) ||
+                (x1 + 1 == x2 && [-1, 0].includes((y2 - y1))) ||
+                (x1 - 1 == x2 && [-1, 0].includes((y2 - y1))) 
+            )
+        }
+
         if (x1 > 0) {
             return (
                 (x1 == x2 && Math.abs(y1 - y2) == 1) ||

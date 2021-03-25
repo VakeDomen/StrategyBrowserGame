@@ -28,6 +28,7 @@ export class SocketHandlerService {
     private auth: AuthService,
     private toastr: ToastrService,
     private router: Router,
+    private cache: Cache,
   ) { 
     this.init();
   }

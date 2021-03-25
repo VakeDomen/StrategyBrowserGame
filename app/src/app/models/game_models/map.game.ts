@@ -28,8 +28,20 @@ export class GameMap implements Drawable {
         this.pathfinder = new PathfindingAgent(this.tiles);
     }
     update(x: number, y: number): void {
+        if (Game.state == 'path_view') {
+            this.findPathToDisplay();
+        }
         this.checkHover(x, y);
         this.tiles.forEach((tile: Tile) => tile.update(x, y));
+    }
+
+    private findPathToDisplay(): void {
+        if (!Cache.selectedArmy) {
+            Game.state = 'view';
+        }
+        if (!Cache.path) {
+            Cache.path = Cache.selectedArmy?.moveEvent?.body.nextTiles.map((coords: [number, number]) => this.getTile(coords[0], coords[1]));
+        }
     }
 
     private sortTilesByCoords(): Tile[] {
@@ -71,7 +83,6 @@ export class GameMap implements Drawable {
             const hover = tile.checkHover(x, y);
             // on hover change
             if (Game.state === 'army_movement_select' && Cache.selectedArmy && hover !== tile.hovered) {
-                console.log('pathfinding')
                 // if now hovered -> calc path
                 if (hover) {
                     const start = this.getTile(

@@ -17,7 +17,7 @@ import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
 import { EventPacket } from "./packets/event.packet";
 
 export class Game {
-    static state: 'loading' | 'view' | 'army_movement_select';
+    static state: 'loading' | 'view' | 'army_movement_select' | 'path_view';
 
     // loding checks
     private loaded: boolean = false;
@@ -93,7 +93,12 @@ export class Game {
                     this.GUI.update(this.mouseX, this.mouseY);
                     this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
                     break;
+                case 'path_view':
+                    this.GUI.update(this.mouseX, this.mouseY);
+                    this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+                    break;
                 default:
+                    this.GUI.update(this.mouseX, this.mouseY);
                     break;
             }
             // end update code
@@ -121,15 +126,6 @@ export class Game {
 
         canvasContext.restore();
         guiContext.restore();
-        // while(1) {
-        //     this._lastDrawTimestamp = new Date().getTime();
-            
-            
-        //     this.draw(canvasContext, guiContext);
-        //     break;
-        //     const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
-        //     await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
-        // }
         this.draw(canvasContext, guiContext);
     }
 
@@ -155,7 +151,7 @@ export class Game {
         canvasContext.scale(zoom, zoom);
         this.drawUI(guiContext);
         guiContext.scale(1, 1)
-        
+
         // FPS delay
         const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
         await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
@@ -275,34 +271,30 @@ export class Game {
     }
 
     private handleClick(): void {
-        if(Game.state === 'view') {
-            // click on HUD
-            if (this.GUI.handleClick(this.mouseX, this.mouseY)) {
+        const army = this.findHoveredArmy();
+        switch (Game.state) {
+            case 'view':
+                // click on HUD
+                if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
+                // click on army
+                if (army) { Cache.selectedArmy = army; return; }
+                // click on tile
+                const tile = this.map.getHovered();
+                if (tile) { Cache.selectedTile = tile; return; }
                 return;
-            }
-
-            // click on army
-            const army = this.findHoveredArmy();
-            if (army) {
-                Cache.selectedArmy = army;
+            case 'loading':
                 return;
-            }
-
-            // click on tile
-            const tile = this.map.getHovered();
-            if (tile) {
-                Cache.selectedTile = tile;
+            case 'army_movement_select':
+                if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
+                if (Cache.selectedArmy && Cache.path) this.moveArmy();
                 return;
-            }
-        } else if (Game.state === 'army_movement_select') {
-            if (this.GUI.handleClick(this.mouseX, this.mouseY)) {
+            case 'path_view':
+                // click on HUD
+                if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
                 return;
-            }
-            if (Cache.selectedArmy && Cache.path) {
-                this.moveArmy();
-            }
+            default:
+                return;
         }
-        
     }
 
     private distToMouse(x: number, y: number): number {
@@ -357,6 +349,7 @@ export class Game {
             }
             army.x = packet.x;
             army.y = packet.y;
+            Cache.path = undefined;
         }
     }
 
@@ -371,7 +364,6 @@ export class Game {
             };
             this.ws.moveArmy(packet);
             Cache.path = undefined;
-            Cache.selectedArmy = undefined;
             Game.state = 'view';
         }
     }
@@ -400,17 +392,13 @@ export class Game {
     }
 
     handleNewEvent(eventPacket: EventPacket): void {
-        console.log('new event packet', eventPacket);
         switch (eventPacket.event_type) {
             case 'ARMY_MOVE':
                 eventPacket.body = JSON.parse(eventPacket.body);
                 const army = Cache.getArmy(eventPacket.body.army_id);
                 if (army) {
                     army.moveEvent = eventPacket;
-                } else {
-                    console.log('moving army not found!', eventPacket)
                 }
-
                 break;
         
             default:
