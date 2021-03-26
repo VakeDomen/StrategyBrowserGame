@@ -13,7 +13,7 @@ export class ArmyMoveEvent extends Event {
     nextTiles: [number, number][];
     army_id: string;
 
-    constructor(data) {
+    constructor(data: any) {
         super(data);
         this.event_type = 'ARMY_MOVE';
         this.army_id = data.army_id;
@@ -39,7 +39,7 @@ export class ArmyMoveEvent extends Event {
                     y: army.y,
                 }
                 await update(conf.tables.army, new ArmyItem(army));
-                await deleteItem(conf.tables.event, this.exportItem());
+                await deleteItem(conf.tables.event, new EventItem({id: this.id}));
                 SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }
         }
@@ -66,9 +66,9 @@ export class ArmyMoveEvent extends Event {
     }
 
     setBody() {
-        this.body = JSON.stringify({
+        this.body = {
             nextTiles: this.nextTiles,
             army_id: this.army_id
-        });
+        };
     }
 }

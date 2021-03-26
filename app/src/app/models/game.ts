@@ -117,7 +117,6 @@ export class Game {
             return;
         }
         while (!this.loaded) {
-            this._lastUpdateTimestamp = new Date().getTime();
             spinner.draw(canvasContext);
             canvasContext.stroke();
             const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
@@ -131,6 +130,7 @@ export class Game {
 
 
     async draw(canvasContext: CanvasRenderingContext2D, guiContext: CanvasRenderingContext2D) {
+        const _lastUpdateTimestamp = new Date().getTime();
         this.clearCanvas(guiContext)
         const zoom = this.cameraZoom;
         canvasContext.scale(1 / zoom, 1 / zoom)
@@ -153,7 +153,7 @@ export class Game {
         guiContext.scale(1, 1)
 
         // FPS delay
-        const deltaTime = (new Date().getTime() - this._lastDrawTimestamp) / 1000;
+        const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
         await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
         window.requestAnimationFrame(() => this.draw(canvasContext, guiContext));
     }
@@ -392,9 +392,9 @@ export class Game {
     }
 
     handleNewEvent(eventPacket: EventPacket): void {
+        console.log(eventPacket)
         switch (eventPacket.event_type) {
             case 'ARMY_MOVE':
-                eventPacket.body = JSON.parse(eventPacket.body);
                 const army = Cache.getArmy(eventPacket.body.army_id);
                 if (army) {
                     army.moveEvent = eventPacket;

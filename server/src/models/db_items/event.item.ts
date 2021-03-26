@@ -3,7 +3,7 @@ import { DbItem } from "./core/db.item";
 export class EventItem extends DbItem {
     game_id: string;
     player_id: string;
-    event_type: string;
+    event_type: 'ARMY_MOVE';
     trigger_time: number;
     body: string;
     
