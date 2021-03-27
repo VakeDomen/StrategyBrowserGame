@@ -8,6 +8,7 @@ export class LoadingSpinner implements Drawable {
     constructor(canvas: any) {
         this.canvas = canvas;
     }
+    
     protected checkHover(x: number, y: number): boolean {
         return false;
     }
@@ -48,4 +49,6 @@ export class LoadingSpinner implements Drawable {
         ctx.restore();
         this.animationStep += 1;
     }
+
+    async load(): Promise<void> { await Promise.all([]) }
 }

@@ -78,12 +78,7 @@ export class PathfindingAgent {
     }
 
     protected weightDiagonal(head: DigraphNode, tail: DigraphNode): number {
-        // const x: number = Math.abs(head.getX()-tail.getX());
-        // const y: number = Math.abs(head.getY()-tail.getY());
-        // //we don't want diagonals
-        // if(x+y == 2) return 99;
-        // else return 10;
-        return 10;
+        return Math.ceil(100 / ((100 + head.getTile().speed) / 100));
     }
 
     private findNeighbours(node: DigraphNode): DigraphNode[] {

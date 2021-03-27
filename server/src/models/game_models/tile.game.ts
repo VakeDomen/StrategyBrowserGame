@@ -7,6 +7,7 @@ export class Tile implements Export {
     x: number;
     y: number;
     tile_type: number;
+    favorable_terrain_level: number;
     orientation: number;
     building: string | null;
 
@@ -16,6 +17,7 @@ export class Tile implements Export {
         this.x = data.x;
         this.y = data.y;
         this.tile_type = data.tile_type ? data.tile_type : 0;
+        this.favorable_terrain_level = data.favorable_terrain_level;
         this.orientation = data.orientation ? data.orientation : 0;
         this.building = data.building ? data.building : null;
     }
@@ -26,6 +28,7 @@ export class Tile implements Export {
             x: this.x,
             y: this.y,
             tile_type: this.tile_type,
+            favorable_terrain_level: this.favorable_terrain_level,
             orientation: this.orientation,
             building: this.building,
         } as TilePacket;

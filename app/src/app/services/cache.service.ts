@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Army } from '../models/game_models/army.game';
 import { Tile } from '../models/game_models/tile.game';
 import { PlayerPacket } from '../models/packets/player.packet';
+import { ResourcePacket } from '../models/packets/resource.packet';
+import { TileTypePacket } from '../models/packets/tile-type.packet';
 import { UserPacket } from '../models/packets/user.packet';
 
 @Injectable({
@@ -20,6 +22,9 @@ export class Cache {
   private static users: Map<string, UserPacket>; // userId
   private static players: Map<string, PlayerPacket> // playerId
   private static armies: Map<string, Army[]> // playerId
+  private static tileTypes: TileTypePacket[];
+  private static tiles: Map<number, Map<number, Tile>>;
+  private static resources: ResourcePacket[];
 
   constructor() {
     Cache.users = new Map();
@@ -29,6 +34,46 @@ export class Cache {
     Cache.hostId = '';
     Cache.myUserId = '';
     Cache.me = {} as PlayerPacket;
+    Cache.tileTypes = [];
+    Cache.tiles = new Map();
+  }
+
+  public static setResources(resources: ResourcePacket[]): void {
+    this.resources = resources;
+  }
+
+  public static getResources(): ResourcePacket[] {
+    return this.resources;
+  }
+
+  public static setTileTypes(types: TileTypePacket[]): void {
+    this.tileTypes = types;
+  }
+
+  public static getTileType(id: number): TileTypePacket | undefined {
+    for (const type of this.tileTypes) {
+      if (type.id == id) {
+        return type;
+      }
+    }
+    return undefined;
+  }
+
+  public static saveTile(tile: Tile) {
+    if (!this.tiles.get(tile.x)) {
+      const map = new Map();
+      map.set(tile.y, tile);
+      this.tiles.set(tile.x, map);
+    } else {
+      this.tiles.get(tile.x)?.set(tile.y, tile);
+    }
+  }
+
+  public static getTile(x: number, y: number): Tile | undefined {
+    if (this.tiles.get(x)) {
+      return this.tiles.get(x)?.get(y);
+    }
+    return undefined;
   }
 
   public static getAllArmies(): Army[] {
@@ -115,6 +160,10 @@ export class Cache {
   public static set selectedArmy(value: Army | undefined) {
     if (value != undefined) {
       this.selectedTile = undefined
+    }
+    const prevArmy = Cache._selectedArmy;
+    if (prevArmy) {
+      prevArmy.displayInvnetory = false;
     }
     Cache._selectedArmy = value;
   }

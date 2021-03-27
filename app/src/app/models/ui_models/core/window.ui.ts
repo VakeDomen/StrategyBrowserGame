@@ -105,6 +105,8 @@ export class Window implements Drawable {
     }
 
     protected checkHover(x: number, y: number): boolean {
+        this._hoverX = x;
+        this._hoverY = y;
         this.hovered = x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
         if (this.hovered) {
             this.hoverX = x;

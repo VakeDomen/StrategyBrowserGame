@@ -155,8 +155,11 @@ export class Button implements Drawable {
     }
 
     handleClick(): boolean {
-        alert('clicked button');
-        return this.hovered;
+        if (this.hovered && this.visible && !this.disabled) {
+            alert('Clicked!');
+            return true;
+        }
+        return false;
     }
 
     public get disabled(): boolean {

@@ -21,6 +21,9 @@ exports.up = function(db, callback) {
     db.createTable.bind(db, 'army', army),
     db.createTable.bind(db, 'battalion', battalion),
     db.createTable.bind(db, 'events', events),
+    db.createTable.bind(db, 'tile_types', tile_type),
+    db.createTable.bind(db, 'army_inventory', army_inventory),
+    db.createTable.bind(db, 'resources', resources),
   ], callback);
 };
 
@@ -32,6 +35,10 @@ exports.down = function(db, callback) {
     db.dropTable.bind(db, 'tiles'),
     db.dropTable.bind(db, 'army'),
     db.dropTable.bind(db, 'battalion'),
+    db.dropTable.bind(db, 'events'),
+    db.dropTable.bind(db, 'tile_types'),
+    db.dropTable.bind(db, 'army_inventory'),
+    db.dropTable.bind(db, 'resources'),
   ], callback);
 };
 
@@ -130,6 +137,9 @@ const tiles = {
     tile_type: {
       type: 'int',
     },
+    favorable_terrain_level: {
+      type: 'int',
+    },
     orientation: {
       type: 'int',
     },
@@ -207,6 +217,204 @@ const events = {
     handled: {
       type: 'boolean',
     }
+  },
+  ifNotExists: true
+}
+
+const tile_type = {
+  columns: {
+    id: {
+      type: 'int',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    tag: {
+      type: 'string',
+    },
+    speed: {
+      type: 'int',
+    },
+    food: {
+      type: 'int',
+    },
+    wood: {
+      type: 'int',
+    },
+    stone: {
+      type: 'int',
+    },
+    ore: {
+      type: 'int',
+    },
+    defense: {
+      type: 'int',
+    }
+  },
+  ifNotExists: true
+}
+
+const army_inventory = {
+  columns: {
+    id: {
+      type: 'string',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    player_id: {
+      type: 'string',
+    },
+    army_id: {
+      type: 'string',
+    },
+    food: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    wood: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    stone: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    ore: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    cart: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    horse: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+  },
+  ifNotExists: true
+}
+
+const resources = {
+  columns: {
+    id: {
+      type: 'int',
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    tag: {
+      type: 'string',
+    },
+    display_name: {
+      type: 'string',
+    },
+    resource_type: {
+      type: 'string',
+    },
+    equippable: {
+      type: 'boolean',
+    },
+    attack: {
+      type: 'int',
+    },
+    defense: {
+      type: 'int',
+    },
+    speed: {
+      type: 'int',
+    },
+    carry: {
+      type: 'int',
+    },
+    weight: {
+      type: 'int',
+    },
+    food: {
+      type: 'int',
+    },
+    wood: {
+      type: 'int',
+    },
+    stone: {
+      type: 'int',
+    },
+    ore: {
+      type: 'int',
+    },
+    build: {
+      type: 'int',
+    },
   },
   ifNotExists: true
 }

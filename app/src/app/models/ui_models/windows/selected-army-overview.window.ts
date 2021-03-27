@@ -7,6 +7,7 @@ import { ShowArmyPathButton } from "../buttons/show-army-path.button";
 import { HideArmyPathButton } from "../buttons/hide-army-path.button";
 import { Button } from "../core/button.ui";
 import { Window } from "../core/window.ui";
+import { ShowArmyInventoryButton } from "../buttons/show-inventory.button";
 
 export class SelectedArmyOverviewWindow extends Window {
 
@@ -16,6 +17,7 @@ export class SelectedArmyOverviewWindow extends Window {
     private moveButton: Button;
     private showPath: Button;
     private hidePath: Button;
+    private showInventory: Button;
 
     constructor() {
         super(-250, 690, 250, 150, `${unescape(Cache.selectedArmy?.name as string)} (${Cache.selectedArmy?.x} | ${Cache.selectedArmy?.y})`, 4);
@@ -23,8 +25,9 @@ export class SelectedArmyOverviewWindow extends Window {
         this.player = Cache.getPlayerById(Cache.selectedArmy?.player_id as string);
         this.user = Cache.getUserById(this.player?.user_id as string);
         this.moveButton = new MoveArmyButton(this.x + 10, this.y + 40, 40, 40, Cache.selectedArmy as Army);
-        this.showPath = new ShowArmyPathButton(this.x + 50, this.y + 40, 40, 40);
-        this.hidePath = new HideArmyPathButton(this.x + 50, this.y + 40, 40, 40);
+        this.showPath = new ShowArmyPathButton(this.x + 60, this.y + 40, 40, 40);
+        this.hidePath = new HideArmyPathButton(this.x + 60, this.y + 40, 40, 40);
+        this.showInventory = new ShowArmyInventoryButton(this.x + 110, this.y + 40, 40, 40);
     }
 
     update(x: number, y: number): void {
@@ -38,6 +41,7 @@ export class SelectedArmyOverviewWindow extends Window {
         this.moveButton.update(x, y);
         this.showPath.update(x, y);
         this.hidePath.update(x, y);
+        this.showInventory.update(x, y);
     }
 
     onClose(): void {
@@ -71,6 +75,7 @@ export class SelectedArmyOverviewWindow extends Window {
         this.moveButton.handleClick();
         this.showPath.handleClick();
         this.hidePath.handleClick();
+        this.showInventory.handleClick();
     }
             
 
@@ -79,12 +84,15 @@ export class SelectedArmyOverviewWindow extends Window {
             this.moveButton.x = this.x + 10;
             this.moveButton.y = this.y + 40;
             this.moveButton.draw(ctx);
-            this.showPath.x = this.x + 50;
+            this.showPath.x = this.x + 60;
             this.showPath.y = this.y + 40;
             this.showPath.draw(ctx);
-            this.hidePath.x = this.x + 50;
+            this.hidePath.x = this.x + 60;
             this.hidePath.y = this.y + 40;
             this.hidePath.draw(ctx);
+            this.showInventory.x = this.x + 110;
+            this.showInventory.y = this.y + 40;
+            this.showInventory.draw(ctx);
         }
 
     }

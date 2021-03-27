@@ -15,6 +15,7 @@ import { Cache } from "../services/cache.service";
 import { ArmyMovementPacket } from "./packets/army-movement.packet";
 import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
 import { EventPacket } from "./packets/event.packet";
+import { ResourcePacket } from "./packets/resource.packet";
 
 export class Game {
     static state: 'loading' | 'view' | 'army_movement_select' | 'path_view';
@@ -27,6 +28,7 @@ export class Game {
     private loadedArmies: boolean = false;
     private loadedGUI: boolean = false;
     private loadedUsers: boolean = false;
+    private loadedResources: boolean = false;
 
     private view: 'map' | 'base';
     private canvas: ElementRef
@@ -165,6 +167,7 @@ export class Game {
         this.ws.getPlayers(Cache.getGameId());
         this.ws.getArmies(Cache.getGameId());
         this.ws.getGameUsers(Cache.getGameId());
+        this.ws.getResourceTypes();
         this.setupUI();
         this.setupMouse()
     }
@@ -178,6 +181,12 @@ export class Game {
         }
         this.loadedPlayers = true;
         this.checkLoaded();
+    }
+
+    setResources(resources: ResourcePacket[]): void {
+        Cache.setResources(resources);
+        this.loadedResources = true;
+        this.checkLoaded()
     }
     
     setUsers(users: UserPacket[]): void {
@@ -199,6 +208,7 @@ export class Game {
     }
 
     async setMap(map: MapPacket) {
+        Cache.setTileTypes(map.tile_types)
         this.map = new GameMap(map);
         await this.map.load();
         this.loadedMap = true;
@@ -210,7 +220,8 @@ export class Game {
             this.mouseSetUp &&
             this.loadedArmies && 
             this.loadedGUI &&
-            this.loadedUsers;
+            this.loadedUsers &&
+            this.loadedResources;
         if (this.loaded) {
             Game.state = 'view';
         }

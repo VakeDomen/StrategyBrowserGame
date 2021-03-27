@@ -1,3 +1,4 @@
+import { ArmyInventoryPacket } from "./army-inventory.packet";
 import { BattalionPacket } from "./battalion.packet";
 
 export interface ArmyPacket {
@@ -7,4 +8,5 @@ export interface ArmyPacket {
     x: number;
     y: number;
     battalions: BattalionPacket[];
+    inventory: ArmyInventoryPacket;
 }

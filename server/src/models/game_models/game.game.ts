@@ -106,7 +106,7 @@ export class Game implements Export {
                     x: column, 
                     y: row, 
                     game_id: this.id,
-                    orientation: 0,
+                    orientation: Math.floor(Math.random() * Math.floor(2)),
                     tile_type: 0,
                     building: '',
                 }));
@@ -129,6 +129,7 @@ export class Game implements Export {
             for (const tile of row) {
                 tile.tile_type = Math.min(Math.abs(Math.round(normal())), 7);
                 if (tile.tile_type == 0) tile.tile_type++;
+                tile.favorable_terrain_level = Math.round(normal());
             }
         }
     }

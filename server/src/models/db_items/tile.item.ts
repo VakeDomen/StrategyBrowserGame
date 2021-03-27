@@ -4,6 +4,7 @@ export class TileItem extends DbItem {
     x: number;
     y: number;
     tile_type: number;
+    favorable_terrain_level: number;
     orientation: number;
     building: string | null;
 
@@ -13,6 +14,7 @@ export class TileItem extends DbItem {
         this.x = data.x;
         this.y = data.y;
         this.tile_type = data.tile_type;
+        this.favorable_terrain_level = data.favorable_terrain_level;
         this.orientation = data.orientation;
         this.building = data.building;
     }

@@ -3,6 +3,8 @@ import { Drawable } from '../core/drawable.abstract';
 import { Tile } from './tile.game';
 import { Cache } from 'src/app/services/cache.service';
 import { EventPacket } from '../packets/event.packet';
+import { ArmyInventoryPacket } from '../packets/army-inventory.packet';
+import { BattalionPacket } from '../packets/battalion.packet';
 export class Army implements Drawable{
     id: string;
     player_id: string;
@@ -10,6 +12,9 @@ export class Army implements Drawable{
     y: number;
     name: string;
     battalions: Battalion[];
+    inventory: ArmyInventoryPacket;
+
+    displayInvnetory: boolean = false;
 
     moveEvent: EventPacket | undefined;
 
@@ -21,12 +26,14 @@ export class Army implements Drawable{
     private moveIcon: HTMLImageElement;
 
     constructor(data: any) {
+        console.log(data);
         this.id = data.id;
         this.player_id = data.player_id;
         this.x = data.x;
         this.y = data.y;
         this.name = data.name;
-        this.battalions = [];
+        this.battalions = data.battalions.map((bat: BattalionPacket) => new Battalion(bat));
+        this.inventory = data.inventory;
 
         this.img = new Image();
         this.moveIcon = new Image();

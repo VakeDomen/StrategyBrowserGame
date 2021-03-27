@@ -6,7 +6,10 @@
     "tile": "tiles",
     "army": "army",
     "battalion": "battalion",
-    "event": "events"
+    "event": "events",
+    "tile_types": "tile_types",
+    "army_inventory": "army_inventory",
+    "resources": "resources"
   },
   "log": false
 }

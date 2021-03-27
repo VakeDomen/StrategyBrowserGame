@@ -15,7 +15,7 @@ export class ShowArmyPathButton extends Button {
     }
 
     handleClick(): boolean {
-        if (this.hovered && this.visible) {
+        if (this.hovered && this.visible && !this.disabled) {
             Game.state = 'path_view';
             return true;
         }

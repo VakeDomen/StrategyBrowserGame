@@ -14,6 +14,7 @@ import { StartGamePacket } from '../models/packets/start-game.packet';
 import { ArmyPacket } from '../models/packets/army.packet';
 import { ArmyMovementPacket } from '../models/packets/army-movement.packet';
 import { EventPacket } from '../models/packets/event.packet';
+import { ResourcePacket } from '../models/packets/resource.packet';
 
 
 @Injectable({
@@ -222,6 +223,7 @@ export class SocketHandlerService {
     this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
     this.ws.listen('QUEUED_EVENT').subscribe((resp: EventPacket) => this.contexts['game'].handleNewEvent(resp));
     this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: ArmyMovementPacket) => this.contexts['game'].updateArmy(resp));
+    this.ws.listen('GET_RESOURCE_TYPES').subscribe((resp: ResourcePacket[]) => this.contexts['game'].setResources(resp));
   }
 
   moveArmy(armyPacket: ArmyMovementPacket): void {
@@ -242,5 +244,9 @@ export class SocketHandlerService {
 
   getGameUsers(id: string): void {
     this.ws.emit('GET_GAME_USERS', id);
+  }
+
+  getResourceTypes(): void {
+    this.ws.emit('GET_RESOURCE_TYPES', null);
   }
 }

@@ -1,6 +1,7 @@
 import { Cache } from "src/app/services/cache.service";
 import { Drawable } from "../core/drawable.abstract";
 import { Game } from "../game";
+import { TileTypePacket } from "../packets/tile-type.packet";
 import { TilePacket } from "../packets/tile.packet";
 
 export class Tile implements Drawable {
@@ -29,24 +30,41 @@ export class Tile implements Drawable {
     x: number;
     y: number;
     tile_type: number;
+    favorable_terrain_level: number;
     orientation: number;
     building: string | null;
     hovered: boolean;
     transparent: boolean;
+    tag: string;
+    speed: number;
+    food: number;
+    wood: number;
+    stone: number;
+    ore: number;
+    defense: number;
 
 
     constructor(tile: TilePacket) {
         this.img = new Image();
-        this.img.src = this.getAssetRoute(tile.tile_type);
+        this.img.src = this.getAssetRoute(tile.tile_type, tile.orientation);
         this.id = tile.id;
         this.game_id = tile.game_id;
         this.x = tile.x;
         this.y = tile.y;
         this.tile_type = tile.tile_type;
+        this.favorable_terrain_level = tile.favorable_terrain_level;
         this.orientation = tile.orientation;
         this.building = tile.building;
         this.hovered = false;
         this.transparent = false;
+        this.tag = (Cache.getTileType(this.tile_type) as TileTypePacket).tag;
+        this.speed = Math.max(-90, (Cache.getTileType(this.tile_type) as TileTypePacket).speed + this.favorable_terrain_level * 5);
+        this.food = Math.max(0, (Cache.getTileType(this.tile_type) as TileTypePacket).food + this.favorable_terrain_level * 5);
+        this.wood = Math.max(0, (Cache.getTileType(this.tile_type) as TileTypePacket).wood + this.favorable_terrain_level * 5);
+        this.stone = Math.max(0, (Cache.getTileType(this.tile_type) as TileTypePacket).stone + this.favorable_terrain_level * 5);
+        this.ore = Math.max(0, (Cache.getTileType(this.tile_type) as TileTypePacket).ore + this.favorable_terrain_level * 5);
+        this.defense = (Cache.getTileType(this.tile_type) as TileTypePacket).defense + this.favorable_terrain_level * 5;
+        Cache.saveTile(this);
     }
     update(x: number, y: number): void {}
 
@@ -125,22 +143,23 @@ export class Tile implements Drawable {
         return offset;
     }
 
-    getAssetRoute(type: number): string {
+    getAssetRoute(type: number, orientation: number): string {
+        const ori = orientation ? 'E' : 'W';
         switch (type) {
             case 1:
-                return '../../../assets/tiles/grass_E.png';
+                return `../../../assets/tiles/grass_${ori}.png`;
             case 2:
-                return '../../../assets/tiles/grass_forest_E.png';
+                return `../../../assets/tiles/grass_forest_${ori}.png`;
             case 3:
-                return '../../../assets/tiles/grass_hill_E.png';
+                return `../../../assets/tiles/grass_hill_${ori}.png`;
             case 4:
-                return '../../../assets/tiles/sand_rocks_E.png';
+                return `../../../assets/tiles/sand_rocks_${ori}.png`;
             case 5:
-                return '../../../assets/tiles/stone_rocks_E.png';
+                return `../../../assets/tiles/stone_rocks_${ori}.png`;
             case 6:
-                return '../../../assets/tiles/stone_hill_E.png';
+                return `../../../assets/tiles/stone_hill_${ori}.png`;
             case 7:
-                return '../../../assets/tiles/stone_mountain_E.png';
+                return `../../../assets/tiles/stone_mountain_${ori}.png`;
         
             default:
                 return '../../../assets/tiles/grass_E.png';

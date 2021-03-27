@@ -11,10 +11,12 @@ import { GamePacket } from '../../models/packets/game.packet';
 export function rooms(socket) {
     
     socket.on('LOBBY_GAMES', async (futureFilter: any) => {
+        console.log(`[ROOMS] Recieved LOBBY_GAMES`);
         socket.emit('LOBBY_GAMES', SocketHandler.getGamesPackets());
     });
 
     socket.on('LOBBY_GAME', (id: string) => {
+        console.log(`[ROOMS] Recieved LOBBY_GAME (${id})`);
         const game = SocketHandler.getGameById(id);
         if (game) {
             socket.emit('LOBBY_GAME', game.exportPacket());
@@ -24,6 +26,7 @@ export function rooms(socket) {
     });
 
     socket.on('STARTED_GAMES', async () => {
+        console.log(`[ROOMS] Recieved STARTED_GAMES`);
         const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionUserMap.get(socket)}));
         let games: GameItem[] = [];
         if (players) {
@@ -35,10 +38,11 @@ export function rooms(socket) {
         await Promise.all(games.map(async (game: any) => {
             game.players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
         }));
-        socket.emit('STARTED_GAMES', games);
+        socket.emit('STARTED_GAMES', games.map((g: GameItem) => new Game(g).exportPacket()));
     });
 
     socket.on('GET_GAME', async (id: string) => {
+        console.log(`[ROOMS] Recieved GET_GAME (${id})`);
         const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({user_id: SocketHandler.connectionUserMap.get(socket)}));
         if (!players) {
             socket.emit('PLAYER_NOT_EXIST', null);
@@ -63,6 +67,7 @@ export function rooms(socket) {
     })
 
     socket.on('LOBBY_HOST_GAME', async (mode: string) => {
+        console.log(`[ROOMS] Recieved LOBBY_HOST_GAME (${mode})`);
         const game = new Game({
             id: uuidv4(),
             host: SocketHandler.connectionUserMap.get(socket),
@@ -75,13 +80,14 @@ export function rooms(socket) {
     });
 
     socket.on('LOBBY_JOIN_GAME', (id: string) => {
+        console.log(`[ROOMS] Recieved LOBBY_JOIN_GAME (${id})`);
         const user = SocketHandler.connectionUserMap.get(socket);
         if (user) {
             const game = SocketHandler.getGameById(id)
             if (game && user !== game.host) {
                 game.players.push(user);
                 socket.join(game.id);
-                SocketHandler.io.to(game.id).emit('LOBBY_JOIN_GAME', game);
+                SocketHandler.io.to(game.id).emit('LOBBY_JOIN_GAME', game.exportPacket());
             }
         }
         if (!user) {
@@ -90,11 +96,12 @@ export function rooms(socket) {
     });
 
     socket.on('LOBBY_LEAVE_GAME', (id: string) => {
+        console.log(`[ROOMS] Recieved LOBBY_LEAVE_GAME (${id})`);
         const player = SocketHandler.connectionUserMap.get(socket);
         const game = SocketHandler.getGameById(id);
         if (player && game) {
             SocketHandler.removePlayerFromGames(player);
-            SocketHandler.io.to(game.id).emit('LOBBY_GAME', game);
+            SocketHandler.io.to(game.id).emit('LOBBY_GAME', game.exportPacket());
             socket.leave(game.id);
         }
         if (!player) {
@@ -106,6 +113,7 @@ export function rooms(socket) {
     });
 
     socket.on('LOBBY_START_GAME', async (startGamePacket: StartGamePacket) => {
+        console.log(`[ROOMS] Recieved LOBBY_START_GAME (${startGamePacket.id})`);
         const player = SocketHandler.connectionUserMap.get(socket);
         const game = SocketHandler.getGameById(startGamePacket.id);
         if (player && game) {
@@ -137,7 +145,7 @@ export function rooms(socket) {
                 }));
                 await game.generateMap();
                 await game.generateStartingArmies();
-                SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game);
+                SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game.exportPacket());
             }
         }
         if (!player) {

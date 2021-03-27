@@ -8,6 +8,8 @@ import { Army } from "../game_models/army.game";
 import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.window";
 import { Cache } from "src/app/services/cache.service";
 import { ArmyListButton } from "./buttons/army-list.button";
+import { ArmyInventoryWindow } from "./windows/army-inventory.window";
+import { Button } from "selenium-webdriver";
 
 export class GUI implements Drawable {
 
@@ -32,18 +34,18 @@ export class GUI implements Drawable {
             cameraFocusButton,
             armyListButton,
         ]
-        const selectedArmyWindow = 
         this.windows = [
             new SelectedArmyOverviewWindow(),
-            new SelectedTileOverviewWindow()
+            new SelectedTileOverviewWindow(),
+            new ArmyInventoryWindow(),
         ];
     }
     
     async load(): Promise<void> {
-        // await Promise.all([
-        //     this.cameraZoomButton.load(),
-        //     this.cameraFocusButton.load(),
-        // ]);
+        await Promise.all([
+            this.buttons.map((button: Drawable) => button.load()),
+            this.windows.map((window: Drawable) => window.load()),
+        ]);
     }
 
     update(x: number, y: number): void {

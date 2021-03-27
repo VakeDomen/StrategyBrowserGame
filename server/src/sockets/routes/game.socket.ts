@@ -1,5 +1,5 @@
 import { GameItem } from '../../models/db_items/game.item';
-import { fetch } from '../../db/database.handler';
+import { fetch, fetchAll } from '../../db/database.handler';
 import * as conf from '../../db/database.config.json';
 import { TileItem } from '../../models/db_items/tile.item';
 import { MapPacket } from '../../models/packets/map.packet';
@@ -16,6 +16,8 @@ import { ArmyMovementPacket } from '../../models/packets/army-movement.packet';
 import { playersOfSocket } from '../../helpers/user.helper';
 import { ArmyMoveEvent } from '../../models/events/army-move.event';
 import { SocketHandler } from '../handler.socket';
+import { ResourceItem } from '../../models/db_items/resource.item';
+import { ResourcePacket } from '../../models/packets/resource.packet';
 
 export function applyGameSockets(socket) {
     
@@ -28,12 +30,17 @@ export function applyGameSockets(socket) {
                 game_id: game.id,
                 radius: game.map_radius,
                 // tiles: tiles
-                tiles: tiles.map((tile: TileItem) => new Tile(tile).exportPacket())
+                tiles: tiles.map((tile: TileItem) => new Tile(tile).exportPacket()),
+                tile_types: await fetchAll(conf.tables.tile_types)
             } as MapPacket);
         } else {
             socket.emit('GAME_NOT_EXIST', null);
         }
     });
+
+    socket.on('GET_RESOURCE_TYPES', async () => {
+        socket.emit('GET_RESOURCE_TYPES', await fetchAll(conf.tables.resources) as ResourcePacket[]);
+    })
 
     socket.on('GET_PLAYERS', async (game_id: string) => {
         const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
@@ -61,7 +68,7 @@ export function applyGameSockets(socket) {
                     armies.push(new Army(army));
                 }
             }
-            await Promise.all(armies.map((army: Army) => army.loadBattalions()));
+            await Promise.all(armies.map(async (army: Army) => await army.load()));
             const packet: ArmyPacket[] = armies.map((army: Army) =>  army.exportPacket());
             socket.emit('GET_ARMIES', packet);
         } else {

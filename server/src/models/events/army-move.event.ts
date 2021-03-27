@@ -8,6 +8,7 @@ import { PlayerItem } from "../db_items/player.item";
 import { ArmyMoveEventPacket } from "../packets/move-army.event.packet";
 import { TileItem } from "../db_items/tile.item";
 import { EventItem } from "../db_items/event.item";
+import { Army } from "../game_models/army.game";
 
 export class ArmyMoveEvent extends Event {
     nextTiles: [number, number][];
@@ -21,8 +22,10 @@ export class ArmyMoveEvent extends Event {
     }
 
     async trigger(): Promise<Event | undefined> {
-        const army = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: this.army_id}))).pop();
-        if (army) {
+        const armyItem = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: this.army_id}))).pop();
+        if (armyItem) {
+            const army = new Army(armyItem);
+            await army.load();
             const initiator: PlayerItem | undefined = (await fetch<PlayerItem>(conf.tables.player, new PlayerItem({id: this.player_id}))).pop();
             if (initiator) {
                 const newCoords = this.nextTiles.shift();
@@ -38,7 +41,8 @@ export class ArmyMoveEvent extends Event {
                     x: army.x,
                     y: army.y,
                 }
-                await update(conf.tables.army, new ArmyItem(army));
+                const updatedArmy = new Army(army);
+                await updatedArmy.saveItem();
                 await deleteItem(conf.tables.event, new EventItem({id: this.id}));
                 SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }
