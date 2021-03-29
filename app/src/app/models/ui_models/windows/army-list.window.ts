@@ -7,8 +7,8 @@ export class ArmyListWindow extends Window {
     private armies: Army[] | undefined;
 
     constructor(armies: Army[] | undefined) {
-        super(-300, 180, 250, 500, `Army list (${armies ? armies.length : 0})`, 4);
-        super.goalX = 10;
+        super(1600, 60, 250, 500, `Army list (${armies ? armies.length : 0})`, 4);
+        super.goalX = 1330;
         this.armies = armies;
     }
 

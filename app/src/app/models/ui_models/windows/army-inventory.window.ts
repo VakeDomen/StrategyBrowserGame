@@ -7,7 +7,7 @@ export class ArmyInventoryWindow extends Window {
     private hoverIndex: number;
 
     constructor() {
-        super(270, 800, 300, 200, `Army invnetory`, 4);
+        super(-300, 530, 300, 200, `Army invnetory`, 4);
         // super.goalY = 740;
         this.resourceIcons = [
             new Image(), new Image(),
@@ -24,7 +24,7 @@ export class ArmyInventoryWindow extends Window {
             new Image(), new Image(),
         ];
         for (const iconIndex in this.resourceIcons) {
-            this.resourceIcons[iconIndex].src = this.getResourceIcon(Number(iconIndex) + 1);
+            this.resourceIcons[iconIndex].src = Cache.getResourceIcon(Number(iconIndex) + 1);
         }
         this.hoverIndex = -1;
         this.hoverX = 0;
@@ -37,10 +37,10 @@ export class ArmyInventoryWindow extends Window {
 
     update(x: number, y: number): void {
         if (Cache.selectedArmy?.displayInvnetory) {
-            this.goalY = 640;
+            this.goalX = 10;
             let totalCarry = 0;
             for (const bat of Cache.selectedArmy.battalions) {
-                totalCarry += 20 * bat.size;
+                totalCarry += bat.carry;
             }
             let weight = 0;
             const resources = Cache.getResources();
@@ -54,7 +54,7 @@ export class ArmyInventoryWindow extends Window {
             this.title = `Army invnetory (${weight}kg/${totalCarry}kg)`
 
         } else {
-            this.goalY = 900;
+            this.goalX = this.originX;
         }
         this.checkHover(x, y);
     }
@@ -120,61 +120,6 @@ export class ArmyInventoryWindow extends Window {
                     break;
                 }
             }
-        }
-    }
-
-    private getResourceIcon(id: number): string {
-        switch (id) {
-            case 1: 
-                return "../../../assets/resources/food.png"
-            case 2:
-                return "../../../assets/resources/wood.png"
-            case 3:
-                return "../../../assets/resources/stone.png"
-            case 4:
-                return "../../../assets/resources/ore.png"
-            case 5:
-                return "../../../assets/resources/cart.png"
-            case 6:
-                return "../../../assets/resources/horse.png"
-            case 7:
-                return "../../../assets/resources/mail-armor.png"
-            case 8:
-                return "../../../assets/resources/scale-armor.png"
-            case 9:
-                return "../../../assets/resources/plate-armor.png"
-            case 10:
-                return "../../../assets/resources/crude-bow.png"
-            case 11:
-                return "../../../assets/resources/recurve-bow.png"
-            case 12:
-                return "../../../assets/resources/longbow.png"
-            case 13:
-                return "../../../assets/resources/shortsword.png"
-            case 14:
-                return "../../../assets/resources/longsword.png"
-            case 15:
-                return "../../../assets/resources/zweihander.png"
-            case 16:
-                return "../../../assets/resources/pike.png"
-            case 17:
-                return "../../../assets/resources/halberd.png"
-            case 18:
-                return "../../../assets/resources/poleaxe.png"
-            case 19:
-                return "../../../assets/resources/buckler.png"
-            case 20:
-                return "../../../assets/resources/kite-shield.png"
-            case 21:
-                return "../../../assets/resources/tower-shield.png"
-            case 22:
-                return "../../../assets/resources/tools_1.png"
-            case 23:
-                return "../../../assets/resources/tools_2.png"
-            case 24:
-                return "../../../assets/resources/tools_3.png"
-            default:
-                return "../../../assets/resources/tools_3.png"
         }
     }
 }

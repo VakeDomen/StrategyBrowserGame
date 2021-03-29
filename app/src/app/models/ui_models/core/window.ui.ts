@@ -12,6 +12,8 @@ export class Window implements Drawable {
     private _visible: boolean;
     private _isClicked: boolean;
     private _hovered: boolean;
+    private _isAnimating: boolean;
+    
     private _hoverX: number | undefined;
     private _hoverY: number | undefined;
 
@@ -49,6 +51,7 @@ export class Window implements Drawable {
         this._visible = true;
         this._isClicked = false;
         this._hovered = false;
+        this._isAnimating = false;
         this._x = x;
         this._y = y;
         this._originX = x;
@@ -126,7 +129,8 @@ export class Window implements Drawable {
             this.background[0].onload,
         ])
     }
-    private getBackground(background: number | undefined): [HTMLImageElement, number, number, number, number] {
+    
+    protected getBackground(background: number | undefined): [HTMLImageElement, number, number, number, number] {
         const bg = new Image();
         switch (background) {
             case 0:
@@ -150,6 +154,7 @@ export class Window implements Drawable {
         }
         return [bg, 0, 0, 30, 30];
     }
+
     private getHeaderStart(color: number): [number, number, number, number] {
         return [
             this.headerStartCoords[0] + this.colorOffset[color][0], 
@@ -184,7 +189,8 @@ export class Window implements Drawable {
     }
 
     protected calculateAnimationStep(): void {
-        if (this.x != this.goalX || this.y != this.goalY) {
+        if (this.isAnimating) {
+            this.preAnimationStep();
             if (this.x != this.goalX  && Math.abs(this.x - this.goalX) > Window.ANIMATION_SPEED) {
                 this.x += this.x < this.goalX ? Window.ANIMATION_SPEED : -Window.ANIMATION_SPEED;
             } else if (this.x != this.goalX ) {
@@ -195,6 +201,7 @@ export class Window implements Drawable {
             } else if (this.y != this.goalY ) {
                 this.y = this.goalY;
             }
+            this.postAnimationStep();
         }
     }
 
@@ -249,15 +256,26 @@ export class Window implements Drawable {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        const isAnimating = this.x != this.goalX || this.y != this.goalY;
+        this.isAnimating = this.x != this.goalX || this.y != this.goalY;
         this.calculateAnimationStep();
-        const animationCompleted = isAnimating && this.x == this.goalX && this.y == this.goalY;
+        const animationCompleted = this.isAnimating && this.x == this.goalX && this.y == this.goalY;
         this.drawBackground(ctx);
         this.drawHeader(ctx);
         this.drawBody(ctx);
+        if (this.isAnimating) {
+            this.postAnimationStep();
+        }
         if (animationCompleted) {
             this.animationCompleted();
         }
+    }
+
+    protected postAnimationStep(): void {
+        return;
+    }
+
+    protected preAnimationStep(): void {
+        return;
     }
 
     protected animationCompleted(): void {
@@ -267,6 +285,11 @@ export class Window implements Drawable {
     protected onClose() {
         this.goalX = this.originX;
         this.goalY = this.originY;
+    }
+
+    public setGoal(x: number, y: number) {
+        this.goalX = x;
+        this.goalY = y;
     }
     
     public get visible(): boolean {
@@ -358,5 +381,11 @@ export class Window implements Drawable {
     }
     public set hoverY(value: number | undefined) {
         this._hoverY = value;
+    }
+    public get isAnimating(): boolean {
+        return this._isAnimating;
+    }
+    public set isAnimating(value: boolean) {
+        this._isAnimating = value;
     }
 }

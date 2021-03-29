@@ -90,7 +90,7 @@ export class Game implements Export {
     }
 
     async generateMap(): Promise<void> {
-        console.log('generating map')
+        console.log('Generating map!')
         const board: Map<number, Tile[]> = new Map();
         let rows;
         for (let column = -this.map_radius + 1 ; column < this.map_radius ; column++) {

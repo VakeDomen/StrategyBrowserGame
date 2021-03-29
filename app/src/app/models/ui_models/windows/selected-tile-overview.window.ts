@@ -11,7 +11,7 @@ export class SelectedTileOverviewWindow extends Window {
     private defense: HTMLImageElement;
 
     constructor() {
-        super(-250, 690, 250, 150, `Tile (${Cache.selectedTile?.x} | ${Cache.selectedTile?.y})`, 2);
+        super(-300, 740, 300, 150, `Tile (${Cache.selectedTile?.x} | ${Cache.selectedTile?.y})`, 2);
         this.goalX = 10;
         this.food = new Image();
         this.wood = new Image();
@@ -23,13 +23,13 @@ export class SelectedTileOverviewWindow extends Window {
         this.wood.src = "../../../assets/resources/wood.png";
         this.stone.src = "../../../assets/resources/stone.png";
         this.ore.src = "../../../assets/resources/ore.png";
-        this.speed.src = "../../../assets/resources/pop.png";
-        this.defense.src = "../../../assets/resources/pop.png";
+        this.speed.src = "../../../assets/army/speed.png";
+        this.defense.src = "../../../assets/army/defense.png";
     }
 
     update(x: number, y: number): void {
         if (Cache.selectedTile) {
-            this.title = `Tile (${Cache.selectedTile?.x} | ${Cache.selectedTile?.y})`;
+            this.title = `${Cache.selectedTile?.tag} (${Cache.selectedTile?.x} | ${Cache.selectedTile?.y})`;
             this.goalX = 10;
         } else {
             this.goalX = this.originX;
@@ -58,14 +58,14 @@ export class SelectedTileOverviewWindow extends Window {
 
     drawBody(ctx: CanvasRenderingContext2D): void {
         const wording = [
-            ["Tile type: ", Cache.selectedTile?.tag], 
             ['Favorable terain level: ', Cache.selectedTile?.favorable_terrain_level],
+            ["", ''], 
             ["    Food: ", Cache.selectedTile?.food], 
             ["    Wood: ", Cache.selectedTile?.wood], 
             ["    Stone: ", Cache.selectedTile?.stone], 
             ["    Ore: ", Cache.selectedTile?.ore],
-            ["    Speed: ", Cache.selectedTile?.speed],
-            ["    Defense: ", Cache.selectedTile?.defense]
+            ["    Speed: ", `${Cache.selectedTile?.speed}%`],
+            ["    Defense bonus: ", `${Cache.selectedTile?.defense}%`]
         ];
         for (let i = 0 ; i < wording.length ; i++) {
             const tilestat = wording[i];
@@ -77,9 +77,9 @@ export class SelectedTileOverviewWindow extends Window {
                 ctx.drawImage(
                     icon,
                     this.x + (Window.HEADER_START_WIDTH / 2) , 
-                    this.y + Window.HEADER_HEIGHT + 15 * (i),
-                    15,
-                    15
+                    this.y + Window.HEADER_HEIGHT + 15 * (i) + 2,
+                    16,
+                    16
                 )
             }
 
@@ -93,7 +93,7 @@ export class SelectedTileOverviewWindow extends Window {
             ctx.textAlign = "end";
             ctx.fillText(
                 `${tilestat[1]}`, 
-                this.x + (Window.HEADER_START_WIDTH / 2) + 225, 
+                this.x + (Window.HEADER_START_WIDTH / 2) + 275, 
                 this.y + Window.HEADER_HEIGHT + 15 * (i + 1),
                 this.width - Window.HEADER_START_WIDTH - Window.HEADER_END_WIDTH
             );

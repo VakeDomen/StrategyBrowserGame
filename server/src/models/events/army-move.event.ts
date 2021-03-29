@@ -1,12 +1,10 @@
-import { deleteItem, fetch, update } from "../../db/database.handler";
+import { deleteItem, fetch } from "../../db/database.handler";
 import { Event } from "./core/event";
 import * as conf from "../../db/database.config.json";
 import { ArmyItem } from "../db_items/army.item";
 import { SocketHandler } from "../../sockets/handler.socket";
-import { UserItem } from "../db_items/user.item";
 import { PlayerItem } from "../db_items/player.item";
 import { ArmyMoveEventPacket } from "../packets/move-army.event.packet";
-import { TileItem } from "../db_items/tile.item";
 import { EventItem } from "../db_items/event.item";
 import { Army } from "../game_models/army.game";
 
@@ -41,8 +39,7 @@ export class ArmyMoveEvent extends Event {
                     x: army.x,
                     y: army.y,
                 }
-                const updatedArmy = new Army(army);
-                await updatedArmy.saveItem();
+                await army.saveItem();
                 await deleteItem(conf.tables.event, new EventItem({id: this.id}));
                 SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }

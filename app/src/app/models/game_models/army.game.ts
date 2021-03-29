@@ -14,7 +14,15 @@ export class Army implements Drawable{
     battalions: Battalion[];
     inventory: ArmyInventoryPacket;
 
+    size: number;
+    attack: number;
+    defense: number;
+    speed: number;
+    carry: number;
+    build: number;
+
     displayInvnetory: boolean = false;
+    displayBattalions: boolean = false;
 
     moveEvent: EventPacket | undefined;
 
@@ -26,7 +34,6 @@ export class Army implements Drawable{
     private moveIcon: HTMLImageElement;
 
     constructor(data: any) {
-        console.log(data);
         this.id = data.id;
         this.player_id = data.player_id;
         this.x = data.x;
@@ -39,6 +46,13 @@ export class Army implements Drawable{
         this.moveIcon = new Image();
         this.img.src = this.getAssetRoute();
         this.moveIcon.src = '../../../assets/ui/move.png';
+
+        this.size = this.calcSizeValue();
+        this.attack = this.calcAttackValue();
+        this.defense = this.calcDefenseValue();
+        this.speed = this.calcSpeedValue();
+        this.carry = this.calcCarryValue();
+        this.build = this.calcBuildValue();
     }
     update(x: number, y: number): void {
         this.checkHover(x, y);
@@ -152,7 +166,11 @@ export class Army implements Drawable{
     }
 
     handleClick(x: number, y: number): boolean {
-        return this.hovered
+        if (this.hovered) {
+            Cache.selectedArmy == this;
+            return true;
+        }
+        return false;
     }
     
     public get hovered(): boolean {
@@ -160,5 +178,29 @@ export class Army implements Drawable{
     }
     public set hovered(value: boolean) {
         this._hovered = value;
+    }
+
+    calcAttackValue(): number {
+        return this.battalions.map((battalion: Battalion) => battalion.attack).reduce((sum: number, item: number) => sum += item, 0);
+    }
+
+    calcDefenseValue(): number {
+        return this.battalions.map((battalion: Battalion) => battalion.defense).reduce((sum: number, item: number) => sum += item, 0);
+    }
+    
+    calcSpeedValue(): number {
+        return Math.min(...this.battalions.map((battalion: Battalion) => battalion.speed));
+    }
+
+    calcCarryValue(): number {
+        return this.battalions.map((battalion: Battalion) => battalion.carry).reduce((sum: number, item: number) => sum += item, 0);
+    }
+
+    calcBuildValue(): number {
+        return this.battalions.map((battalion: Battalion) => battalion.build).reduce((sum: number, item: number) => sum += item, 0);
+    }
+    
+    calcSizeValue(): number {
+        return this.battalions.map((battalion: Battalion) => battalion.size).reduce((sum: number, item: number) => sum += item, 0);
     }
 }

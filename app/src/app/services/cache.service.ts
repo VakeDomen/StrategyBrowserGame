@@ -46,6 +46,10 @@ export class Cache {
     return this.resources;
   }
 
+  public static getResource(id: number) {
+    return this.resources[id - 1];
+  }
+
   public static setTileTypes(types: TileTypePacket[]): void {
     this.tileTypes = types;
   }
@@ -164,6 +168,7 @@ export class Cache {
     const prevArmy = Cache._selectedArmy;
     if (prevArmy) {
       prevArmy.displayInvnetory = false;
+      prevArmy.displayBattalions = false;
     }
     Cache._selectedArmy = value;
   }
@@ -177,4 +182,78 @@ export class Cache {
     }
     Cache._selectedTile = value;
   }
+
+  public static getStatIcon(stat: string): string {
+    switch (stat) {
+      case 'size':
+        return "../../../assets/resources/pop.png";
+      case 'attack':
+        return "../../../assets/army/attack.png";
+      case 'defense':
+        return "../../../assets/army/defense.png";
+      case 'speed':
+        return "../../../assets/army/speed.png";
+      case 'carry':
+        return "../../../assets/army/carry.png";
+      case 'build':
+        return "../../../assets/army/construct.png";
+      default:
+        return "../../../assets/resources/pop.png"
+    }
+  }
+
+  public static getResourceIcon(id: number): string {
+    switch (id) {
+        case 1: 
+            return "../../../assets/resources/food.png"
+        case 2:
+            return "../../../assets/resources/wood.png"
+        case 3:
+            return "../../../assets/resources/stone.png"
+        case 4:
+            return "../../../assets/resources/ore.png"
+        case 5:
+            return "../../../assets/resources/cart.png"
+        case 6:
+            return "../../../assets/resources/horse.png"
+        case 7:
+            return "../../../assets/resources/mail-armor.png"
+        case 8:
+            return "../../../assets/resources/scale-armor.png"
+        case 9:
+            return "../../../assets/resources/plate-armor.png"
+        case 10:
+            return "../../../assets/resources/crude-bow.png"
+        case 11:
+            return "../../../assets/resources/recurve-bow.png"
+        case 12:
+            return "../../../assets/resources/longbow.png"
+        case 13:
+            return "../../../assets/resources/shortsword.png"
+        case 14:
+            return "../../../assets/resources/longsword.png"
+        case 15:
+            return "../../../assets/resources/zweihander.png"
+        case 16:
+            return "../../../assets/resources/pike.png"
+        case 17:
+            return "../../../assets/resources/halberd.png"
+        case 18:
+            return "../../../assets/resources/poleaxe.png"
+        case 19:
+            return "../../../assets/resources/buckler.png"
+        case 20:
+            return "../../../assets/resources/kite-shield.png"
+        case 21:
+            return "../../../assets/resources/tower-shield.png"
+        case 22:
+            return "../../../assets/resources/tools_1.png"
+        case 23:
+            return "../../../assets/resources/tools_2.png"
+        case 24:
+            return "../../../assets/resources/tools_3.png"
+        default:
+            return "../../../assets/resources/pop.png"
+    }
+}
 }

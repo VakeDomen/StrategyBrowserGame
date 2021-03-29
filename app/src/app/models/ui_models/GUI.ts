@@ -10,6 +10,7 @@ import { Cache } from "src/app/services/cache.service";
 import { ArmyListButton } from "./buttons/army-list.button";
 import { ArmyInventoryWindow } from "./windows/army-inventory.window";
 import { Button } from "selenium-webdriver";
+import { ArmyBattalionsWindow } from "./windows/army-battalions.window";
 
 export class GUI implements Drawable {
 
@@ -38,6 +39,7 @@ export class GUI implements Drawable {
             new SelectedArmyOverviewWindow(),
             new SelectedTileOverviewWindow(),
             new ArmyInventoryWindow(),
+            new ArmyBattalionsWindow(),
         ];
     }
     

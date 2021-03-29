@@ -1,10 +1,10 @@
 import { Cache } from "src/app/services/cache.service";
 import { Button } from "../core/button.ui";
 
-export class ShowArmyInventoryButton extends Button {
+export class ShowArmyBattalionsButton extends Button {
 
     constructor(x: number, y: number, width: number, height: number) {
-        super(x, y, width, height, 0,"../../../assets/ui/crate.png");
+        super(x, y, width, height, 0,"../../../assets/ui/banner.png");
     }
 
     update(x: number, y: number): void {
@@ -14,7 +14,7 @@ export class ShowArmyInventoryButton extends Button {
     handleClick(): boolean {
         if (this.hovered && this.visible && !this.disabled) {
             if (Cache.selectedArmy) {
-                Cache.selectedArmy.displayInvnetory = !Cache.selectedArmy.displayInvnetory;
+                Cache.selectedArmy.displayBattalions = !Cache.selectedArmy.displayBattalions;
             }
             return true;
         }

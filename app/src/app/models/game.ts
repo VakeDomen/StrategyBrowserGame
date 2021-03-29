@@ -403,7 +403,6 @@ export class Game {
     }
 
     handleNewEvent(eventPacket: EventPacket): void {
-        console.log(eventPacket)
         switch (eventPacket.event_type) {
             case 'ARMY_MOVE':
                 const army = Cache.getArmy(eventPacket.body.army_id);

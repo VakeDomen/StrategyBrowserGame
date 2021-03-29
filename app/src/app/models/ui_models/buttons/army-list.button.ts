@@ -8,7 +8,7 @@ export class ArmyListButton extends Button {
     private gui: GUI;
 
     constructor(gui: GUI) {
-        super(110, 850, 40, 40, 4, "../../../assets/ui/helmet_icon.png")
+        super(1600 - 60, 10, 40, 40, 4, "../../../assets/ui/helmet_icon.png")
         this.gui = gui;
     }
 

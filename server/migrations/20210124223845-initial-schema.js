@@ -187,6 +187,34 @@ const battalion = {
     size: {
       type: 'int',
     },
+    horse: {
+      type: 'boolean',
+      defaultValue: 0,
+    },
+    cart: {
+      type: 'boolean',
+      defaultValue: 0,
+    },
+    ARMOR: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    WEAPON_2H: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    WEAPON_1H: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    OFF_HAND: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    TOOL: {
+      type: 'int',
+      defaultValue: 0,
+    },
   },
   ifNotExists: true
 }
