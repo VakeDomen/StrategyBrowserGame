@@ -5,6 +5,7 @@ import { PlayerPacket } from '../models/packets/player.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
 import { TileTypePacket } from '../models/packets/tile-type.packet';
 import { UserPacket } from '../models/packets/user.packet';
+import { Camera } from '../models/ui_models/camera';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class Cache {
   private static tileTypes: TileTypePacket[];
   private static tiles: Map<number, Map<number, Tile>>;
   private static resources: ResourcePacket[];
+  private static camera: Camera;
 
   constructor() {
     Cache.users = new Map();
@@ -36,6 +38,14 @@ export class Cache {
     Cache.me = {} as PlayerPacket;
     Cache.tileTypes = [];
     Cache.tiles = new Map();
+  }
+
+  public static setCamera(camera: Camera): void {
+    this.camera = camera;
+  }
+
+  public static getCamera(): Camera {
+    return this.camera;
   }
 
   public static setResources(resources: ResourcePacket[]): void {

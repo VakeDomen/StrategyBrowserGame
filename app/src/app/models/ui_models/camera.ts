@@ -1,11 +1,12 @@
 import { Game } from "../game";
+import { Tile } from "../game_models/tile.game";
 
 export class Camera {
-
     private game: Game;
 
-    x: number;
-    y: number;
+    public x: number;
+    public y: number;
+    public inFrameTiles: number = 0;
 
     private goalX: number;
     private goalY: number;
@@ -64,5 +65,25 @@ export class Camera {
             ((x * this.zoom) + this.x - (800 * this.zoom)), 
             ((y * this.zoom) + this.y - (450 * this.zoom)) 
         ];
+    }
+
+
+    inFrame(tile: Tile): boolean {
+        const topLeft:     [number, number] = [this.x - (800 * this.zoom), this.y - (450 * this.zoom)];
+        const bottomRight: [number, number] = [this.x + (800 * this.zoom), this.y + (450 * this.zoom)];
+        const tileX = tile.calcImageXOffset();
+        const tileY = tile.calcImageYOffset();
+        for (let coord of Tile.hexBorders) {
+            if (
+                topLeft[0] < tileX + coord[0] &&
+                bottomRight[0] > tileX + coord[0] &&
+                topLeft[1] < tileY + coord[1] &&
+                bottomRight[1] > tileY + coord[1]
+            ) {
+                this.inFrameTiles++;
+                return true;
+            }
+        }
+        return false;
     }
 }

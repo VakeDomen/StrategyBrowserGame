@@ -79,6 +79,7 @@ export class Game {
         Game.state = 'loading';
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450, this);
+        Cache.setCamera(this.camera);
     }
 
     private async updateLoop(): Promise<void> {
@@ -156,6 +157,7 @@ export class Game {
 
         // FPS delay
         const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
+        this.camera.inFrameTiles = 0;
         await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
         window.requestAnimationFrame(() => this.draw(canvasContext, guiContext));
     }

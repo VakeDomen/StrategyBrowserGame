@@ -9,7 +9,7 @@ export class Tile implements Drawable {
     //     1   2
     // 0           3
     //     5   4
-    private static hexBorders: [number, number][]= [
+    public static hexBorders: [number, number][]= [
         [150, 342],
         [203, 297],
         [308, 297],
@@ -24,6 +24,7 @@ export class Tile implements Drawable {
     public static hexYoffset: number = Tile.hexBorders[1][1] - Tile.hexBorders[0][1];
 
     private img: HTMLImageElement;
+    private visible: boolean = false;
     
     id: string;
     game_id: string;
@@ -66,7 +67,9 @@ export class Tile implements Drawable {
         this.defense = (Cache.getTileType(this.tile_type) as TileTypePacket).defense + this.favorable_terrain_level * 5;
         Cache.saveTile(this);
     }
-    update(x: number, y: number): void {}
+    update(x: number, y: number): void {
+        this.visible = Cache.getCamera().inFrame(this);
+    }
 
 
     handleClick(x: number, y: number): boolean {
@@ -81,36 +84,38 @@ export class Tile implements Drawable {
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
-        this.transparent = this.shouldBeTransparent();
-        if (this.transparent) {
-            ctx.globalAlpha = 0.5;
-        } 
-        ctx.drawImage(this.img, ...offsets);
-        ctx.globalAlpha = 1;
-        
-        if ((this.hovered || Cache.selectedTile == this)) {
-            ctx.fillText(
-                `${this.x} | ${this.y}`, 
-                offsets[0] + Tile.hexBorders[5][0], 
-                offsets[1] + Tile.hexBorders[5][1] - 5
-            );
-            const path = new Path2D();
-            path.moveTo(
-                this.calcImageXOffset() + Tile.hexBorders[0][0] + 2, 
-                this.calcImageYOffset() + Tile.hexBorders[0][1]
-            );
-            for (let i = 1 ; i < Tile.hexBorders.length ; i++) {
-                path.lineTo(
-                    this.calcImageXOffset() + Tile.hexBorders[i][0] + 1, 
-                    this.calcImageYOffset() + Tile.hexBorders[i][1] - 1
+        if (this.visible) {
+            const offsets: [number, number] = [this.calcImageXOffset(), this.calcImageYOffset()];
+            this.transparent = this.shouldBeTransparent();
+            if (this.transparent) {
+                ctx.globalAlpha = 0.5;
+            } 
+            ctx.drawImage(this.img, ...offsets);
+            ctx.globalAlpha = 1;
+            
+            if ((this.hovered || Cache.selectedTile == this)) {
+                ctx.fillText(
+                    `${this.x} | ${this.y}`, 
+                    offsets[0] + Tile.hexBorders[5][0], 
+                    offsets[1] + Tile.hexBorders[5][1] - 5
                 );
+                const path = new Path2D();
+                path.moveTo(
+                    this.calcImageXOffset() + Tile.hexBorders[0][0] + 2, 
+                    this.calcImageYOffset() + Tile.hexBorders[0][1]
+                );
+                for (let i = 1 ; i < Tile.hexBorders.length ; i++) {
+                    path.lineTo(
+                        this.calcImageXOffset() + Tile.hexBorders[i][0] + 1, 
+                        this.calcImageYOffset() + Tile.hexBorders[i][1] - 1
+                    );
+                }
+                path.closePath();
+                ctx.stroke(path);
             }
-            path.closePath();
-            ctx.stroke(path);
         }
+            
     }
-
     private shouldBeTransparent(): boolean {
         return (
             !!(
