@@ -154,14 +154,14 @@ export class Game {
         canvasContext.scale(zoom, zoom);
         this.drawUI(guiContext);
         guiContext.scale(1, 1)
+        this.camera.inFrameTiles = 0;
 
         // FPS delay
         const deltaTime = (new Date().getTime() - this._lastUpdateTimestamp) / 1000;
-        this.camera.inFrameTiles = 0;
         await this.delay(Math.max(deltaTime, this._drawLoopTime - deltaTime));
         window.requestAnimationFrame(() => this.draw(canvasContext, guiContext));
     }
-    
+
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);

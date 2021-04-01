@@ -75,8 +75,8 @@ export class Army implements Export, Save {
     private async loadBattalions(): Promise<void> {
         if (this.id) {
             const battalions = await fetch<BattalionItem>(conf.tables.battalion, new BattalionItem({army_id: this.id}));
-            console.log(battalions);
             this.battalions = battalions.map((battalion: BattalionItem) => new Battalion(battalion));
+            await Promise.all(this.battalions.map(async (bat: Battalion) => await bat.load()));
         }
     }
 

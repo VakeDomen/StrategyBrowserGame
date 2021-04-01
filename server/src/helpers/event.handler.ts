@@ -27,20 +27,26 @@ export class EventHandler {
         await this.prefillEvents();
         console.log(`[Game: ${this.game.id}] Starting event handler!`);
         while(!this.stopLoop) {
+            let chainEvents: Event[] | undefined = undefined;
             const start = new Date().getTime();
             if (this.heap.size() > 0) {
                 const minValue = this.heap.minValue();
                 if (minValue && minValue < start) {
                     const event = this.heap.pop();
                     console.log(`[Game: ${this.game.id}] Triggering event ${event.event_type} [${event.id}]`)
-                    const chainEvent = await event.trigger();
-                    if (chainEvent) {
-                        this.heap.push(chainEvent);
+                    chainEvents = await event.trigger();
+                    if (chainEvents) {
+                        for (const event of chainEvents) {
+                            console.log('')
+                            this.heap.push(event);
+                        }
                     }
                 }
             }
-            const deltaTime = (new Date().getTime() - start) / 1000;
-            await this.delay(Math.max(deltaTime, EventHandler.TICK - deltaTime));
+            if (!chainEvents) {
+                const deltaTime = (new Date().getTime() - start) / 1000;
+                await this.delay(Math.max(deltaTime, EventHandler.TICK - deltaTime));
+            }
         }
     }
 

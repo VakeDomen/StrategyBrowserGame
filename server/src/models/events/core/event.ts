@@ -54,9 +54,9 @@ export class Event implements Export, Save {
         } as EventPacket;
     }
 
-    async trigger(): Promise<Event | undefined> {
+    async trigger(): Promise<Event[] | undefined> {
         console.log('Empty event triggered!');
-        return this;
+        return [this];
     }
 
 }

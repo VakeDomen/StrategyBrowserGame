@@ -7,6 +7,7 @@ import { PlayerItem } from "../db_items/player.item";
 import { ArmyMoveEventPacket } from "../packets/move-army.event.packet";
 import { EventItem } from "../db_items/event.item";
 import { Army } from "../game_models/army.game";
+import { ArmyBattleEvent } from "./army-battle.event";
 
 export class ArmyMoveEvent extends Event {
     nextTiles: [number, number][];
@@ -19,8 +20,9 @@ export class ArmyMoveEvent extends Event {
         this.nextTiles = data.nextTiles;
     }
 
-    async trigger(): Promise<Event | undefined> {
+    async trigger(): Promise<Event[] | undefined> {
         const armyItem = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: this.army_id}))).pop();
+        const chainEvents: Event[] = [];
         if (armyItem) {
             const army = new Army(armyItem);
             await army.load();
@@ -30,6 +32,18 @@ export class ArmyMoveEvent extends Event {
                 if (newCoords) {
                     army.x = newCoords[0];
                     army.y = newCoords[1];
+                    const armiesOnTargetField = await fetch<ArmyItem>(conf.tables.army, new ArmyItem({x: newCoords[0], y: newCoords[1]}));
+                    if (armiesOnTargetField.length) {
+                        for (const occupArmy of armiesOnTargetField) {
+                            if (army.id != occupArmy.id) {
+                                chainEvents.push(new ArmyBattleEvent({
+                                    trigger_time: new Date().getTime(),
+                                    initiator: army.id,
+                                    defender: occupArmy.id
+                                }));
+                            }
+                        }
+                    }
                 }
                 const packet: ArmyMoveEventPacket = {
                     id: this.id,
@@ -44,10 +58,20 @@ export class ArmyMoveEvent extends Event {
                 SocketHandler.broadcastToGame(this.game_id, 'ARMY_MOVE_EVENT', packet);
             }
         }
-        return await this.chainEvent();
+        const chainEvents2 = await this.chainEvent();
+        if (chainEvents.length && chainEvents2) {
+            return [...chainEvents, ...chainEvents2];
+        }
+        if (chainEvents.length) {
+            return chainEvents;
+        } 
+        if (chainEvents2) {
+            return chainEvents2;
+        }
+        return undefined;
     }
 
-    private async chainEvent(): Promise<ArmyMoveEvent | undefined> {
+    private async chainEvent(): Promise<ArmyMoveEvent[] | undefined> {
         if (this.nextTiles.length) {
             const eventTrigger = new Date();
             eventTrigger.setSeconds(eventTrigger.getSeconds() + 5);
@@ -61,7 +85,7 @@ export class ArmyMoveEvent extends Event {
             });
             await event.saveItem();
             SocketHandler.broadcastToGame(this.game_id, 'QUEUED_EVENT', event.exportPacket());
-            return event;
+            return [event];
         }
         return undefined;
     }
