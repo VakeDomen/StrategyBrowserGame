@@ -24,6 +24,9 @@ export class Tile implements Drawable {
     public static hexYoffset: number = Tile.hexBorders[1][1] - Tile.hexBorders[0][1];
 
     private img: HTMLImageElement;
+    private banner: HTMLImageElement;
+    private bannerHover: HTMLImageElement;
+    private colorBanner: HTMLImageElement;
     private visible: boolean = false;
     
     id: string;
@@ -57,6 +60,18 @@ export class Tile implements Drawable {
         this.hovered = false;
         this.transparent = false;
         this.img = new Image();
+        this.banner = new Image();
+        this.bannerHover = new Image();
+        this.colorBanner = new Image();
+        if (this.base) {
+            const base = Cache.getBase(this.base);
+            if (base) {
+                const myColor = Cache.getPlayerById(base?.player_id as string)?.color ?? 1;
+                this.banner.src = `../../../assets/ui/black_banner1.png`;
+                this.bannerHover.src = `../../../assets/ui/black_banner1_glow.png`;
+                this.colorBanner.src = `../../../assets/ui/banner${myColor}.png`;
+            }
+        }
         this.img.src = this.getAssetRoute(tile.tile_type, tile.orientation);
         this.tag = (Cache.getTileType(this.tile_type) as TileTypePacket).tag;
         this.speed = Math.max(-90, (Cache.getTileType(this.tile_type) as TileTypePacket).speed + this.favorable_terrain_level * 5);
@@ -80,7 +95,13 @@ export class Tile implements Drawable {
     
 
     async load(): Promise<void> {
-        await this.img.onload;
+        await Promise.all([
+            this.img.onload,
+            this.banner.onload,
+            this.bannerHover.onload,
+            this.colorBanner.onload,
+        ]);
+
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
@@ -112,6 +133,44 @@ export class Tile implements Drawable {
                 }
                 path.closePath();
                 ctx.stroke(path);
+            }
+            if (this.base) {
+                const base = Cache.getBase(this.base);
+                if (base) {
+                    ctx.drawImage(
+                        this.hovered ? this.bannerHover : this.banner,
+                        this.calcImageXOffset() + 156,
+                        this.calcImageYOffset() + 260,
+                        200,
+                        30
+                    );  
+                    ctx.fillRect(
+                        this.calcImageXOffset() + 160,
+                        this.calcImageYOffset() + 288,
+                        30,
+                        30
+                    );
+                    ctx.drawImage(
+                        this.colorBanner,
+                        this.calcImageXOffset() + 160,
+                        this.calcImageYOffset() + 288,
+                        30,
+                        30
+                    );
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = 'white';
+                    const font = ctx.font;
+                    ctx.font = "bold 17px Arial"
+                    ctx.fillText(
+                        `${base.name}`, 
+                        this.calcImageXOffset() + 256,
+                        this.calcImageYOffset() + 276,
+                        120
+                    );
+                    ctx.font = font;
+                    ctx.textAlign = 'start';
+                    ctx.fillStyle = 'black';
+                }
             }
         }
             
@@ -151,7 +210,6 @@ export class Tile implements Drawable {
     getAssetRoute(type: number, orientation: number): string {
         const ori = orientation ? 'E' : 'W';
         if (this.base) {
-            console.log(1)
             return `../../../assets/tiles/building_village_${ori}.png`;
         }
         switch (type) {

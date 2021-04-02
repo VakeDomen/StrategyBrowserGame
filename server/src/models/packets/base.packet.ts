@@ -4,4 +4,5 @@ export interface BasePacket {
 	x: number;
     y: number;
     base_type: number;
+    name: string;
 }

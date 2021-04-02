@@ -86,7 +86,7 @@ export function rooms(socket) {
         if (user) {
             const game = SocketHandler.getGameById(id)
             if (game && user !== game.host) {
-                game.players.push(user);
+                game.users.push(user);
                 socket.join(game.id);
                 SocketHandler.io.to(game.id).emit('LOBBY_JOIN_GAME', game.exportPacket());
             }
@@ -129,7 +129,7 @@ export function rooms(socket) {
                 }
                     
                 const gameMeta = game.exportItem();
-                const players: PlayerItem[] = game.players.map((id: string) => {
+                const players: PlayerItem[] = game.users.map((id: string) => {
                     const player = new PlayerItem({
                         user_id: id,
                         game_id: gameMeta.id,

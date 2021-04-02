@@ -15,13 +15,14 @@ import { ArmyPacket } from '../models/packets/army.packet';
 import { ArmyMovementPacket } from '../models/packets/army-movement.packet';
 import { EventPacket } from '../models/packets/event.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
+import { BasePacket } from '../models/packets/base.packet';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocketHandlerService {
-
+  
   private contexts: any = {};
 
   constructor(
@@ -221,6 +222,7 @@ export class SocketHandlerService {
     this.ws.listen('GET_PLAYERS').subscribe((resp: PlayersPacket[]) => this.contexts['game'].setPlayers(resp));
     this.ws.listen('GET_ARMIES').subscribe((resp: ArmyPacket[]) => this.contexts['game'].setArmies(resp));
     this.ws.listen('GET_ARMY').subscribe((resp: ArmyPacket) => this.contexts['game'].setArmy(resp));
+    this.ws.listen('GET_BASES').subscribe((resp: BasePacket[]) => this.contexts['game'].setBases(resp));
     this.ws.listen('ARMY_DEFEATED').subscribe((id: string) => this.contexts['game'].removeArmy(id));
     this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
     this.ws.listen('QUEUED_EVENT').subscribe((resp: EventPacket) => this.contexts['game'].handleNewEvent(resp));
@@ -251,4 +253,9 @@ export class SocketHandlerService {
   getResourceTypes(): void {
     this.ws.emit('GET_RESOURCE_TYPES', null);
   }
+
+  getBases(id: string) {
+    this.ws.emit('GET_BASES', id);
+}
+
 }

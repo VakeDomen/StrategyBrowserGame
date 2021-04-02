@@ -17,6 +17,9 @@ import { playersOfSocket } from '../../helpers/user.helper';
 import { ArmyMoveEvent } from '../../models/events/army-move.event';
 import { SocketHandler } from '../handler.socket';
 import { ResourcePacket } from '../../models/packets/resource.packet';
+import { Base } from '../../models/game_models/base.game';
+import { BaseItem } from '../../models/db_items/base.item';
+import { BasePacket } from '../../models/packets/base.packet';
 
 export function applyGameSockets(socket) {
     
@@ -70,6 +73,28 @@ export function applyGameSockets(socket) {
             await Promise.all(armies.map(async (army: Army) => await army.load()));
             const packet: ArmyPacket[] = armies.map((army: Army) =>  army.exportPacket());
             socket.emit('GET_ARMIES', packet);
+        } else {
+            socket.emit('GAME_NOT_EXIST', null);
+        }
+    });
+
+    socket.on('GET_BASES', async (game_id: string) => {
+        const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
+        const game = games.pop();
+        if (game) {
+            const players: PlayerItem[] = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game_id}));
+            const playerBases: BaseItem[][] = await Promise.all(players.map(async (player: PlayerItem) => {
+                return await fetch<BaseItem>(conf.tables.bases, new BaseItem({player_id: player.id}));
+            }));
+            const bases: Base[] = [];
+            for (const playerBase of playerBases) {
+                for (const base of playerBase) {
+                    bases.push(new Base(base));
+                }
+            }
+            console.log(playerBases)
+            const packet: BasePacket[] = bases.map((base: Base) =>  base.exportPacket());
+            socket.emit('GET_BASES', packet);
         } else {
             socket.emit('GAME_NOT_EXIST', null);
         }

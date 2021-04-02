@@ -16,6 +16,8 @@ import { ArmyMovementPacket } from "./packets/army-movement.packet";
 import { ArmyMoveEventPacket } from "./packets/move-army.event.packet";
 import { EventPacket } from "./packets/event.packet";
 import { ResourcePacket } from "./packets/resource.packet";
+import { BasePacket } from "./packets/base.packet";
+import { Base } from "./game_models/base.game";
 
 export class Game {
     static state: 'loading' | 'view' | 'army_movement_select' | 'path_view';
@@ -29,6 +31,7 @@ export class Game {
     private loadedGUI: boolean = false;
     private loadedUsers: boolean = false;
     private loadedResources: boolean = false;
+    private loadedBases: boolean = false;
 
     private view: 'map' | 'base';
     private canvas: ElementRef
@@ -165,13 +168,22 @@ export class Game {
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);
-        this.ws.getMap(Cache.getGameId());
         this.ws.getPlayers(Cache.getGameId());
         this.ws.getArmies(Cache.getGameId());
         this.ws.getGameUsers(Cache.getGameId());
         this.ws.getResourceTypes();
+        this.ws.getBases(Cache.getGameId());
         this.setupUI();
         this.setupMouse()
+    }
+
+    setBases(bases: BasePacket[]): void {
+        for (const basePacket of bases) {
+            Cache.saveBase(new Base(basePacket));
+        }
+        this.loadedBases = true;
+        this.checkLoaded();
+        this.ws.getMap(Cache.getGameId());
     }
 
     setPlayers(players: PlayerPacket[]): void {
@@ -233,7 +245,8 @@ export class Game {
             this.loadedArmies && 
             this.loadedGUI &&
             this.loadedUsers &&
-            this.loadedResources;
+            this.loadedResources &&
+            this.loadedBases;
         if (this.loaded) {
             Game.state = 'view';
         }

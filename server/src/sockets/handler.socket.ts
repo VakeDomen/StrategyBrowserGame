@@ -63,8 +63,8 @@ export class SocketHandler {
 
     static removePlayerFromGames(player: string): void {
         for (const game of this.games) {
-            if (game.players.includes(player)) {
-                game.players.splice(game.players.indexOf(player), 1);
+            if (game.users.includes(player)) {
+                game.users.splice(game.users.indexOf(player), 1);
                 SocketHandler.broadcast('LOBBY_GAMES', SocketHandler.getGamesPackets());
             }
         }
@@ -79,7 +79,7 @@ export class SocketHandler {
     }
 
     static closeGame(game: Game): void {
-        for (const player of game.players) {
+        for (const player of game.users) {
             const socket = this.usersConnectionMap.get(player)
             if (socket) {
                 socket.emit('GAME_CLOSED', game.id);
@@ -117,7 +117,7 @@ export class SocketHandler {
             const game = new Game(gameMeta);
             const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
             const bases = await Promise.all(players.map(async (pl: PlayerItem) => await fetch<BaseItem>(conf.tables.bases, new BaseItem({player_id: pl.id})))); 
-            game.players = players.map((player: PlayerItem) => player.id as string);
+            game.users = players.map((player: PlayerItem) => player.id as string);
             game.bases = [];
             for (const plbases of bases) {
                 game.bases.concat(plbases.map((b: BaseItem) => new Base(b)));

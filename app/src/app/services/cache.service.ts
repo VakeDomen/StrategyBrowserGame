@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Army } from '../models/game_models/army.game';
+import { Base } from '../models/game_models/base.game';
 import { Tile } from '../models/game_models/tile.game';
 import { PlayerPacket } from '../models/packets/player.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
@@ -11,10 +12,11 @@ import { Camera } from '../models/ui_models/camera';
   providedIn: 'root'
 })
 export class Cache {
-
+  
   static path: Tile[] | undefined;
   private static _selectedArmy: Army | undefined;
   private static _selectedTile: Tile | undefined;
+  private static _selectedBase: Base | undefined;
   
   private static gameId: string;
   private static myUserId: string;  
@@ -26,6 +28,7 @@ export class Cache {
   private static tileTypes: TileTypePacket[];
   private static tiles: Map<number, Map<number, Tile>>;
   private static resources: ResourcePacket[];
+  private static bases: Map<string, Base[]>; // playerId
   private static camera: Camera;
 
   constructor() {
@@ -38,6 +41,47 @@ export class Cache {
     Cache.me = {} as PlayerPacket;
     Cache.tileTypes = [];
     Cache.tiles = new Map();
+    Cache.bases = new Map();
+  }
+
+  static getPlayerBases(id: string): Base[] | undefined {
+    return this.bases.get(id);
+  }
+
+  static getMyBase(id: string): Base | undefined {
+    const me = Cache.me?.id as string;
+    const myBases = this.bases.get(me);
+    if (myBases) {
+      return myBases[id as any];
+    }
+    return undefined;
+  }
+
+  static getBase(id: string): Base | undefined {
+    for (const bases of this.bases.values()) {
+      for (const base of bases) {
+        if (base.id == id) return base;
+      }
+    }
+    return undefined;
+  }
+ 
+  public static saveBase(base: Base) {
+    if (!Cache.bases.get(base.player_id)) {
+      Cache.bases.set(base.player_id, [base]);
+    } else {
+      let found = false;
+      for (let i = 0 ; i < (Cache.bases.get(base.player_id) as Base[]).length ; i++) {
+        if ((Cache.bases.get(base.player_id) as Base[])[i].id == base.id) {
+          (Cache.bases.get(base.player_id) as Base[])[i] = base
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+       Cache.bases.get(base.player_id)?.push(base);
+      }
+    }
   }
 
   public static setCamera(camera: Camera): void {
@@ -199,7 +243,8 @@ export class Cache {
 
   public static set selectedArmy(value: Army | undefined) {
     if (value != undefined) {
-      this.selectedTile = undefined
+      this.selectedTile = undefined;
+      this.selectedBase = undefined;
     }
     const prevArmy = Cache._selectedArmy;
     if (prevArmy) {
@@ -209,12 +254,30 @@ export class Cache {
     Cache._selectedArmy = value;
   }
 
+  public static get selectedBase(): Base | undefined {
+    return Cache._selectedBase;
+  }
+
+  public static set selectedBase(value: Base | undefined) {
+    if (value != undefined) {
+      this.selectedTile = undefined;
+      this.selectedArmy = undefined;
+    }
+    const prevBase = Cache._selectedBase;
+    if (prevBase) {
+      // prevBase.displayInvnetory = false;
+      // prevBase.displayBattalions = false;
+    }
+    Cache._selectedBase = value;
+  }
+
   public static get selectedTile(): Tile | undefined {
     return Cache._selectedTile;
   }
   public static set selectedTile(value: Tile | undefined) {
     if (value != undefined) {
-      this.selectedArmy = undefined
+      this.selectedArmy = undefined;
+      this.selectedBase = undefined;
     }
     Cache._selectedTile = value;
   }

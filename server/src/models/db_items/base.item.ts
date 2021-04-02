@@ -5,6 +5,7 @@ export class BaseItem extends DbItem {
 	x: number;
     y: number;
     base_type: number;
+	name: string;
 
 	constructor(data: any) {
 		super(data);
@@ -12,5 +13,6 @@ export class BaseItem extends DbItem {
 		this.x = data.x;
         this.y = data.y;
         this.base_type = data.base_type;
+		this.name = data.name;
 	}
 }

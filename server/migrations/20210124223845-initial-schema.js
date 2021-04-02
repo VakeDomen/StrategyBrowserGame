@@ -521,6 +521,9 @@ const bases = {
     base_type: {
       type: 'string',
     },
+    name: {
+      type: 'string',
+    },
   },
   ifNotExists: true
 }

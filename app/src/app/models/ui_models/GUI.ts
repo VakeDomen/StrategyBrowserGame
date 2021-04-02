@@ -9,8 +9,9 @@ import { SelectedArmyOverviewWindow } from "./windows/selected-army-overview.win
 import { Cache } from "src/app/services/cache.service";
 import { ArmyListButton } from "./buttons/army-list.button";
 import { ArmyInventoryWindow } from "./windows/army-inventory.window";
-import { Button } from "selenium-webdriver";
 import { ArmyBattalionsWindow } from "./windows/army-battalions.window";
+import { BaseListButton } from "./buttons/base-list.button";
+import { PlayerNameBanner } from "./components/player-name-banner.component";
 
 export class GUI implements Drawable {
 
@@ -18,91 +19,62 @@ export class GUI implements Drawable {
 
     isHovered: boolean = false;
 
-    // buttons
-    private buttons: Array<Drawable>;
-    
-    // windows
-    private windows: Array<Drawable>;
+    private elements: Array<Drawable>;
     
     constructor(game: Game) {
         this.game = game;
-        const cameraZoomButton = new CameraZoomButton(game);
-        const cameraFocusButton = new CameraFocusButton(game);
-        cameraFocusButton.disabled = !(Cache.selectedTile || Cache.selectedArmy);
-        const armyListButton = new ArmyListButton(this);
-        this.buttons = [
-            cameraZoomButton,
-            cameraFocusButton,
-            armyListButton,
-        ]
-        this.windows = [
+        this.elements = [
+            new CameraZoomButton(game),
+            new CameraFocusButton(game),
+            new ArmyListButton(this),
+            new BaseListButton(this),
             new SelectedArmyOverviewWindow(),
             new SelectedTileOverviewWindow(),
             new ArmyInventoryWindow(),
             new ArmyBattalionsWindow(),
+            new PlayerNameBanner(),
         ];
     }
     
     async load(): Promise<void> {
         await Promise.all([
-            this.buttons.map((button: Drawable) => button.load()),
-            this.windows.map((window: Drawable) => window.load()),
+            this.elements.map((el: Drawable) => el.load()),
         ]);
     }
 
     update(x: number, y: number): void {
-        for (const window of this.windows) {
-            if (window) {
-                window.update(x, y);
+        for (const el of this.elements) {
+            if (el) {
+                el.update(x, y);
             } 
-        }
-        for (const button of this.buttons) {
-            if (button) {
-                button.update(x, y);
-            }
-        }    
+        }  
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
-        for (const window of this.windows) {
-            if (window) {
-                window.draw(ctx);
+        for (const el of this.elements) {
+            if (el) {
+                el.draw(ctx);
             } 
         }
-        for (const button of this.buttons) {
-            if (button) {
-                button.draw(ctx);
-            }
-        }
     }
-
-
 
     handleClick(x: number, y: number, mousePressed?: boolean): boolean {
-        const buttons = this.buttons.map((button: Drawable) => {
-            return button.handleClick(x, y);
+        const elts = this.elements.map((el: Drawable) => {
+            return el.handleClick(x, y);
         });
-        const windows = this.windows.map((window: Drawable) => {
-            return window.handleClick(x, y);
-        });
-        return buttons.includes(true) || windows.includes(true);
+        return elts.includes(true);
     }
 
-    removeWindow(toRemove: Drawable): void {
-        for (let window of this.windows) {
-            if (toRemove === window) {
-                delete this.windows[this.windows.indexOf(toRemove)];
-            }
-        }
-        for (let button of this.buttons) {
-            if (toRemove === button) {
-                delete this.buttons[this.buttons.indexOf(toRemove)];
+    removeElement(toRemove: Drawable): void {
+        for (let el of this.elements) {
+            if (toRemove === el) {
+                delete this.elements[this.elements.indexOf(toRemove)];
             }
         }
     }
 
-    addWindow(window: Drawable): void {
-        this.windows.push(window);
+    addElement(window: Drawable): void {
+        this.elements.push(window);
     }
 
     

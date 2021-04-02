@@ -1,20 +1,20 @@
 import { Cache } from "src/app/services/cache.service";
 import { Button } from "../core/button.ui";
 import { GUI } from "../GUI";
-import { ArmyListWindow } from "../windows/army-list.window";
+import { BaseListWindow } from "../windows/base-list.window";
 
-export class ArmyListButton extends Button {
+export class BaseListButton extends Button {
 
     private gui: GUI;
 
     constructor(gui: GUI) {
-        super(1600 - 60, 10, 40, 40, 4, "../../../assets/ui/helmet_icon.png")
+        super(1600 - 110, 10, 40, 40, 3, "../../../assets/ui/base.png")
         this.gui = gui;
     }
 
     handleClick(): boolean {
         if (this.hovered) {
-            this.gui.addElement(new ArmyListWindow(Cache.getPlayerArmies(Cache.getMe().id)));
+            this.gui.addElement(new BaseListWindow(Cache.getPlayerBases(Cache.getMe().id)));
         }
         return this.hovered;
     }

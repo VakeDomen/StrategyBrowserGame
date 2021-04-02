@@ -20,7 +20,7 @@ export class Game implements Export {
     id: string;
     name: string;
     host: string;
-    players: string[];
+    users: string[];
     running: boolean;
     seed: string;
 
@@ -35,7 +35,7 @@ export class Game implements Export {
         this.id = data.id;
         this.host = data.host;
         this.name = data.name;
-        this.players = data.players;
+        this.users = data.players;
         this.running = data.running;
         this.seed = data.seed;
         this.map_radius = data.map_radius ? data.map_radius : 3;
@@ -51,7 +51,7 @@ export class Game implements Export {
         return {
             id: this.id,
             host: this.host,
-            players: this.players,
+            players: this.users,
             running: this.running
         } as GamePacket;
     }
@@ -80,26 +80,32 @@ export class Game implements Export {
         if (!this.bases) {
             this.bases = [];
         }
-        for (const player of this.players) {
-            const x = random.int(-this.map_radius + 1, this.map_radius -1);
-            const y = random.int(this.map_radius, (this.map_radius - 1) - x);
-            const base = new Base({
-                player_id: player,
-                x: x,
-                y: y,
-                base_type: 1
-            });
-            await base.saveItem();
-            const tile = (this.board.get(x) as Tile[])[y];
-            tile.base = base.id;
-            await tile.saveItem();
-            this.bases.push(base);
+        for (const user_id of this.users) {
+            const user = (await fetch<UserItem>(conf.tables.user, new UserItem({id: user_id}))).pop();
+            const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: this.id, user_id: user_id}));
+            const player = players.pop();
+            if (player) {
+                const x = random.int(-this.map_radius + 1, this.map_radius -1);
+                const y = random.int(this.map_radius, (this.map_radius - 1) - x);
+                const base = new Base({
+                    player_id: player,
+                    x: x,
+                    y: y,
+                    base_type: 1,
+                    name: escape(`${user?.username}'s army`),
+                });
+                await base.saveItem();
+                const tile = (this.board.get(x) as Tile[])[y];
+                tile.base = base.id;
+                await tile.saveItem();
+                this.bases.push(base);
+            }
 
         }
     }
 
     async generateStartingArmies(): Promise<void> {
-        for (const user_id of this.players) {
+        for (const user_id of this.users) {
             const user = (await fetch<UserItem>(conf.tables.user, new UserItem({id: user_id}))).pop();
             const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: this.id, user_id: user_id}));
             const player = players.pop();

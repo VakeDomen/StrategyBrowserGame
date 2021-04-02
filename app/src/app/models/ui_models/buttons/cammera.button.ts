@@ -8,7 +8,7 @@ export class CameraZoomButton extends Button {
 
     
     constructor(game: Game) {
-        super(10, 10, 40, 40, 3, "../../../assets/ui/camera_zoom_icon.png");
+        super(10, 10, 40, 40, 1, "../../../assets/ui/camera_zoom_icon.png");
         this.game = game;
         this.zoomOptions = game.getZoomOptions();
     }

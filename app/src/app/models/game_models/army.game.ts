@@ -32,6 +32,9 @@ export class Army implements Drawable{
     private imgHeight: number = 218;
     
     private moveIcon: HTMLImageElement;
+    private banner: HTMLImageElement;
+    private bannerHover: HTMLImageElement;
+    private colorBanner: HTMLImageElement;
 
     constructor(data: any) {
         this.id = data.id;
@@ -44,6 +47,15 @@ export class Army implements Drawable{
 
         this.img = new Image();
         this.moveIcon = new Image();
+        this.banner = new Image();
+        this.bannerHover = new Image();
+        this.colorBanner = new Image();
+        const myColor = Cache.getPlayerById(this.player_id)?.color;
+        this.colorBanner.src = `../../../assets/ui/banner${myColor}.png`;
+        if (this.player_id == Cache.getMe().id) {
+            this.banner.src = `../../../assets/ui/black_banner1.png`;
+            this.bannerHover.src = `../../../assets/ui/black_banner1_glow.png`;
+        }
         this.img.src = this.getAssetRoute();
         this.moveIcon.src = '../../../assets/ui/move.png';
 
@@ -129,6 +141,45 @@ export class Army implements Drawable{
             const displayTime = `${Math.floor(timeLeft / 3600)}:${Math.floor(timeLeft / 60)}:${timeLeft%60}`;
             ctx.fillStyle = 'black';
             ctx.fillText(displayTime, offsets[0], offsets[1] + 40);
+        }
+
+        // color banner
+
+        ctx.fillRect(
+            this.calcImageXOffset() - 70,
+            this.calcImageYOffset() + 28 - this.imgHeight / 2,
+            30,
+            30
+        );
+        ctx.drawImage(
+            this.colorBanner,
+            this.calcImageXOffset() - 70,
+            this.calcImageYOffset() + 28 - this.imgHeight / 2,
+            30,
+            30
+        );
+        if (this.player_id == Cache.getMe().id) {
+            ctx.drawImage(
+                this.hovered ? this.bannerHover : this.banner,
+                this.calcImageXOffset() - 80,
+                this.calcImageYOffset() - this.imgHeight  / 2,
+                160,
+                30
+            );  
+            
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'white';
+            const font = ctx.font;
+            ctx.font = "bold 17px Arial"
+            ctx.fillText(
+                `${unescape(this.name)}`, 
+                this.calcImageXOffset(),
+                this.calcImageYOffset() + 16 - this.imgHeight / 2,
+                90
+            );
+            ctx.font = font;
+            ctx.textAlign = 'start';
+            ctx.fillStyle = 'black';
         }
     }
 
