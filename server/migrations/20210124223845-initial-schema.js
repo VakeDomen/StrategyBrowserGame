@@ -505,7 +505,7 @@ const base_type = {
 const bases = {
   columns: {
     id: {
-      type: 'int',
+      type: 'string',
       primaryKey: true,
       autoIncrement: false,
     },

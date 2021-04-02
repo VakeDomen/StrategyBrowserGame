@@ -1,0 +1,46 @@
+import { insert, update } from '../../db/database.handler';
+import { BaseItem } from '../db_items/base.item';
+import { Export } from './core/export.item';
+import * as conf from '../../db/database.config.json';
+import { Save } from './core/save.item';
+import { BasePacket } from '../packets/base.packet';
+export class Base implements Export, Save {
+    id: string;
+    player_id: string;
+	x: number;
+    y: number;
+    base_type: number;
+
+    constructor(data: any) {
+        this.id = data.id;
+        this.player_id = data.player_id;
+        this.x = data.x;
+        this.y = data.y;
+        this.base_type = data.base_type;
+    }
+    async saveItem(): Promise<BaseItem> {
+        const item = this.exportItem();
+        if (!item.id) {
+            item.generateId();
+            await insert(conf.tables.bases, item);
+        } else {
+            await update(conf.tables.bases, item);
+        }
+        return item;
+    }
+
+    exportPacket(): BasePacket {
+        return {
+            id: this.id,
+            player_id: this.player_id,
+            x: this.x,
+            y: this.y,
+            base_type: this.base_type,
+        } as BasePacket;
+    }
+
+    exportItem(): BaseItem {
+        return new BaseItem(this);
+    }
+
+}

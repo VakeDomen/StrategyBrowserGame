@@ -9,7 +9,9 @@
     "event": "events",
     "tile_types": "tile_types",
     "army_inventory": "army_inventory",
-    "resources": "resources"
+    "resources": "resources",
+    "base_types": "base_types",
+    "bases": "bases"
   },
   "log": false
 }

@@ -11,6 +11,9 @@ import { PlayerItem } from "../db_items/player.item";
 import { UserItem } from "../db_items/user.item";
 import { EventHandler } from "../../helpers/event.handler";
 import { Event } from "../events/core/event";
+import { BaseItem } from '../db_items/base.item';
+import { Base } from "./base.game";
+
 const seedrandom = require('seedrandom')
 
 export class Game implements Export {
@@ -26,6 +29,7 @@ export class Game implements Export {
     board: Map<number, Tile[]>; // column no. -> column tiles
     armies: Map<string, Army[]>; // player_id -> player armies
     eventHandler: EventHandler;
+    bases: Base[];
 
     constructor(data: any) {
         this.id = data.id;
@@ -35,6 +39,7 @@ export class Game implements Export {
         this.running = data.running;
         this.seed = data.seed;
         this.map_radius = data.map_radius ? data.map_radius : 3;
+        this.bases = data.bases;
 
         this.board = new Map();
         this.armies = new Map();
@@ -71,16 +76,37 @@ export class Game implements Export {
         this.seed = uuidv4().replace('-', '');
     }
 
+    async generateStartingTowns(): Promise<void> {
+        if (!this.bases) {
+            this.bases = [];
+        }
+        for (const player of this.players) {
+            const x = random.int(-this.map_radius + 1, this.map_radius -1);
+            const y = random.int(this.map_radius, (this.map_radius - 1) - x);
+            const base = new Base({
+                player_id: player,
+                x: x,
+                y: y,
+                base_type: 1
+            });
+            await base.saveItem();
+            this.bases.push(base);
+
+        }
+    }
+
     async generateStartingArmies(): Promise<void> {
         for (const user_id of this.players) {
             const user = (await fetch<UserItem>(conf.tables.user, new UserItem({id: user_id}))).pop();
             const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: this.id, user_id: user_id}));
             const player = players.pop();
             if (player) {
+                const x = random.int(-this.map_radius + 1, this.map_radius -1);
+                const y = random.int(this.map_radius, 2 * (this.map_radius - 1) - x);
                 const army = new Army({
                     player_id: player.id,
-                    x: random.int(-this.map_radius + 1, this.map_radius -1),
-                    y: random.int(-this.map_radius + 1, this.map_radius -1),
+                    x: x,
+                    y: y,
                     name: `${user?.username}'s army`,
                 });
                 await army.saveItem();

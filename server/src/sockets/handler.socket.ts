@@ -11,6 +11,8 @@ import { GameItem } from '../models/db_items/game.item';
 import { PlayerItem } from '../models/db_items/player.item';
 import { applyGameSockets } from './routes/game.socket';
 import { GamePacket } from '../models/packets/game.packet';
+import { BaseItem } from '../models/db_items/base.item';
+import { Base } from '../models/game_models/base.game';
 
 export class SocketHandler {
 
@@ -114,7 +116,12 @@ export class SocketHandler {
         this.games = await Promise.all(games.map(async (gameMeta: GameItem) => {
             const game = new Game(gameMeta);
             const players = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({game_id: game.id}));
+            const bases = await Promise.all(players.map(async (pl: PlayerItem) => await fetch<BaseItem>(conf.tables.bases, new BaseItem({player_id: pl.id})))); 
             game.players = players.map((player: PlayerItem) => player.id as string);
+            game.bases = [];
+            for (const plbases of bases) {
+                game.bases.concat(plbases.map((b: BaseItem) => new Base(b)));
+            }
             return game;
         }));
         return;

@@ -6,5 +6,5 @@ export interface TilePacket {
     tile_type: number;
     favorable_terrain_level: number;
     orientation: number;
-    building: string | null;  
+    base: string | null;  
 }

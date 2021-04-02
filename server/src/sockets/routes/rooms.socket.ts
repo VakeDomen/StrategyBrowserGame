@@ -62,7 +62,7 @@ export function rooms(socket) {
             host: game.host,
             name: game.name,
             players: gamePlayers.map((player: PlayerItem) => player.id),
-            running: game.running
+            running: game.running,
         } as GamePacket);
     })
 
@@ -73,6 +73,7 @@ export function rooms(socket) {
             host: SocketHandler.connectionUserMap.get(socket),
             players: [SocketHandler.connectionUserMap.get(socket)],
             running: false,
+            bases: [],
         });
         socket.join(game.id);
         SocketHandler.addGame(game);
@@ -145,6 +146,7 @@ export function rooms(socket) {
                 }));
                 await game.generateMap();
                 await game.generateStartingArmies();
+                await game.generateStartingTowns();
                 SocketHandler.io.to(game.id).emit("LOBBY_START_GAME", game.exportPacket());
             }
         }

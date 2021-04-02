@@ -33,7 +33,7 @@ export class Tile implements Drawable {
     tile_type: number;
     favorable_terrain_level: number;
     orientation: number;
-    building: string | null;
+    base: string | null;
     hovered: boolean;
     transparent: boolean;
     tag: string;
@@ -55,7 +55,7 @@ export class Tile implements Drawable {
         this.tile_type = tile.tile_type;
         this.favorable_terrain_level = tile.favorable_terrain_level;
         this.orientation = tile.orientation;
-        this.building = tile.building;
+        this.base = tile.base;
         this.hovered = false;
         this.transparent = false;
         this.tag = (Cache.getTileType(this.tile_type) as TileTypePacket).tag;
