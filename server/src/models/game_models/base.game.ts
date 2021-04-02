@@ -22,6 +22,7 @@ export class Base implements Export, Save {
         const item = this.exportItem();
         if (!item.id) {
             item.generateId();
+            this.id = item.id as string;
             await insert(conf.tables.bases, item);
         } else {
             await update(conf.tables.bases, item);

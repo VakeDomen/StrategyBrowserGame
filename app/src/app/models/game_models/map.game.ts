@@ -20,6 +20,7 @@ export class GameMap implements Drawable {
     constructor(data: MapPacket) {
         this.radius = data.radius;
         if (data.tiles) {
+            console.log(data.tiles.map(a => a.base))
             this.tiles = data.tiles.map((tile: TilePacket) => new Tile(tile));
         } else {
             this.tiles = [];

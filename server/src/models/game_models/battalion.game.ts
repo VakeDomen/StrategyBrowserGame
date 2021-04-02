@@ -105,6 +105,7 @@ export class Battalion implements Export, Save, Delete {
         const item = this.exportItem();
         if (!item.id) {
             item.generateId();
+            this.id = item.id as string;
             await insert(conf.tables.battalion, item);
         } else {
             await update(conf.tables.battalion, item);

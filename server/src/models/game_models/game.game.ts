@@ -90,6 +90,9 @@ export class Game implements Export {
                 base_type: 1
             });
             await base.saveItem();
+            const tile = (this.board.get(x) as Tile[])[y];
+            tile.base = base.id;
+            await tile.saveItem();
             this.bases.push(base);
 
         }
@@ -141,10 +144,7 @@ export class Game implements Export {
         }
         this.randomizeMapLandscape(board);
         for (const columnIndex of board) {
-            await Promise.all(columnIndex[1].map(async (tile: Tile) => {
-                let insertable = tile.exportItem().generateId();
-                return await insert(conf.tables.tile, insertable);
-            }));
+            await Promise.all(columnIndex[1].map(async (tile: Tile) => tile.saveItem()));
         }
         this.board = board;
     }

@@ -46,8 +46,6 @@ export class Tile implements Drawable {
 
 
     constructor(tile: TilePacket) {
-        this.img = new Image();
-        this.img.src = this.getAssetRoute(tile.tile_type, tile.orientation);
         this.id = tile.id;
         this.game_id = tile.game_id;
         this.x = tile.x;
@@ -58,6 +56,8 @@ export class Tile implements Drawable {
         this.base = tile.base;
         this.hovered = false;
         this.transparent = false;
+        this.img = new Image();
+        this.img.src = this.getAssetRoute(tile.tile_type, tile.orientation);
         this.tag = (Cache.getTileType(this.tile_type) as TileTypePacket).tag;
         this.speed = Math.max(-90, (Cache.getTileType(this.tile_type) as TileTypePacket).speed + this.favorable_terrain_level * 5);
         this.food = Math.max(0, (Cache.getTileType(this.tile_type) as TileTypePacket).food + this.favorable_terrain_level * 5);
@@ -150,6 +150,10 @@ export class Tile implements Drawable {
 
     getAssetRoute(type: number, orientation: number): string {
         const ori = orientation ? 'E' : 'W';
+        if (this.base) {
+            console.log(1)
+            return `../../../assets/tiles/building_village_${ori}.png`;
+        }
         switch (type) {
             case 1:
                 return `../../../assets/tiles/grass_${ori}.png`;
