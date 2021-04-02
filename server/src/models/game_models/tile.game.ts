@@ -30,7 +30,7 @@ export class Tile implements Export {
             tile_type: this.tile_type,
             favorable_terrain_level: this.favorable_terrain_level,
             orientation: this.orientation,
-            building: this.building,
+            base: this.building,
         } as TilePacket;
     }
     exportItem(): TileItem {
