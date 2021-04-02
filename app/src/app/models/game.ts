@@ -207,6 +207,16 @@ export class Game {
         }
         this.loadedArmies = true;
         this.checkLoaded()
+    }    
+    
+    async setArmy(packet: ArmyPacket) {
+        const army = new Army(packet);
+        await army.load();
+        Cache.saveArmy(army);
+    }
+
+    async removeArmy(id: string) {
+        Cache.deleteArmy(id);
     }
 
     async setMap(map: MapPacket) {

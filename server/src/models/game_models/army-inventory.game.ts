@@ -1,12 +1,15 @@
-import { insert, update } from "../../db/database.handler";
+import { deleteItem, insert, update } from "../../db/database.handler";
 import { ArmyInventoryItem } from "../db_items/army-inventory.item";
 import { DbItem } from "../db_items/core/db.item";
 import { ArmyInventoryPacket } from "../packets/army-inventory.packet";
 import { Export } from "./core/export.item";
 import { Save } from "./core/save.item";
 import * as conf from '../../db/database.config.json';
+import { fetchAll } from '../../db/database.handler';
+import { ResourceItem } from "../db_items/resource.item";
+import { Delete } from "./core/delete.item";
 
-export class ArmyInventory implements Export, Save {
+export class ArmyInventory implements Export, Save, Delete {
     id: string;
     game_id: string;
     player_id: string;
@@ -66,7 +69,37 @@ export class ArmyInventory implements Export, Save {
         this.tools_T2 = data.tools_T2;
         this.tools_T3 = data.tools_T3;
     }
-    
+    async deleteItem() {
+        await deleteItem(conf.tables.army_inventory, new ArmyInventoryItem({id: this.id}));
+    }
+
+    blank(): ArmyInventory {
+        this.food = 0;
+        this.wood = 0;
+        this.stone = 0;
+        this.ore = 0;
+        this.cart = 0;
+        this.horse = 0;
+        this.bow_T1 = 0;
+        this.bow_T2 = 0;
+        this.bow_T3 = 0;
+        this.armor_T1 = 0;
+        this.armor_T2 = 0;
+        this.armor_T3 = 0;
+        this.sword_T1 = 0;
+        this.sword_T2 = 0;
+        this.sword_T3 = 0;
+        this.pike_T1 = 0;
+        this.pike_T2 = 0;
+        this.pike_T3 = 0;
+        this.shield_T1 = 0;
+        this.shield_T2 = 0;
+        this.shield_T3 = 0;
+        this.tools_T1 = 0;
+        this.tools_T2 = 0;
+        this.tools_T3 = 0;
+        return this;
+    }    
     async saveItem() {
         const item = this.exportItem();
         if (!item.id) {
@@ -113,5 +146,51 @@ export class ArmyInventory implements Export, Save {
         } as ArmyInventoryPacket;
     }
 
+    async emptyInvenotryOverfill(cap: number): Promise<any> {
+        const resources = await fetchAll<ResourceItem>(conf.tables.resources);
+        const drops = {};
+        while (await this.calcWeight(resources) > cap) {
+            // get random res to drop
+            const randomRes = resources[Math.floor(Math.random() * resources.length)];
+            
+            // don't drop food
+            if (randomRes.tag == 'food' || !randomRes.id) {
+                continue;
+            }
+            // add res to drops
+            if (this[randomRes.tag] > 0) {
+                if (!drops[randomRes.id])  {
+                    drops[randomRes.id] = 0;
+                }
+                drops[randomRes.id] += 1;
+            }
+            // remove res from inventory
+            this[randomRes.tag] = Math.max(0, this[randomRes.tag] - 1);
+        } 
+        return drops;
+    }
+
+    async calcWeight(resources?: ResourceItem[]): Promise<number> {
+        if (!resources) {
+            resources = await fetchAll<ResourceItem>(conf.tables.resources);
+        }
+        let weight = 0;
+        for (const resTag of Object.keys(this)) {
+            const res = this.getResourceByTag(resTag, resources);
+            if (res) {
+                weight += res.weight * this[resTag];
+            }
+        }
+        return weight;
+    }
+
+    private getResourceByTag(tag: string, resources: ResourceItem[]): ResourceItem | undefined {
+        for (const res of resources) {
+            if (tag == res.tag) {
+                return res;
+            }
+        }
+        return undefined;
+    }
 
 }

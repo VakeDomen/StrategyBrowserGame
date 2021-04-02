@@ -16,7 +16,6 @@ import { ArmyMovementPacket } from '../../models/packets/army-movement.packet';
 import { playersOfSocket } from '../../helpers/user.helper';
 import { ArmyMoveEvent } from '../../models/events/army-move.event';
 import { SocketHandler } from '../handler.socket';
-import { ResourceItem } from '../../models/db_items/resource.item';
 import { ResourcePacket } from '../../models/packets/resource.packet';
 
 export function applyGameSockets(socket) {

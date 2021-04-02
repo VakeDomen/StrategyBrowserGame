@@ -1,4 +1,4 @@
-import { fetchAll, insert, update } from '../../db/database.handler';
+import { deleteItem, fetch, fetchAll, insert, update } from '../../db/database.handler';
 import { BattalionItem } from '../db_items/battalion.item';
 import { Export } from './core/export.item';
 import { Save } from './core/save.item';
@@ -7,8 +7,10 @@ import { ArmyItem } from '../db_items/army.item';
 import { BattalionPacket } from '../packets/battalion.packet';
 import { ResourceItem } from '../db_items/resource.item';
 import { ResourcePacket } from '../packets/resource.packet';
+import { TileItem } from '../db_items/tile.item';
+import { Delete } from './core/delete.item';
 
-export class Battalion implements Export, Save {
+export class Battalion implements Export, Save, Delete {
     id: string;
     army_id: string;
     size: number;
@@ -28,8 +30,10 @@ export class Battalion implements Export, Save {
 
     private remainingArmor: number = 0;
     private remainingHP: number = 0;
-    private totalHP: number = 3
+    private totalHP: number;
     private totalArmor: number;
+    public preBattleSize: number;
+    public isDefender: boolean = false;
 
     constructor(data: any) {
         this.id = data.id;
@@ -48,7 +52,11 @@ export class Battalion implements Export, Save {
         this.carry = 0;
         this.build = 0;
         this.totalArmor = 0;
-
+        this.totalHP = 0;
+        this.preBattleSize = this.size;
+    }
+    async deleteItem() {
+        await deleteItem(conf.tables.battalion, new BattalionItem({id: this.id}));
     }
     exportPacket(): BattalionPacket {
         return {
@@ -73,6 +81,24 @@ export class Battalion implements Export, Save {
         this.carry = await this.calcCarryValue(resources);
         this.build = await this.calcBuildValue(resources);
         this.totalArmor = this.defense / this.size;
+        this.totalHP = 3;
+    }
+    
+    async weightStatsByTile(x, y): Promise<void> {
+        const tile = (await fetch<TileItem>(conf.tables.tile, new TileItem({x: x, y: y}))).pop();
+        if (tile) {
+            if (this.isDefender) {
+                this.totalArmor = Math.round(20 * (this.defense / this.size) * (1 + (tile.favorable_terrain_level * 0.05)));
+                this.defense = this.totalArmor * this.size;
+                this.attack *= 20;
+                this.totalHP *= 20;
+            } else {
+                this.totalArmor *= 20;
+                this.defense = this.totalArmor * this.size;
+                this.attack *= 20;
+                this.totalHP *= 20;
+            }
+        }
     }
 
     async saveItem(): Promise<BattalionItem> {

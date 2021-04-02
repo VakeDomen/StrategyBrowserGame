@@ -110,11 +110,37 @@ export class Cache {
     return undefined;
   }
 
+  public static deleteArmy(id: string): void {
+    const army = Cache.getArmy(id);
+    if (army) {
+      const playerArmies = this.armies.get(army.player_id);
+      if (!playerArmies) {
+        return;
+      }
+      for (let i = 0 ; i < playerArmies.length ; i++) {
+        if (army.id == playerArmies[i].id) {
+          playerArmies.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }
+
   public static saveArmy(army: Army): void {
     if (!Cache.armies.get(army.player_id)) {
       Cache.armies.set(army.player_id, [army]);
     } else {
+      let found = false;
+      for (let i = 0 ; i < (Cache.armies.get(army.player_id) as Army[]).length ; i++) {
+        if ((Cache.armies.get(army.player_id) as Army[])[i].id == army.id) {
+          (Cache.armies.get(army.player_id) as Army[])[i] = army
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
         Cache.armies.get(army.player_id)?.push(army);
+      }
     }
   }
 
