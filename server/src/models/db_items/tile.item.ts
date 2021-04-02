@@ -6,7 +6,7 @@ export class TileItem extends DbItem {
     tile_type: number;
     favorable_terrain_level: number;
     orientation: number;
-    building: string | null;
+    base: string | null;
 
     constructor(data: any) {
         super(data);
@@ -16,6 +16,6 @@ export class TileItem extends DbItem {
         this.tile_type = data.tile_type;
         this.favorable_terrain_level = data.favorable_terrain_level;
         this.orientation = data.orientation;
-        this.building = data.building;
+        this.base = data.base;
     }
 } 

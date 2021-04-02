@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsc && node ./build/server.js",
     "tsc": "tsc",
-    "migrate": "node_modules/db-migrate/bin/db-migrate up"
+    "migrate": "node_modules/db-migrate/bin/db-migrate up",
+    "new-migration": "node_modules/db-migrate/bin/db-migrate create"
   },
   "author": "Domen Vake",
   "license": "ISC",

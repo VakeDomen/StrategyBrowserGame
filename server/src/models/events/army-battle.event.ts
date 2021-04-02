@@ -120,7 +120,7 @@ export class ArmyBattleEvent extends Event {
 
                     // calculate attacker damage per defending batalion
                     const dmg = Math.ceil((attacker.attack / defenders.length));
-                    console.log(`attacker ${attacker.id.substr(0, 5)} dealing ${attacker.attack} dmg to ${defenders.length} defenders (DMG PER DEF: ${dmg})`)
+                    console.log(`\tattacker ${attacker.id.substr(0, 5)} dealing ${attacker.attack} dmg to ${defenders.length} defenders (DMG PER DEF: ${dmg})`)
                     // apply dmg to all defending battalions
                     defenders.forEach((defender: Battalion) => defender.recieveDmg(dmg));
                 }
@@ -141,10 +141,11 @@ export class ArmyBattleEvent extends Event {
         if (att.map((b: Battalion) => b.size > 0).includes(true)) {
             console.log('Attacker won with:')
             att.map((b: Battalion) => console.log(`\t${b.id.substr(0, 5)} remaining ${b.size} units`));
+        } else {
+            // defender won
+            console.log('Defender won with:')
+            def.map((b: Battalion) => console.log(`\t${b.id.substr(0, 5)} remaining ${b.size} units`));
         }
-        // defender won
-        console.log('Defender won with:')
-        def.map((b: Battalion) => console.log(`\t${b.id.substr(0, 5)} remaining ${b.size} units`));
 
         // save updated data
         // delete dead battalions

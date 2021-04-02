@@ -24,6 +24,8 @@ exports.up = function(db, callback) {
     db.createTable.bind(db, 'tile_types', tile_type),
     db.createTable.bind(db, 'army_inventory', army_inventory),
     db.createTable.bind(db, 'resources', resources),
+    db.createTable.bind(db, 'base_types', base_type),
+    db.createTable.bind(db, 'bases', bases),
   ], callback);
 };
 
@@ -39,6 +41,8 @@ exports.down = function(db, callback) {
     db.dropTable.bind(db, 'tile_types'),
     db.dropTable.bind(db, 'army_inventory'),
     db.dropTable.bind(db, 'resources'),
+    db.dropTable.bind(db, 'base_types'),
+    db.dropTable.bind(db, 'bases'),
   ], callback);
 };
 
@@ -143,7 +147,7 @@ const tiles = {
     orientation: {
       type: 'int',
     },
-    building: {
+    base: {
       type: 'string',
     }
   },
@@ -442,6 +446,80 @@ const resources = {
     },
     build: {
       type: 'int',
+    },
+  },
+  ifNotExists: true
+}
+
+
+
+const base_type = {
+  columns: {
+    id: {
+      type: 'int',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    tag: {
+      type: 'string',
+    },
+    display_name: {
+      type: 'string',
+    },
+    build: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    wood: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    stone: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    ore: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    speed: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    defense: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    harvestable: {
+      type: 'boolean',
+      defaultValue: 0,
+    },
+    vision: {
+      type: 'int',
+      defaultValue: 2,
+    }
+  },
+  ifNotExists: true
+}
+
+const bases = {
+  columns: {
+    id: {
+      type: 'int',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    player_id: {
+      type: 'string',
+    },
+    x: {
+      type: 'int',
+    },
+    y: {
+      type: 'int',
+    },
+    base_type: {
+      type: 'string',
     },
   },
   ifNotExists: true
