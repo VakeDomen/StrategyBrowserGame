@@ -50,7 +50,7 @@ export class PlayerNameBanner implements Drawable {
         );
 
         ctx.drawImage(
-            this.colorBanners[Cache.getMe().color ],
+            this.colorBanners[Cache.getMe().color ?? 1],
             this.x + 60,
             this.y + 27,
             35,

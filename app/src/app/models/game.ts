@@ -339,6 +339,7 @@ export class Game {
 
     private setupMouse(): void {
         this.guiCanvas.nativeElement.addEventListener("mousemove", (event: MouseEvent) => this.onMouseMove(event));
+        this.guiCanvas.nativeElement.addEventListener("mousewheel", (event: WheelEvent) => this.onMouseWheel(event));
         this.mouseSetUp = true;
         this.checkLoaded()
     }
@@ -366,6 +367,15 @@ export class Game {
         if (this.mousePressed && this.mouseDownEvent && !this.GUI.isHovered) {
             this.handleCameraDrag();
             return;
+        }
+    }
+
+    private onMouseWheel(event: any) { 
+        console.log(event);
+        if (event.wheelDelta > 0) {
+            this.setZoom(this.getZoom() - 0.1);
+        } else {
+            this.setZoom(this.getZoom() + 0.1);
         }
     }
     
@@ -413,11 +423,11 @@ export class Game {
     }
 
     setZoom(zoom: number): void {
-        if (this.cameraZoomOptions.includes(zoom)) {
+        // if (this.cameraZoomOptions.includes(zoom)) {
             const tile = this.map.getTile(0, this.map.radius - 1);
             this.camera.setZoom(zoom);
             this.cameraZoom = zoom;
-        }
+        // }
     }
     getZoom(): number {
         return this.cameraZoom;

@@ -51,7 +51,7 @@ export class Army implements Drawable{
         this.bannerHover = new Image();
         this.colorBanner = new Image();
         const myColor = Cache.getPlayerById(this.player_id)?.color;
-        this.colorBanner.src = `../../../assets/ui/banner${myColor}.png`;
+        this.colorBanner.src = `../../../assets/ui/banner${myColor ?? 1}.png`;
         if (this.player_id == Cache.getMe().id) {
             this.banner.src = `../../../assets/ui/black_banner1.png`;
             this.bannerHover.src = `../../../assets/ui/black_banner1_glow.png`;
