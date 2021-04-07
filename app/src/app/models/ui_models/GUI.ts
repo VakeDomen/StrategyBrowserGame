@@ -13,6 +13,7 @@ import { ArmyBattalionsWindow } from "./windows/army-battalions.window";
 import { BaseListButton } from "./buttons/base-list.button";
 import { PlayerNameBanner } from "./components/player-name-banner.component";
 import { SelectedBaseOverviewWindow } from "./windows/selected-base-overview.window";
+import { ToggleSoundButton } from "./buttons/togge-sound.button";
 
 export class GUI implements Drawable {
 
@@ -27,6 +28,7 @@ export class GUI implements Drawable {
         this.elements = [
             new CameraZoomButton(game),
             new CameraFocusButton(game),
+            new ToggleSoundButton(),
             new ArmyListButton(this),
             new BaseListButton(this),
             new SelectedArmyOverviewWindow(),

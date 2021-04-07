@@ -42,6 +42,7 @@ export class Button implements Drawable {
             this._backgroundClicked.onload,
             this._icon.onload,
         ]);
+        await this.afterLoad();
     }
 
 
@@ -124,6 +125,9 @@ export class Button implements Drawable {
     protected afterDraw(ctx: CanvasRenderingContext2D): void {
         return;
     }
+
+    protected async afterLoad() {}
+
 
     protected drawHover(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = 'white';

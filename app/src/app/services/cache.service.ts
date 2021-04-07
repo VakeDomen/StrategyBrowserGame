@@ -13,6 +13,8 @@ import { Camera } from '../models/ui_models/camera';
   providedIn: 'root'
 })
 export class Cache {
+  
+  public static soundOn: boolean = true;
 
   static path: Tile[] | undefined;
   private static _selectedArmy: Army | undefined;

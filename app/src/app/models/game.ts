@@ -66,6 +66,7 @@ export class Game {
 
     private map: GameMap;
 
+    private click: HTMLAudioElement;
 
     constructor(myId: string, data: GamePacket, ws: SocketHandlerService, canvas: ElementRef, gui: ElementRef, cache: Cache) {
         console.log('Initializing game...')
@@ -85,6 +86,9 @@ export class Game {
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450, this);
         Cache.setCamera(this.camera);
+
+        this.click = new Audio();
+        this.click.src = '../../assets/audio/buttonclick.wav';
     }
 
     private async updateLoop(): Promise<void> {
@@ -320,6 +324,9 @@ export class Game {
     }
 
     private handleClick(): void {
+        if (Cache.soundOn) {
+            this.click.play();
+        }
         const army = this.findHoveredArmy();
         switch (Game.state) {
             case 'view':
@@ -390,7 +397,6 @@ export class Game {
     }
 
     private onMouseWheel(event: any) { 
-        console.log(event);
         if (event.wheelDelta > 0) {
             this.setZoom(this.getZoom() - 0.1);
         } else {
