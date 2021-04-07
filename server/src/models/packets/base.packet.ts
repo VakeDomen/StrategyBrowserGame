@@ -5,4 +5,5 @@ export interface BasePacket {
     y: number;
     base_type: number;
     name: string;
+    size: number;
 }

@@ -92,7 +92,6 @@ export function applyGameSockets(socket) {
                     bases.push(new Base(base));
                 }
             }
-            console.log(playerBases)
             const packet: BasePacket[] = bases.map((base: Base) =>  base.exportPacket());
             socket.emit('GET_BASES', packet);
         } else {

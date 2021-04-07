@@ -17,7 +17,16 @@ export class Tile implements Drawable {
         [308, 388],
         [203, 388],
     ];
+    // public static hexBorders: [number, number][]= [
+    //     [63, 156],
+    //     [94, 124],
+    //     [162, 124],
+    //     [194, 156],
+    //     [162, 188],
+    //     [94, 188],
+    // ];
     public static hexMiddle: [number, number] = [255, 342];
+    // public static hexMiddle: [number, number] = [128, 128];
     public static hexWidth: number = Tile.hexBorders[3][0] - Tile.hexBorders[0][0];
     public static hexHeight: number = Tile.hexBorders[5][1] - Tile.hexBorders[1][1]; 
     public static hexXoffset: number = Tile.hexBorders[2][0] - Tile.hexBorders[0][0];
@@ -231,6 +240,26 @@ export class Tile implements Drawable {
             default:
                 return '../../../assets/tiles/grass_E.png';
         }
+
+        // switch (type) {
+        //     case 1:
+        //         return `../../../assets/tiles/ass/Grass.png`;
+        //     case 2:
+        //         return `../../../assets/tiles/ass/GrassForest.png`;
+        //     case 3:
+        //         return `../../../assets/tiles/Grass.png`;
+        //     case 4:
+        //         return `../../../assets/tiles/Sand.png`;
+        //     case 5:
+        //         return `../../../assets/tiles/Grass.png`;
+        //     case 6:
+        //         return `../../../assets/tiles/StoneHill.png`;
+        //     case 7:
+        //         return `../../../assets/tiles/StoneMountain.png`;
+        
+        //     default:
+        //         return '../../../assets/tiles/grass_E.png';
+        // }
     }
 
     checkHover(x: number, y: number): boolean {

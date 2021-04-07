@@ -13,6 +13,8 @@ import { EventHandler } from "../../helpers/event.handler";
 import { Event } from "../events/core/event";
 import { BaseItem } from '../db_items/base.item';
 import { Base } from "./base.game";
+import { Battalion } from "./battalion.game";
+import { encode } from "node:punycode";
 
 const seedrandom = require('seedrandom')
 
@@ -86,13 +88,14 @@ export class Game implements Export {
             const player = players.pop();
             if (player) {
                 const x = random.int(-this.map_radius + 1, this.map_radius -1);
-                const y = random.int(this.map_radius, (this.map_radius - 1) - x);
+                const y = random.int(0, 2 * (this.map_radius - 1) - Math.abs(x));
                 const base = new Base({
-                    player_id: player,
+                    player_id: player.id,
                     x: x,
                     y: y,
                     base_type: 1,
-                    name: escape(`${user?.username}'s army`),
+                    name: escape(`${user?.username}'s base`),
+                    size: 200,
                 });
                 await base.saveItem();
                 const tile = (this.board.get(x) as Tile[])[y];
@@ -111,13 +114,18 @@ export class Game implements Export {
             const player = players.pop();
             if (player) {
                 const x = random.int(-this.map_radius + 1, this.map_radius -1);
-                const y = random.int(this.map_radius, 2 * (this.map_radius - 1) - x);
+                const y = random.int(0, 2 * (this.map_radius - 1) - Math.abs(x));
                 const army = new Army({
                     player_id: player.id,
                     x: x,
                     y: y,
-                    name: `${user?.username}'s army`,
+                    name: escape(`${user?.username}'s army`),
                 });
+                await army.saveItem();
+                army.battalions.push(new Battalion({
+                    army_id: army.id,
+                    size: 500
+                }));
                 await army.saveItem();
                 this.armies.set(player.id as string, [army]);
             }

@@ -11,6 +11,7 @@ export class Base implements Export, Save {
     y: number;
     base_type: number;
     name: string;
+    size: number;
 
     constructor(data: any) {
         this.id = data.id;
@@ -19,6 +20,7 @@ export class Base implements Export, Save {
         this.y = data.y;
         this.base_type = data.base_type;
         this.name = data.name;
+        this.size = data.size;
     }
     async saveItem(): Promise<BaseItem> {
         const item = this.exportItem();
@@ -40,6 +42,7 @@ export class Base implements Export, Save {
             y: this.y,
             base_type: this.base_type,
             name: this.name,
+            size: this.size,
         } as BasePacket;
     }
 

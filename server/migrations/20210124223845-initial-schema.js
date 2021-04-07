@@ -524,6 +524,9 @@ const bases = {
     name: {
       type: 'string',
     },
+    size: {
+      type: 'int',
+    }
   },
   ifNotExists: true
 }
