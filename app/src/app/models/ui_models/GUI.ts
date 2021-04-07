@@ -12,6 +12,7 @@ import { ArmyInventoryWindow } from "./windows/army-inventory.window";
 import { ArmyBattalionsWindow } from "./windows/army-battalions.window";
 import { BaseListButton } from "./buttons/base-list.button";
 import { PlayerNameBanner } from "./components/player-name-banner.component";
+import { SelectedBaseOverviewWindow } from "./windows/selected-base-overview.window";
 
 export class GUI implements Drawable {
 
@@ -30,6 +31,7 @@ export class GUI implements Drawable {
             new BaseListButton(this),
             new SelectedArmyOverviewWindow(),
             new SelectedTileOverviewWindow(),
+            new SelectedBaseOverviewWindow(),
             new ArmyInventoryWindow(),
             new ArmyBattalionsWindow(),
             new PlayerNameBanner(),

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Army } from '../models/game_models/army.game';
 import { Base } from '../models/game_models/base.game';
 import { Tile } from '../models/game_models/tile.game';
+import { BaseTypePacket } from '../models/packets/base-type.packet';
 import { PlayerPacket } from '../models/packets/player.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
 import { TileTypePacket } from '../models/packets/tile-type.packet';
@@ -12,7 +13,7 @@ import { Camera } from '../models/ui_models/camera';
   providedIn: 'root'
 })
 export class Cache {
-  
+
   static path: Tile[] | undefined;
   private static _selectedArmy: Army | undefined;
   private static _selectedTile: Tile | undefined;
@@ -26,6 +27,7 @@ export class Cache {
   private static players: Map<string, PlayerPacket> // playerId
   private static armies: Map<string, Army[]> // playerId
   private static tileTypes: TileTypePacket[];
+  private static baseTypes: BaseTypePacket[];
   private static tiles: Map<number, Map<number, Tile>>;
   private static resources: ResourcePacket[];
   private static bases: Map<string, Base[]>; // playerId
@@ -84,6 +86,10 @@ export class Cache {
     }
   }
 
+  static setBaseTypes(baseTypes: BaseTypePacket[]) {
+    this.baseTypes = baseTypes;
+  }
+
   public static setCamera(camera: Camera): void {
     this.camera = camera;
   }
@@ -94,6 +100,15 @@ export class Cache {
 
   public static setResources(resources: ResourcePacket[]): void {
     this.resources = resources;
+  }
+
+  public static getBaseType(id: number): BaseTypePacket | undefined {
+    for (const baseType of this.baseTypes) {
+      if (baseType.id == id) {
+        return baseType;
+      }
+    }
+    return undefined;
   }
 
   public static getResources(): ResourcePacket[] {

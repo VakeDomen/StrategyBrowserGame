@@ -245,6 +245,7 @@ const events = {
     },
     body: {
       type: 'string',
+      length: 1024
     },
     handled: {
       type: 'boolean',

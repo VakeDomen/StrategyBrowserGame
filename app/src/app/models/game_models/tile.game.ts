@@ -171,7 +171,7 @@ export class Tile implements Drawable {
                     const font = ctx.font;
                     ctx.font = "bold 17px Arial"
                     ctx.fillText(
-                        `${base.name}`, 
+                        `${unescape(base.name)}`, 
                         this.calcImageXOffset() + 256,
                         this.calcImageYOffset() + 276,
                         120
@@ -243,22 +243,22 @@ export class Tile implements Drawable {
 
         // switch (type) {
         //     case 1:
-        //         return `../../../assets/tiles/ass/Grass.png`;
+        //         return `../../../assets/tiles/ass/Plains.png`;
         //     case 2:
-        //         return `../../../assets/tiles/ass/GrassForest.png`;
+        //         return `../../../assets/tiles/ass/Forest.png`;
         //     case 3:
-        //         return `../../../assets/tiles/Grass.png`;
+        //         return `../../../assets/tiles/ass/Hills.png`;
         //     case 4:
-        //         return `../../../assets/tiles/Sand.png`;
+        //         return `../../../assets/tiles/ass/Wasteland.png`;
         //     case 5:
-        //         return `../../../assets/tiles/Grass.png`;
+        //         return `../../../assets/tiles/ass/Stone Plains.png`;
         //     case 6:
-        //         return `../../../assets/tiles/StoneHill.png`;
+        //         return `../../../assets/tiles/ass/Mountain.png`;
         //     case 7:
-        //         return `../../../assets/tiles/StoneMountain.png`;
+        //         return `../../../assets/tiles/ass/High Mountain.png`;
         
         //     default:
-        //         return '../../../assets/tiles/grass_E.png';
+        //         return '../../../assets/ui/ass/Plains.png';
         // }
     }
 

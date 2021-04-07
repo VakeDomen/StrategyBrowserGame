@@ -16,6 +16,7 @@ import { ArmyMovementPacket } from '../models/packets/army-movement.packet';
 import { EventPacket } from '../models/packets/event.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
 import { BasePacket } from '../models/packets/base.packet';
+import { BaseTypePacket } from '../models/packets/base-type.packet';
 
 
 @Injectable({
@@ -228,6 +229,7 @@ export class SocketHandlerService {
     this.ws.listen('QUEUED_EVENT').subscribe((resp: EventPacket) => this.contexts['game'].handleNewEvent(resp));
     this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: ArmyMovementPacket) => this.contexts['game'].updateArmy(resp));
     this.ws.listen('GET_RESOURCE_TYPES').subscribe((resp: ResourcePacket[]) => this.contexts['game'].setResources(resp));
+    this.ws.listen('GET_BASE_TYPES').subscribe((resp: BaseTypePacket[]) => this.contexts['game'].setBaseTypes(resp));
   }
 
   moveArmy(armyPacket: ArmyMovementPacket): void {
@@ -256,6 +258,10 @@ export class SocketHandlerService {
 
   getBases(id: string) {
     this.ws.emit('GET_BASES', id);
-}
+  }
+
+  getBaseTypes() {
+    this.ws.emit('GET_BASE_TYPES', null);
+  }
 
 }

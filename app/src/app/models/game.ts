@@ -18,6 +18,7 @@ import { EventPacket } from "./packets/event.packet";
 import { ResourcePacket } from "./packets/resource.packet";
 import { BasePacket } from "./packets/base.packet";
 import { Base } from "./game_models/base.game";
+import { BaseTypePacket } from "./packets/base-type.packet";
 
 export class Game {
     static state: 'loading' | 'view' | 'army_movement_select' | 'path_view';
@@ -32,6 +33,7 @@ export class Game {
     private loadedUsers: boolean = false;
     private loadedResources: boolean = false;
     private loadedBases: boolean = false;
+    private loadedBaseTypes: boolean = false;
 
     private view: 'map' | 'base';
     private canvas: ElementRef
@@ -173,6 +175,8 @@ export class Game {
         this.ws.getGameUsers(Cache.getGameId());
         this.ws.getResourceTypes();
         this.ws.getBases(Cache.getGameId());
+
+        this.ws.getBaseTypes();
         this.setupUI();
         this.setupMouse()
     }
@@ -184,6 +188,13 @@ export class Game {
         this.loadedBases = true;
         this.checkLoaded();
         this.ws.getMap(Cache.getGameId());
+    }
+
+    setBaseTypes(baseTypes: BaseTypePacket[]) {
+        console.log(baseTypes)
+        Cache.setBaseTypes(baseTypes);
+        this.loadedBaseTypes = true;
+        this.checkLoaded();
     }
 
     setPlayers(players: PlayerPacket[]): void {
@@ -235,6 +246,7 @@ export class Game {
         Cache.setTileTypes(map.tile_types)
         this.map = new GameMap(map);
         await this.map.load();
+
         this.loadedMap = true;
         this.checkLoaded();
     }
@@ -246,7 +258,8 @@ export class Game {
             this.loadedGUI &&
             this.loadedUsers &&
             this.loadedResources &&
-            this.loadedBases;
+            this.loadedBases &&
+            this.loadedBaseTypes;
         if (this.loaded) {
             Game.state = 'view';
         }
@@ -316,7 +329,13 @@ export class Game {
                 if (army) { Cache.selectedArmy = army; return; }
                 // click on tile
                 const tile = this.map.getHovered();
-                if (tile) { Cache.selectedTile = tile; return; }
+                if (tile) { 
+                    Cache.selectedTile = tile; 
+                    if (tile.base) {
+                        Cache.selectedBase = Cache.getBase(tile.base);
+                    }
+                    return; 
+                }
                 return;
             case 'loading':
                 return;

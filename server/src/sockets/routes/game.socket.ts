@@ -20,6 +20,7 @@ import { ResourcePacket } from '../../models/packets/resource.packet';
 import { Base } from '../../models/game_models/base.game';
 import { BaseItem } from '../../models/db_items/base.item';
 import { BasePacket } from '../../models/packets/base.packet';
+import { BaseTypePacket } from '../../models/packets/base-type.packet';
 
 export function applyGameSockets(socket) {
     
@@ -42,6 +43,10 @@ export function applyGameSockets(socket) {
 
     socket.on('GET_RESOURCE_TYPES', async () => {
         socket.emit('GET_RESOURCE_TYPES', await fetchAll(conf.tables.resources) as ResourcePacket[]);
+    })    
+    
+    socket.on('GET_BASE_TYPES', async () => {
+        socket.emit('GET_BASE_TYPES', await fetchAll(conf.tables.base_types) as BaseTypePacket[]);
     })
 
     socket.on('GET_PLAYERS', async (game_id: string) => {

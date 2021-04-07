@@ -8,14 +8,16 @@ export class Stat extends Window {
     stat: string;
     value: number;
     textWidth: number;
+    percentage: boolean;
 
-    constructor(stat: string, value: number, x: number, y: number, width?: number, height?: number) {
+    constructor(stat: string, value: number, x: number, y: number, width?: number, percentage?: boolean) {
         super(x, y, 16, 16, '', 0);
         this.textWidth = width ? width : 50;
         this.icon = new Image();
         this.icon.src = Cache.getStatIcon(stat);
         this.stat = stat;
         this.value = value;
+        this.percentage = percentage ?? false;
     }
 
     async load(): Promise<void> {
@@ -30,7 +32,7 @@ export class Stat extends Window {
             this.width,
             this.height
         );
-        ctx.fillText(`${this.value}`, this.x + 16, this.y + 14, this.textWidth - 16);
+        ctx.fillText(`${this.value}${this.percentage ? '%' : ''}`, this.x + 16, this.y + 14, this.textWidth - 16);
         if (this.hovered) {
             ctx.textAlign = 'center'
             ctx.fillStyle = 'rgba(35, 206, 235, 0.9)';
