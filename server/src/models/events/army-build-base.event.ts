@@ -28,7 +28,7 @@ export class ArmyBaseBuildEvent extends Event {
         this.y = data.y;
         this.base_type_id = data.base_type_id;
         this.army_id = data.army_id;
-        this.trigger_time = 0;
+        this.trigger_time = data.trigger_time;
     }
     
     async trigger(): Promise<Event[] | undefined> { 

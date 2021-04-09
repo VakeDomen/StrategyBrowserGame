@@ -227,6 +227,7 @@ export class SocketHandlerService {
     this.ws.listen('GET_BASES').subscribe((resp: BasePacket[]) => this.contexts['game'].setBases(resp));
     this.ws.listen('ARMY_DEFEATED').subscribe((id: string) => this.contexts['game'].removeArmy(id));
     this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
+    this.ws.listen('GET_EVENTS').subscribe((resp: EventPacket[]) => this.contexts['game'].handleLoadedEvents(resp));
     this.ws.listen('QUEUED_EVENT').subscribe((resp: EventPacket) => this.contexts['game'].handleNewEvent(resp));
     this.ws.listen('EVENT_TRIGGERED').subscribe((resp: EventPacket) => this.contexts['game'].handleTriggeredEvent(resp));
     this.ws.listen('BUILD_BASE_ORDER_COMPLETED').subscribe((resp: BasePacket) => this.contexts['game'].setBase(resp));
@@ -270,6 +271,10 @@ export class SocketHandlerService {
   buildBuilding(order: BuildOrderPacket) {
     this.ws.emit('BUILD_BASE_ORDER', order);
     console.log('submitting order', order)
+  }
+
+  getEvents() {
+    this.ws.emit('GET_EVENTS', Cache.getGameId());
   }
 
 }

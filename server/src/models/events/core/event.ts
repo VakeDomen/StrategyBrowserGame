@@ -22,7 +22,7 @@ export class Event implements Export, Save {
         this.player_id = data.player_id;
         this.event_type = data.event_type;
         this.trigger_time = data.trigger_time;
-        this.body = "";
+        this.body = data.body;
     }
     async saveItem(): Promise<void> {
         this.setBody();

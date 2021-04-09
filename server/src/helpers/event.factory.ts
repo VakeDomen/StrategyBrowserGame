@@ -21,7 +21,6 @@ export class EventFactory {
                 clone.base_type_id = JSON.parse(item.body).base_type_id;
                 clone.army_id = JSON.parse(item.body).army_id;
                 event = new ArmyBaseBuildEvent(clone);
-                await event.calculateTriggerTime();
                 return event;
             default:
                 return undefined;

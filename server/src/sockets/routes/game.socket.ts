@@ -24,6 +24,8 @@ import { BaseTypePacket } from '../../models/packets/base-type.packet';
 import { BuildOrderPacket } from '../../models/packets/build-order.packet';
 import { BaseTypeItem } from '../../models/db_items/base-type.item';
 import { ArmyBaseBuildEvent } from '../../models/events/army-build-base.event';
+import { EventItem } from '../../models/db_items/event.item';
+import { EventFactory } from '../../helpers/event.factory';
 
 export function applyGameSockets(socket) {
     
@@ -206,5 +208,16 @@ export function applyGameSockets(socket) {
             socket.emit('QUEUED_EVENT', event.exportPacket());
         } 
     });
-    
+
+    socket.on('GET_EVENTS', async (game_id: string) => {
+        const games: GameItem[] = await (await fetch<GameItem>(conf.tables.game, new GameItem({id: game_id})));
+        const game = games.pop();
+        if (!game) {
+            socket.emit('GAME_NOT_EXIST', null);   
+        }
+        const eventItems = await fetch<EventItem>(conf.tables.event, new EventItem({game_id: game_id}));
+        socket.emit('GET_EVENTS', await Promise.all(eventItems.map(async (e: EventItem) => (await EventFactory.createEvent(new EventItem(e)))?.exportPacket())));
+    });
+
+
 }

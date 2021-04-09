@@ -25,6 +25,8 @@ export class Game {
 
     // loding checks
     private loaded: boolean = false;
+    private loaded1: boolean = false;
+    private loaded2: boolean = false;
     private loadedMap: boolean = false;
     private loadedPlayers: boolean = false;
     private mouseSetUp: boolean = false;
@@ -34,6 +36,7 @@ export class Game {
     private loadedResources: boolean = false;
     private loadedBases: boolean = false;
     private loadedBaseTypes: boolean = false;
+    private loadedEvents: boolean = false;
 
     private view: 'map' | 'base';
     private canvas: ElementRef
@@ -175,15 +178,27 @@ export class Game {
     async start(): Promise<void> {
         this.initLoops();
         this.ws.setCotext('game', this);
+        this.initFirstLoad();
+        while (!this.loaded1) {
+            await this.delay(100);
+        }
+        this.initSecondLoad();
+    }
+
+    
+    private initFirstLoad(): void{
         this.ws.getPlayers(Cache.getGameId());
         this.ws.getArmies(Cache.getGameId());
         this.ws.getGameUsers(Cache.getGameId());
         this.ws.getResourceTypes();
         this.ws.getBases(Cache.getGameId());
-
         this.ws.getBaseTypes();
         this.setupUI();
-        this.setupMouse()
+        this.setupMouse();
+    }
+
+    private initSecondLoad(): void{
+        this.ws.getEvents();
     }
 
     setBases(bases: BasePacket[]): void {
@@ -261,7 +276,7 @@ export class Game {
         this.checkLoaded();
     }
     private checkLoaded(): void {
-        this.loaded = this.loadedMap && 
+        this.loaded1 = this.loadedMap && 
             this.loadedPlayers &&
             this.mouseSetUp &&
             this.loadedArmies && 
@@ -270,6 +285,9 @@ export class Game {
             this.loadedResources &&
             this.loadedBases &&
             this.loadedBaseTypes;
+        this.loaded2 = this.loadedEvents;
+        this.loaded = this.loaded1 && this.loaded2;
+        console.log(this.loaded1, this.loaded2, this.loaded)
         if (this.loaded) {
             Game.state = 'view';
         }
@@ -502,10 +520,19 @@ export class Game {
                 if (army && army.buildEvent?.id == eventPacket.id) {
                     army.buildEvent = undefined;
                 }
-
                 break;
             default:
                 break;
         }
     }
+
+    handleLoadedEvents(events: EventPacket[]): void {
+        console.log(events)
+        for (const event of events) {
+            event.body = JSON.parse(JSON.parse(event.body));
+            this.handleNewEvent(event);
+        }
+        this.loadedEvents = true;
+        this.checkLoaded();
+    } 
 }
