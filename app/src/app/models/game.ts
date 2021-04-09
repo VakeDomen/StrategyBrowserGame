@@ -78,6 +78,7 @@ export class Game {
         this.guiCanvas = gui;
         this.GUI = new GUI(this);
         this.ws = ws;
+        Cache.ws = ws;
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
         this._lastUpdateTimestamp = new Date().getTime();
@@ -194,8 +195,13 @@ export class Game {
         this.ws.getMap(Cache.getGameId());
     }
 
+    async setBase(base: BasePacket): Promise<void> {
+        const tile = Cache.getTile(base.x, base.y);
+        if (tile) await tile.setBase(base);
+        Cache.saveBase(new Base(base));
+    }
+
     setBaseTypes(baseTypes: BaseTypePacket[]) {
-        console.log(baseTypes)
         Cache.setBaseTypes(baseTypes);
         this.loadedBaseTypes = true;
         this.checkLoaded();
@@ -463,14 +469,41 @@ export class Game {
     }
 
     handleNewEvent(eventPacket: EventPacket): void {
+        let army;
         switch (eventPacket.event_type) {
             case 'ARMY_MOVE':
-                const army = Cache.getArmy(eventPacket.body.army_id);
+                army = Cache.getArmy(eventPacket.body.army_id);
                 if (army) {
                     army.moveEvent = eventPacket;
                 }
                 break;
-        
+            case 'ARMY_BASE_BUILD':
+                army = Cache.getArmy(eventPacket.body.army_id);
+                if (army) {
+                    army.buildEvent = eventPacket;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    handleTriggeredEvent(eventPacket: EventPacket): void {
+        let army;
+        switch (eventPacket.event_type) {
+            case 'ARMY_MOVE':
+                army = Cache.getArmy(eventPacket.body.army_id);
+                if (army && army.moveEvent?.id == eventPacket.id) {
+                    army.moveEvent = undefined;
+                }
+                break;
+            case 'ARMY_BASE_BUILD':
+                army = Cache.getArmy(eventPacket.body.army_id);
+                if (army && army.buildEvent?.id == eventPacket.id) {
+                    army.buildEvent = undefined;
+                }
+
+                break;
             default:
                 break;
         }

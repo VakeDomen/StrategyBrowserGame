@@ -8,6 +8,7 @@ import { ResourcePacket } from '../models/packets/resource.packet';
 import { TileTypePacket } from '../models/packets/tile-type.packet';
 import { UserPacket } from '../models/packets/user.packet';
 import { Camera } from '../models/ui_models/camera';
+import { SocketHandlerService } from './socket-handler.service';
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,7 @@ export class Cache {
   private static _selectedTile: Tile | undefined;
   private static _selectedBase: Base | undefined;
   
+  private static _ws: SocketHandlerService;
   private static gameId: string;
   private static myUserId: string;  
   private static hostId: string;
@@ -78,6 +80,9 @@ export class Cache {
       for (let i = 0 ; i < (Cache.bases.get(base.player_id) as Base[]).length ; i++) {
         if ((Cache.bases.get(base.player_id) as Base[])[i].id == base.id) {
           (Cache.bases.get(base.player_id) as Base[])[i] = base
+          if (Cache.selectedBase && Cache.selectedBase.id == base.id) {
+            Cache.selectedBase = base;
+          }
           found = true;
           break;
         }
@@ -105,6 +110,9 @@ export class Cache {
   }
 
   public static getBaseType(id: number): BaseTypePacket | undefined {
+    if (!this.baseTypes) {
+      return undefined;
+    }
     for (const baseType of this.baseTypes) {
       if (baseType.id == id) {
         return baseType;
@@ -195,6 +203,9 @@ export class Cache {
       for (let i = 0 ; i < (Cache.armies.get(army.player_id) as Army[]).length ; i++) {
         if ((Cache.armies.get(army.player_id) as Army[])[i].id == army.id) {
           (Cache.armies.get(army.player_id) as Army[])[i] = army
+          if (Cache.selectedArmy && Cache.selectedArmy.id == army.id) {
+            Cache.selectedArmy = army;
+          }
           found = true;
           break;
         }
@@ -297,6 +308,13 @@ export class Cache {
       this.selectedBase = undefined;
     }
     Cache._selectedTile = value;
+  }
+
+  public static get ws(): SocketHandlerService {
+    return Cache._ws;
+  }
+  public static set ws(value: SocketHandlerService) {
+    Cache._ws = value;
   }
 
   public static getStatIcon(stat: string): string {

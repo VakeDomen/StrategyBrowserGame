@@ -1,7 +1,5 @@
 import { Cache } from "src/app/services/cache.service";
 import { Button } from "../core/button.ui";
-import { GUI } from "../GUI";
-import { ArmyListWindow } from "../windows/army-list.window";
 
 export class ToggleSoundButton extends Button {
 

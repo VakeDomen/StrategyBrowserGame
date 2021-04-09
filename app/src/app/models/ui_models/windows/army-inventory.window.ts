@@ -37,6 +37,11 @@ export class ArmyInventoryWindow extends Window {
 
     update(x: number, y: number): void {
         if (Cache.selectedArmy?.displayInvnetory) {
+            if (Cache.selectedArmy.displayBuild) {
+                this.goalY = 530 - 80;
+            } else {
+                this.goalY = 530;
+            }
             this.goalX = 10;
             let totalCarry = 0;
             for (const bat of Cache.selectedArmy.battalions) {
@@ -51,7 +56,7 @@ export class ArmyInventoryWindow extends Window {
                     weight += res * resources[i].weight;
                 }
             }
-            this.title = `Army invnetory (${weight}kg/${totalCarry}kg)`
+            this.title = `Army inventory (${weight}kg/${totalCarry}kg)`
 
         } else {
             this.goalX = this.originX;
@@ -72,7 +77,7 @@ export class ArmyInventoryWindow extends Window {
             for (let i = 0 ; i < resources.length ; i++) {
                 ctx.drawImage(
                     this.resourceIcons[resources[i].id - 1],
-                    this.x + (Window.HEADER_START_WIDTH / 2) + 100 * (i % 3), 
+                    this.x + (Window.HEADER_START_WIDTH / 2) + 90 * (i % 3), 
                     this.y + Window.HEADER_HEIGHT + 5 + 20 * Math.floor(i / 3),
                     16,
                     16
@@ -83,9 +88,9 @@ export class ArmyInventoryWindow extends Window {
                 }
                 ctx.fillText(
                     `${res}`, 
-                    this.x + (Window.HEADER_START_WIDTH / 2) + 20 + 100 * (i % 3), 
+                    this.x + (Window.HEADER_START_WIDTH / 2) + 20 + 90 * (i % 3), 
                     this.y + Window.HEADER_HEIGHT + 20 * Math.floor(i / 3 + 1),
-                    80
+                    70
                 );
             }
             if (this.hoverIndex > -1) {
@@ -97,7 +102,7 @@ export class ArmyInventoryWindow extends Window {
                     `${resources[this.hoverIndex].display_name}`, 
                     this.hoverX as number + 60, 
                     this.hoverY as number + 17,
-                    80
+                    70
                 );
                 ctx.textAlign = 'start';
             }
@@ -108,12 +113,11 @@ export class ArmyInventoryWindow extends Window {
         if (Cache.selectedArmy && Cache.selectedArmy.inventory) {
             this.hoverIndex = -1;
             const resources = Cache.getResources();
-            const armyInventory: any = Cache.selectedArmy.inventory;
             for (let i = 0 ; i < resources.length ; i++) {
                 if (
-                    x > this.x + (Window.HEADER_START_WIDTH / 2) + 100 * (i % 3) && 
+                    x > this.x + (Window.HEADER_START_WIDTH / 2) + 90 * (i % 3) && 
                     y > this.y + Window.HEADER_HEIGHT + 20 * Math.floor(i / 3) &&
-                    x < 15 + this.x + (Window.HEADER_START_WIDTH / 2) + 100 * (i % 3) && 
+                    x < 15 + this.x + (Window.HEADER_START_WIDTH / 2) + 90 * (i % 3) && 
                     y < this.y + Window.HEADER_HEIGHT + 20 * Math.floor(i / 3 + 1)
                 ) {
                     this.hoverIndex = i;

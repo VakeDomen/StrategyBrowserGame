@@ -10,6 +10,7 @@ import { Window } from "../core/window.ui";
 import { ShowArmyInventoryButton } from "../buttons/show-inventory.button";
 import { ShowArmyBattalionsButton } from "../buttons/show-army-battalions.button";
 import { Stat } from "../../game_models/stat.game";
+import { ToggleArmyBuildButton } from "../buttons/toggle-army-build.button";
 
 export class SelectedArmyOverviewWindow extends Window {
 
@@ -22,6 +23,7 @@ export class SelectedArmyOverviewWindow extends Window {
     private hidePath: Button;
     private showInventory: Button;
     private showBattalions: Button;
+    private showBuildMenu: Button;
 
     private pop: Stat | undefined;
     private attack: Stat | undefined;
@@ -40,6 +42,7 @@ export class SelectedArmyOverviewWindow extends Window {
         this.hidePath = new HideArmyPathButton(this.x + 60, this.y + 40, 40, 40);
         this.showInventory = new ShowArmyInventoryButton(this.x + 110, this.y + 40, 40, 40);
         this.showBattalions = new ShowArmyBattalionsButton(this.x + 160, this.y + 40, 40, 40);
+        this.showBuildMenu = new ToggleArmyBuildButton(this.x + 210, this.y + 40, 40, 40);
         this.army = Cache.selectedArmy;
         if (this.army) {
             this.pop = new Stat('size', this.army.size, this.x + 10, this.y + 3 + 40, 0);
@@ -75,6 +78,7 @@ export class SelectedArmyOverviewWindow extends Window {
         this.hidePath.update(x, y);
         this.showInventory.update(x, y);
         this.showBattalions.update(x, y);
+        this.showBuildMenu.update(x, y);
         if (this.pop) this.pop.update(x, y);
         if (this.attack) this.attack.update(x, y);
         if (this.defense) this.defense.update(x, y);
@@ -116,6 +120,7 @@ export class SelectedArmyOverviewWindow extends Window {
         this.hidePath.handleClick();
         this.showInventory.handleClick();
         this.showBattalions.handleClick();
+        this.showBuildMenu.handleClick();
     }
           
     postAnimationStep() {
@@ -146,6 +151,9 @@ export class SelectedArmyOverviewWindow extends Window {
             this.showBattalions.x = this.x + 160;
             this.showBattalions.y = this.y + 100;
             this.showBattalions.draw(ctx);
+            this.showBuildMenu.x = this.x + 210;
+            this.showBuildMenu.y = this.y + 100;
+            this.showBuildMenu.draw(ctx);
             
             if (this.pop) this.pop.draw(ctx);
             if (this.attack) this.attack.draw(ctx);

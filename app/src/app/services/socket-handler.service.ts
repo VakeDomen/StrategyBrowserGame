@@ -17,13 +17,14 @@ import { EventPacket } from '../models/packets/event.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
 import { BasePacket } from '../models/packets/base.packet';
 import { BaseTypePacket } from '../models/packets/base-type.packet';
+import { BuildOrderPacket } from '../models/packets/build-order.packet';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocketHandlerService {
-  
+ 
   private contexts: any = {};
 
   constructor(
@@ -227,6 +228,8 @@ export class SocketHandlerService {
     this.ws.listen('ARMY_DEFEATED').subscribe((id: string) => this.contexts['game'].removeArmy(id));
     this.ws.listen('GET_GAME_USERS').subscribe((resp: UserPacket[]) => this.contexts['game'].setUsers(resp));
     this.ws.listen('QUEUED_EVENT').subscribe((resp: EventPacket) => this.contexts['game'].handleNewEvent(resp));
+    this.ws.listen('EVENT_TRIGGERED').subscribe((resp: EventPacket) => this.contexts['game'].handleTriggeredEvent(resp));
+    this.ws.listen('BUILD_BASE_ORDER_COMPLETED').subscribe((resp: BasePacket) => this.contexts['game'].setBase(resp));
     this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: ArmyMovementPacket) => this.contexts['game'].updateArmy(resp));
     this.ws.listen('GET_RESOURCE_TYPES').subscribe((resp: ResourcePacket[]) => this.contexts['game'].setResources(resp));
     this.ws.listen('GET_BASE_TYPES').subscribe((resp: BaseTypePacket[]) => this.contexts['game'].setBaseTypes(resp));
@@ -262,6 +265,11 @@ export class SocketHandlerService {
 
   getBaseTypes() {
     this.ws.emit('GET_BASE_TYPES', null);
+  }
+
+  buildBuilding(order: BuildOrderPacket) {
+    this.ws.emit('BUILD_BASE_ORDER', order);
+    console.log('submitting order', order)
   }
 
 }

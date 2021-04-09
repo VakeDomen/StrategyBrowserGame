@@ -10,8 +10,11 @@ import { ArmyInventory } from './army-inventory.game';
 import { ArmyInventoryItem } from '../db_items/army-inventory.item';
 import { ResourceItem } from '../db_items/resource.item';
 import { Delete } from './core/delete.item';
+import { BaseTypeItem } from '../db_items/base-type.item';
+import { TileItem } from '../db_items/tile.item';
+import { textChangeRangeIsUnchanged } from 'typescript';
 export class Army implements Export, Save, Delete {
-   
+  
     id: string;
     player_id: string;
     x: number;
@@ -21,6 +24,7 @@ export class Army implements Export, Save, Delete {
     battalions: Battalion[];
     inventory: ArmyInventory | undefined;
     inventorySpace: number;
+    buildSpeed: number;
 
     constructor(data: any) {
         this.id = data.id;
@@ -30,6 +34,7 @@ export class Army implements Export, Save, Delete {
         this.name = data.name;
         this.battalions = [];
         this.inventorySpace = 0;
+        this.buildSpeed = 0;
     }
     async deleteItem() {
         await this.load();
@@ -91,6 +96,7 @@ export class Army implements Export, Save, Delete {
             await Promise.all(this.battalions.map(async (bat: Battalion) => await bat.load()));
             this.inventorySpace = 0;
             this.battalions.forEach((b: Battalion) => this.inventorySpace += b.carry);
+            this.battalions.forEach((b: Battalion) => this.buildSpeed += b.build);
         }
     }
 
@@ -155,6 +161,27 @@ export class Army implements Export, Save, Delete {
         });
         this.battalions.push(battalion);
         return battalion;
+    }
+
+    async canBuild(baseType: BaseTypeItem): Promise<boolean> {
+        if (!this.inventory) {
+            return false;
+        }
+        if (!this.battalions || !this.battalions.length) {
+            return false;
+        }
+        const tile = (await fetch<TileItem>(conf.tables.tile, new TileItem({x: this.x, y: this.y}))).pop();
+        if (!tile || tile.base) {
+            return false;
+        }
+        if (
+            this.inventory.wood < baseType.wood ||
+            this.inventory.stone < baseType.stone ||
+            this.inventory.ore < baseType.ore
+        ) {
+            return false;
+        }
+        return true;
     }
 
 }

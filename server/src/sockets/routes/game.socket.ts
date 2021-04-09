@@ -21,6 +21,9 @@ import { Base } from '../../models/game_models/base.game';
 import { BaseItem } from '../../models/db_items/base.item';
 import { BasePacket } from '../../models/packets/base.packet';
 import { BaseTypePacket } from '../../models/packets/base-type.packet';
+import { BuildOrderPacket } from '../../models/packets/build-order.packet';
+import { BaseTypeItem } from '../../models/db_items/base-type.item';
+import { ArmyBaseBuildEvent } from '../../models/events/army-build-base.event';
 
 export function applyGameSockets(socket) {
     
@@ -150,7 +153,6 @@ export function applyGameSockets(socket) {
         evetTrigger.setSeconds(evetTrigger.getSeconds() + 5);
         const event = new ArmyMoveEvent({
             game_id: packet.game_id,
-            type: 'ARMY_MOVE',
             player_id: player.id,
             trigger_time: evetTrigger.getTime(),
             army_id: packet.army_id,
@@ -158,9 +160,51 @@ export function applyGameSockets(socket) {
         });
         const game = SocketHandler.getGameById(packet.game_id);
         if (game) {
-            event.saveItem();
+            await event.saveItem();
             game.pushEvent(event);
             socket.emit('QUEUED_EVENT', event.exportPacket());
         } 
     });
+
+
+    socket.on('BUILD_BASE_ORDER', async (packet: BuildOrderPacket) => {
+        const players = await playersOfSocket(socket);
+        const player = players?.pop();
+        if (!player) {
+            socket.emit('PLAYER_NOT_EXIST', null);
+            return;
+        }
+        const armyItem = (await fetch<ArmyItem>(conf.tables.army, new ArmyItem({id: packet.army_id, player_id: player.id}))).pop();
+        if (!armyItem) {
+            socket.emit('ARMY_NOT_EXIST', null); 
+            return;
+        }
+        const baseType = (await fetch<BaseTypeItem>(conf.tables.base_types, new BaseTypeItem({id: packet.base_type_id}))).pop();
+        if (!baseType) {
+            socket.emit('BASE_TYPE_NOT_EXIST', null); 
+            return;
+        }
+        const army = new Army(armyItem);
+        await army.load();
+        if (!await army.canBuild(baseType)) {
+            socket.emit('BUILD_BASE_ORDER_REJECTED', null); 
+            return;
+        }
+        const game = SocketHandler.getGameById(packet.game_id);
+        if (game) {
+            const event = new ArmyBaseBuildEvent({
+                game_id: packet.game_id,
+                player_id: player.id,
+                army_id: packet.army_id,
+                x: packet.x,
+                y: packet.y,
+                base_type_id: packet.base_type_id,
+            });
+            await event.calculateTriggerTime();
+            await event.saveItem()
+            game.pushEvent(event);
+            socket.emit('QUEUED_EVENT', event.exportPacket());
+        } 
+    });
+    
 }

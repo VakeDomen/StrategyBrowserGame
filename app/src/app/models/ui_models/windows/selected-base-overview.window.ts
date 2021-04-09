@@ -2,7 +2,6 @@ import { Cache } from "src/app/services/cache.service";
 import { Base } from "../../game_models/base.game";
 import { PlayerPacket } from "../../packets/player.packet";
 import { UserPacket } from "../../packets/user.packet";
-import { Button } from "../core/button.ui";
 import { Window } from "../core/window.ui";
 import { Stat } from "../../game_models/stat.game";
 
@@ -81,7 +80,7 @@ export class SelectedBaseOverviewWindow extends Window {
             this.width - Window.HEADER_START_WIDTH - Window.HEADER_END_WIDTH
         );
         ctx.fillText(
-            `${Cache.getBaseType(this.base?.base_type as number)?.display_name}`, 
+            `${Cache.getTile(this.base?.x as number, this.base?.y as number)?.tag} ${Cache.getBaseType(this.base?.base_type as number)?.display_name}`, 
             this.x + (Window.HEADER_START_WIDTH / 2) + 50, 
             this.y + Window.HEADER_HEIGHT + 30,
             this.width - Window.HEADER_START_WIDTH - Window.HEADER_END_WIDTH

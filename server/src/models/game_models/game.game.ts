@@ -11,10 +11,8 @@ import { PlayerItem } from "../db_items/player.item";
 import { UserItem } from "../db_items/user.item";
 import { EventHandler } from "../../helpers/event.handler";
 import { Event } from "../events/core/event";
-import { BaseItem } from '../db_items/base.item';
 import { Base } from "./base.game";
 import { Battalion } from "./battalion.game";
-import { encode } from "node:punycode";
 
 const seedrandom = require('seedrandom')
 

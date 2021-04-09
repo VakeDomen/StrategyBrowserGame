@@ -14,17 +14,15 @@ import { BaseListButton } from "./buttons/base-list.button";
 import { PlayerNameBanner } from "./components/player-name-banner.component";
 import { SelectedBaseOverviewWindow } from "./windows/selected-base-overview.window";
 import { ToggleSoundButton } from "./buttons/togge-sound.button";
+import { ArmyBuildWindow } from "./windows/army-build.window";
 
 export class GUI implements Drawable {
-
-    private game: Game;
 
     isHovered: boolean = false;
 
     private elements: Array<Drawable>;
     
     constructor(game: Game) {
-        this.game = game;
         this.elements = [
             new CameraZoomButton(game),
             new CameraFocusButton(game),
@@ -36,6 +34,7 @@ export class GUI implements Drawable {
             new SelectedBaseOverviewWindow(),
             new ArmyInventoryWindow(),
             new ArmyBattalionsWindow(),
+            new ArmyBuildWindow(),
             new PlayerNameBanner(),
         ];
     }

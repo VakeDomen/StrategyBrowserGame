@@ -1,6 +1,7 @@
 import { Cache } from "src/app/services/cache.service";
 import { Drawable } from "../core/drawable.abstract";
 import { Game } from "../game";
+import { BasePacket } from "../packets/base.packet";
 import { TileTypePacket } from "../packets/tile-type.packet";
 import { TilePacket } from "../packets/tile.packet";
 
@@ -100,7 +101,22 @@ export class Tile implements Drawable {
         return this.hovered;
     }
     
+    async setBase(base: BasePacket): Promise<void> {
+        this.base = base.id;
+        this.img = new Image();
+        this.img.src = this.getAssetRoute(this.tile_type, this.orientation);
+        const myColor = Cache.getPlayerById(base?.player_id as string)?.color ?? 1;
+        this.banner.src = `../../../assets/ui/black_banner1.png`;
+        this.bannerHover.src = `../../../assets/ui/black_banner1_glow.png`;
+        this.colorBanner.src = `../../../assets/ui/banner${myColor}.png`;
+        await Promise.all([
+            this.img.onload,
+            this.banner.onload,
+            this.bannerHover.onload,
+            this.colorBanner.onload,
+        ]);
 
+    }
     
 
     async load(): Promise<void> {

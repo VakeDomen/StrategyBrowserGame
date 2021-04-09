@@ -34,8 +34,12 @@ export class ArmyBattalionsWindow extends Window {
 
     update(x: number, y: number): void {
         if (Cache.selectedArmy?.displayBattalions) {
-            if (Cache.selectedArmy?.displayInvnetory) {
+            if (Cache.selectedArmy?.displayInvnetory && Cache.selectedArmy.displayBuild) {
+                this.goalY = 220 - 80;
+            } else if (Cache.selectedArmy?.displayInvnetory) {
                 this.goalY = 220;
+            } else if (Cache.selectedArmy?.displayBuild) {
+                this.goalY = 430 - 80;
             } else {
                 this.goalY = 430;
             }

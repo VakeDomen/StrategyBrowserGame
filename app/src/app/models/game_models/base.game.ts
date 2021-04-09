@@ -22,23 +22,13 @@ export class Base {
         this.base_type = basePacket.base_type;
         this.name = basePacket.name;
         this.size = basePacket.size; 
-        const tile = Cache.getTile(this.x, this.y);
-        if (tile) {
-            console.log(tile)
-            this.defense = Cache.getBaseType(this.base_type as number)?.defense as number +  (Cache.getTileType(tile.tile_type) as TileTypePacket).defense + tile.favorable_terrain_level * 5;
-            this.speed = Cache.getBaseType(this.base_type as number)?.speed as number + Math.max(-90, (Cache.getTileType(tile.tile_type) as TileTypePacket).speed + tile.favorable_terrain_level * 5);
-        } else {
-            this.defense = 0;
-            this.speed = 0;
-        }
-        console.log(this)
+        this.defense = 0;
+        this.speed = 0;
     }
 
     calcStats(): void {
         const tile = Cache.getTile(this.x, this.y);
-        console.log('tile', tile)
         if (tile) {
-            console.log(tile)
             this.defense = Cache.getBaseType(this.base_type as number)?.defense as number +  tile.defense;
             this.speed = Cache.getBaseType(this.base_type as number)?.speed as number + Math.max(-90, tile.defense);
         } else {

@@ -23,8 +23,10 @@ export class Army implements Drawable{
 
     displayInvnetory: boolean = false;
     displayBattalions: boolean = false;
+    displayBuild: boolean = false;
 
     moveEvent: EventPacket | undefined;
+    buildEvent: EventPacket | undefined;
 
     private _hovered: boolean = false;    
     private img: HTMLImageElement;
@@ -32,6 +34,7 @@ export class Army implements Drawable{
     private imgHeight: number = 218;
     
     private moveIcon: HTMLImageElement;
+    private buildIcon: HTMLImageElement;
     private banner: HTMLImageElement;
     private bannerHover: HTMLImageElement;
     private colorBanner: HTMLImageElement;
@@ -47,6 +50,7 @@ export class Army implements Drawable{
 
         this.img = new Image();
         this.moveIcon = new Image();
+        this.buildIcon = new Image();
         this.banner = new Image();
         this.bannerHover = new Image();
         this.colorBanner = new Image();
@@ -58,6 +62,7 @@ export class Army implements Drawable{
         }
         this.img.src = this.getAssetRoute();
         this.moveIcon.src = '../../../assets/ui/move.png';
+        this.buildIcon.src = '../../../assets/ui/buttons/build.png';
 
         this.size = this.calcSizeValue();
         this.attack = this.calcAttackValue();
@@ -114,8 +119,8 @@ export class Army implements Drawable{
             ctx.fillStyle = 'rgba(35, 206, 235, 0.9)';
             const w = 32;
             const h = 32;
-            const cx = offsets[0] + 16;
-            const cy = offsets[1] + 16;
+            const cx = offsets[0] + 95;
+            const cy = offsets[1] + 45;
             ctx.beginPath();
             var lx = cx - w/2,
                 rx = cx + w/2,
@@ -133,14 +138,58 @@ export class Army implements Drawable{
             ctx.restore(); // restore to original state
             ctx.drawImage(
                 this.moveIcon, 
-                ...offsets, 
+                offsets[0] + 79,
+                offsets[1] + 29,
                 30, 
                 30
             );
             const timeLeft = Math.floor((this.moveEvent.trigger_time - new Date().getTime()) / 1000);
-            const displayTime = `${Math.floor(timeLeft / 3600)}:${Math.floor(timeLeft / 60)}:${timeLeft%60}`;
-            ctx.fillStyle = 'black';
-            ctx.fillText(displayTime, offsets[0], offsets[1] + 40);
+            if (timeLeft >= 0) {
+                const displayTime = `${Math.floor(timeLeft / 3600)}:${Math.floor(timeLeft / 60)}:${timeLeft%60}`;
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.fillText(displayTime, offsets[0] + 95, offsets[1] + 75);
+                ctx.textAlign = 'start';
+            }
+        }
+
+        if (this.buildEvent) {
+            ctx.save(); // save state
+            ctx.fillStyle = 'rgba(35, 206, 235, 0.9)';
+            const w = 32;
+            const h = 32;
+            const cx = offsets[0] + 95;
+            const cy = offsets[1] + 45;
+            ctx.beginPath();
+            var lx = cx - w/2,
+                rx = cx + w/2,
+                ty = cy - h/2,
+                by = cy + h/2;
+            var magic = 0.551784;
+            var xmagic = magic*w/2;
+            var ymagic = h*magic/2;
+            ctx.moveTo(cx,ty);
+            ctx.bezierCurveTo(cx+xmagic,ty,rx,cy-ymagic,rx,cy);
+            ctx.bezierCurveTo(rx,cy+ymagic,cx+xmagic,by,cx,by);
+            ctx.bezierCurveTo(cx-xmagic,by,lx,cy+ymagic,lx,cy);
+            ctx.bezierCurveTo(lx,cy-ymagic,cx-xmagic,ty,cx,ty);
+            ctx.fill();
+            ctx.restore(); // restore to original state
+            ctx.drawImage(
+                this.buildIcon, 
+                offsets[0] + 79,
+                offsets[1] + 29,
+                30, 
+                30
+            );
+            const timeLeft = Math.floor((this.buildEvent.trigger_time - new Date().getTime()) / 1000);
+            if (timeLeft >= 0) {
+                const displayTime = `${Math.floor(timeLeft / 3600)}:${Math.floor(timeLeft / 60)}:${timeLeft%60}`;
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.fillText(displayTime, offsets[0] + 95, offsets[1] + 75);
+                ctx.textAlign = 'start';
+            }
         }
 
         // color banner

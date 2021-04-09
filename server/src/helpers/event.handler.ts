@@ -59,7 +59,7 @@ export class EventHandler {
         if (events.length) {
             console.log(`[Game: ${this.game.id}] Importing ${events.length} events from db!`);
             for (const event of events) {
-                const ev = EventFactory.createEvent(event);
+                const ev = await EventFactory.createEvent(event);
                 if (ev) {
                     this.push(ev);
                 } else {
