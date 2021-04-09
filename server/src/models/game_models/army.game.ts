@@ -12,7 +12,6 @@ import { ResourceItem } from '../db_items/resource.item';
 import { Delete } from './core/delete.item';
 import { BaseTypeItem } from '../db_items/base-type.item';
 import { TileItem } from '../db_items/tile.item';
-import { textChangeRangeIsUnchanged } from 'typescript';
 export class Army implements Export, Save, Delete {
   
     id: string;
@@ -126,7 +125,7 @@ export class Army implements Export, Save, Delete {
         return drops;
     }
 
-    async mergeInventory(inventory: ArmyInventory | undefined): Promise<ArmyInventory | undefined> {
+    async mergeInventory(inventory: ArmyInventory | undefined): Promise<any | undefined> {
         const resources = await fetchAll<ResourceItem>(conf.tables.resources);
         if (!this.inventory || !inventory) {
             console.log('ARMY DOES NOT HAVE INVENTORY!');
@@ -142,12 +141,31 @@ export class Army implements Export, Save, Delete {
                 }
             }
         }
-        return inventory;
+        // convert to drop format
+        const drops = {};
+        if (inventory) {
+            for (const key of Object.keys(inventory)) {
+                const res = this.getResourceByTag(key, resources);
+                if (res && inventory[res.tag] > 0) {
+                    drops[res.id as string] = inventory[res.tag];
+                }
+            }
+        }
+        return drops;
     }
 
     private getResourceById(id: string, resources: ResourceItem[]): ResourceItem | undefined {
         for (const res of resources) {
             if (id == res.id) {
+                return res;
+            }
+        }
+        return undefined;
+    }
+
+    private getResourceByTag(tag: string, resources: ResourceItem[]): ResourceItem | undefined {
+        for (const res of resources) {
+            if (tag == res.tag) {
                 return res;
             }
         }

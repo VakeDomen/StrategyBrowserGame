@@ -1,7 +1,7 @@
 import { deleteItem, insert, update } from "../../db/database.handler";
-import { ArmyInventoryItem } from "../db_items/army-inventory.item";
+import { BaseInventoryItem } from "../db_items/base-inventory.item";
 import { DbItem } from "../db_items/core/db.item";
-import { ArmyInventoryPacket } from "../packets/army-inventory.packet";
+import { BaseInventoryPacket } from "../packets/base-inventory.packet";
 import { Export } from "./core/export.item";
 import { Save } from "./core/save.item";
 import * as conf from '../../db/database.config.json';
@@ -9,11 +9,11 @@ import { fetchAll } from '../../db/database.handler';
 import { ResourceItem } from "../db_items/resource.item";
 import { Delete } from "./core/delete.item";
 
-export class ArmyInventory implements Export, Save, Delete {
+export class BaseInventory implements Export, Save, Delete {
     id: string;
     game_id: string;
     player_id: string;
-    army_id: string;
+    base_id: string;
     food: number;
     wood: number;
     stone: number;
@@ -43,7 +43,7 @@ export class ArmyInventory implements Export, Save, Delete {
         this.id = data.id;
         this.game_id = data.game_id;
         this.player_id = data.player_id;
-        this.army_id = data.army_id;
+        this.base_id = data.base_id;
         this.food = data.food;
         this.wood = data.wood;
         this.stone = data.stone;
@@ -70,10 +70,10 @@ export class ArmyInventory implements Export, Save, Delete {
         this.tools_T3 = data.tools_T3;
     }
     async deleteItem() {
-        await deleteItem(conf.tables.army_inventory, new ArmyInventoryItem({id: this.id}));
+        await deleteItem(conf.tables.base_inventory, new BaseInventoryItem({id: this.id}));
     }
 
-    blank(): ArmyInventory {
+    blank(): BaseInventory {
         this.food = 0;
         this.wood = 0;
         this.stone = 0;
@@ -104,21 +104,21 @@ export class ArmyInventory implements Export, Save, Delete {
         const item = this.exportItem();
         if (!item.id) {
             item.generateId();
-            await insert(conf.tables.army_inventory, item);
+            await insert(conf.tables.base_inventory, item);
         } else {
-            await update(conf.tables.army_inventory, item);
+            await update(conf.tables.base_inventory, item);
         }
         return item;
     }
     exportItem(): DbItem {
-        return new ArmyInventoryItem(this);
+        return new BaseInventoryItem(this);
     }
-    exportPacket(): ArmyInventoryPacket {
+    exportPacket(): BaseInventoryPacket {
         return {
             id: this.id,
             game_id: this.game_id,
             player_id: this.player_id,
-            army_id: this.army_id,
+            base_id: this.base_id,
             food: this.food,
             wood: this.wood,
             stone: this.stone,
@@ -143,10 +143,10 @@ export class ArmyInventory implements Export, Save, Delete {
             tools_T1: this.tools_T1,
             tools_T2: this.tools_T2,
             tools_T3: this.tools_T3,
-        } as ArmyInventoryPacket;
+        } as BaseInventoryPacket;
     }
 
-    async emptyInventoryOverfill(cap: number): Promise<any> {
+    async emptyInvenotryOverfill(cap: number): Promise<any> {
         const resources = await fetchAll<ResourceItem>(conf.tables.resources);
         const drops = {};
         while (await this.calcWeight(resources) > cap) {
@@ -193,4 +193,27 @@ export class ArmyInventory implements Export, Save, Delete {
         return undefined;
     }
 
+    private getResourceById(id: string, resources: ResourceItem[]): ResourceItem | undefined {
+        for (const res of resources) {
+            if (id == res.id) {
+                return res;
+            }
+        }
+        return undefined;
+    }
+
+    async addToInventory(drops: any) {
+        const resources = await fetchAll<ResourceItem>(conf.tables.resources);
+        for (const dropId of Object.keys(drops)) {
+            const res = this.getResourceById(dropId, resources);
+            if (res) {
+                const volume = drops[dropId];
+                if (await this.calcWeight(resources) ?? 0 >= volume * res.weight) {
+                    this[res.tag] += volume;
+                    delete drops[dropId];
+                }
+            }
+        }
+        return drops;
+    }
 }

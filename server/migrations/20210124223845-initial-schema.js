@@ -23,9 +23,11 @@ exports.up = function(db, callback) {
     db.createTable.bind(db, 'events', events),
     db.createTable.bind(db, 'tile_types', tile_type),
     db.createTable.bind(db, 'army_inventory', army_inventory),
+    db.createTable.bind(db, 'base_inventory', base_inventory),
     db.createTable.bind(db, 'resources', resources),
     db.createTable.bind(db, 'base_types', base_type),
     db.createTable.bind(db, 'bases', bases),
+    db.createTable.bind(db, 'reports', report),
   ], callback);
 };
 
@@ -43,6 +45,7 @@ exports.down = function(db, callback) {
     db.dropTable.bind(db, 'resources'),
     db.dropTable.bind(db, 'base_types'),
     db.dropTable.bind(db, 'bases'),
+    db.dropTable.bind(db, 'reports'),
   ], callback);
 };
 
@@ -399,6 +402,119 @@ const army_inventory = {
   ifNotExists: true
 }
 
+const base_inventory = {
+  columns: {
+    id: {
+      type: 'string',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    player_id: {
+      type: 'string',
+    },
+    base_id: {
+      type: 'string',
+    },
+    food: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    wood: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    stone: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    ore: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    cart: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    horse: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    bow_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    armor_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    sword_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    pike_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    shield_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T1: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T2: {
+      type: 'int',
+      defaultValue: 0,
+    },
+    tools_T3: {
+      type: 'int',
+      defaultValue: 0,
+    },
+  },
+  ifNotExists: true
+}
+
 const resources = {
   columns: {
     id: {
@@ -498,7 +614,10 @@ const base_type = {
     vision: {
       type: 'int',
       defaultValue: 2,
-    }
+    },
+    buildable: {
+      type: 'boolean'
+    },
   },
   ifNotExists: true
 }
@@ -528,6 +647,31 @@ const bases = {
     size: {
       type: 'int',
     }
+  },
+  ifNotExists: true
+}
+
+const report = {
+  columns: {
+    id: {
+      type: 'string',
+      primaryKey: true,
+      autoIncrement: false,
+    },
+    player_id: {
+      type: 'string',
+    },
+    report_read: {
+      type: 'boolean',
+      defaultValue: 0,
+    },
+    report_type: {
+      type: 'string'
+    },
+    body: {
+      type: 'string',
+      length: 4096,
+    },
   },
   ifNotExists: true
 }

@@ -11,7 +11,9 @@
     "army_inventory": "army_inventory",
     "resources": "resources",
     "base_types": "base_types",
-    "bases": "bases"
+    "bases": "bases",
+    "reports": "reports",
+    "base_inventory": "base_inventory"
   },
   "log": false
 }

@@ -218,6 +218,5 @@ export function applyGameSockets(socket) {
         const eventItems = await fetch<EventItem>(conf.tables.event, new EventItem({game_id: game_id}));
         socket.emit('GET_EVENTS', await Promise.all(eventItems.map(async (e: EventItem) => (await EventFactory.createEvent(new EventItem(e)))?.exportPacket())));
     });
-
-
+    
 }

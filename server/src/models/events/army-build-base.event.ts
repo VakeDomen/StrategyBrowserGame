@@ -12,6 +12,7 @@ import { UserItem } from "../db_items/user.item";
 import { TileItem } from "../db_items/tile.item";
 import { Tile } from "../game_models/tile.game";
 import { EventItem } from "../db_items/event.item";
+import { Report } from "../game_models/report.game";
 
 export class ArmyBaseBuildEvent extends Event {
     x: number;
@@ -81,6 +82,15 @@ export class ArmyBaseBuildEvent extends Event {
         await army.saveItem();
         tile.base = base.id;
         await new Tile(tile).saveItem();
+
+        const report = new Report({
+            player_id: this.player_id,
+            report_read: false,
+            report_type: 'BUILD_BASE_ORDER_COMPLETED',
+            body: JSON.stringify(this.body)
+        });
+        await report.saveItem();
+        SocketHandler.broadcastToGame(this.game_id, 'NEW_REPORT', report.exportPacket());
         SocketHandler.broadcastToGame(this.game_id, 'GET_ARMY', army.exportPacket());
         SocketHandler.broadcastToGame(this.game_id, 'BUILD_BASE_ORDER_COMPLETED', base.exportPacket());
         return undefined;

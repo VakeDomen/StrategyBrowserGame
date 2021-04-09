@@ -16,11 +16,13 @@ exports.setup = function(options, seedLink) {
 
 
 exports.up = function(db) {
-  const columns = ['id',               'tag',         'display_name',     'build','wood','stone', 'ore','speed', 'defense', 'harvestable', 'vision'];
-  db.insert('base_types', columns, [1, 'town',        'Town',                5000,  2000,   2000,     0,     80,        40,             0,       3 ], inserted);
-  db.insert('base_types', columns, [2, 'mil_outpost', 'Military outpost',    3000,  1300,   1000,   500,     50,        60,             0,       3 ], inserted);
-  db.insert('base_types', columns, [3, 'res_outpost', 'Resource outpost',     200,   300,    300,     0,     30,        20,             1,       2 ], inserted);
-  db.insert('base_types', columns, [4, 'tower',       'Watch tower',         1000,  1500,   1500,  1000,      0,         0,             0,       4 ], inserted);
+  const columns = ['id',               'tag',                 'display_name',     'build','wood','stone', 'ore','speed', 'defense', 'harvestable', 'vision', 'buildable'];
+  db.insert('base_types', columns, [1, 'town',                'Town',                5000,  2000,   2000,     0,     80,        40,             0,       3,           1 ], inserted);
+  db.insert('base_types', columns, [2, 'mil_outpost',         'Military outpost',    3000,  1300,   1000,   500,     50,        60,             0,       3,           1 ], inserted);
+  db.insert('base_types', columns, [3, 'res_outpost',         'Resource outpost',     200,   300,    300,     0,     30,        20,             1,       2,           1 ], inserted);
+  db.insert('base_types', columns, [4, 'tower',               'Watch tower',         1000,  1500,   1500,  1000,      0,         0,             0,       4,           1 ], inserted);
+  db.insert('base_types', columns, [5, 'res_outpost_general', 'Resource outpost 2',  1000,  1500,   1500,  1000,      0,         0,             1,       4,           1 ], inserted);
+  db.insert('base_types', columns, [6, 'loot',                'Battle remains',         0,     0,      0,     0,      0,         0,             0,       0,           0 ], inserted);
   return null;
 };
 

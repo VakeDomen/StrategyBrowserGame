@@ -7,6 +7,9 @@ import { Event } from "./core/event";
 import { TileItem } from "../db_items/tile.item";
 import { BattalionItem } from "../db_items/battalion.item";
 import { SocketHandler } from "../../sockets/handler.socket";
+import { Report } from "../game_models/report.game";
+import { Base } from "../game_models/base.game";
+import { basename } from "node:path";
 
 export class ArmyBattleEvent extends Event {
     
@@ -24,7 +27,13 @@ export class ArmyBattleEvent extends Event {
     async trigger(): Promise<Event[] | undefined> {
         const initiator = await this.getArmy(this.initiator);
         const defender = await this.getArmy(this.defender);
+
         if (initiator && defender) {
+            // save inital state for report
+            const preInitiator = initiator.exportPacket();
+            const preDefender = defender.exportPacket();
+
+            // find battle location (for tile modifiers)
             this.battleTile = (await fetch<TileItem>(conf.tables.tile, new TileItem({x: defender.x, y: defender.y}))).pop();
             
             // fight the armies and get the resource drop from casualties
@@ -42,27 +51,63 @@ export class ArmyBattleEvent extends Event {
                 victoriousArmy = defendingArmy;
                 defeatedArmy = initiator;
             }
-
+            // if nothing went wrong and not both dead
             if (victoriousArmy && defeatedArmy && victoriousArmy.inventory) {
                 // if inventory too full (due to casualties)
                 // empty unitll valid
                 let dropsFromOverfill: any;
                 if (await victoriousArmy.inventory.calcWeight() as number > victoriousArmy.inventorySpace) {
-                    dropsFromOverfill = await victoriousArmy.inventory.emptyInvenotryOverfill(victoriousArmy.inventorySpace);
+                    dropsFromOverfill = await victoriousArmy.inventory.emptyInventoryOverfill(victoriousArmy.inventorySpace);
                 }
-                console.log('drops', dropsFromOverfill)
-                if (!dropsFromOverfill) {
-                    const overflow1 = await victoriousArmy.addToInventory(drops);
-                    const overflow2 = await victoriousArmy.mergeInventory(defeatedArmy.inventory);
-                    // console.log('overflow', overflow1, overflow2)
-                    // console.log(victoriousArmy.inventory, await victoriousArmy.inventory.calcWeight())
-                }
+                const overflow1 = await victoriousArmy.addToInventory(drops);
+                const overflow2 = await victoriousArmy.mergeInventory(defeatedArmy.inventory);
+                const allOverflow = this.mergeDrops(dropsFromOverfill, overflow1, overflow2);
+
                 await victoriousArmy.saveItem();
                 await defeatedArmy.deleteItem();
+                const lootPile = new Base({
+                    x: defender.x,
+                    y: defender.y,
+                    base_type: 6
+                });
+                await lootPile.saveItem();
+                await lootPile.load();
+                await lootPile.inventory?.addToInventory(allOverflow);
+                await lootPile.saveItem();
             }
+            // save remains for report
+            const postInitiator = initiator.exportPacket();
+            const postDefender = defender.exportPacket();
             SocketHandler.broadcastToGame(this.game_id, 'ARMY_DEFEATED', defeatedArmy.id)
             SocketHandler.broadcastToGame(this.game_id, 'GET_ARMY', victoriousArmy?.exportPacket());
-            // console.log(survivor, attackingArmy, defendingArmy);
+
+            // generate reports
+            const initiatorReport = new Report({
+                player_id: initiator.player_id,
+                report_read: false,
+                report_type: 'ARMY_FILED_BATTLE',
+                body: JSON.stringify({
+                    preInitiator,
+                    preDefender,
+                    postInitiator,
+                    postDefender
+                })
+            });
+            const defenderReport = new Report({
+                player_id: defender.player_id,
+                report_read: false,
+                report_type: 'ARMY_FILED_BATTLE',
+                body: JSON.stringify({
+                    preInitiator,
+                    preDefender,
+                    postInitiator,
+                    postDefender
+                })
+            });
+            await initiatorReport.saveItem();
+            await defenderReport.saveItem();
+            SocketHandler.broadcastToGame(this.game_id, 'NEW_REPORT', initiatorReport.exportPacket());
+            SocketHandler.broadcastToGame(this.game_id, 'NEW_REPORT', defenderReport.exportPacket());
         }
         return undefined;
     }
@@ -74,7 +119,7 @@ export class ArmyBattleEvent extends Event {
         def.forEach((b: Battalion) => b.isDefender = true);
         const allBattalions = [...att, ...def];
         while (!this.oneIsDefeated(att, def)) {
-            console.log('Turn', turn)
+            console.log('Turn', turn);
             turn++;
             // merge all batalions
             // ids of batalions to attack this round
@@ -92,7 +137,6 @@ export class ArmyBattleEvent extends Event {
             } else {
                 // sort all batalions by initiative 
                 battalionsIds = this.sortBattalionsByInitiative(allBattalions.filter((bat: Battalion) => bat.size > 0)).map((bat: Battalion) => bat.id);
-
             }
             // deal damage with selected batalions
             while (battalionsIds.length) {
@@ -117,7 +161,6 @@ export class ArmyBattleEvent extends Event {
                         await attacker.weightStatsByTile(this.battleTile.x, this.battleTile.y);
                         await Promise.all(defenders.map( async (defr: Battalion) => await defr.weightStatsByTile(this.battleTile?.x, this.battleTile?.y)));
                     }
-
                     // calculate attacker damage per defending batalion
                     const dmg = Math.ceil((attacker.attack / defenders.length));
                     console.log(`\tattacker ${attacker.id.substr(0, 5)} dealing ${attacker.attack} dmg to ${defenders.length} defenders (DMG PER DEF: ${dmg})`)
@@ -205,5 +248,22 @@ export class ArmyBattleEvent extends Event {
             return loadedArmy;
         }
         return undefined;
+    }
+
+    private mergeDrops(d1: any, d2: any, d3: any): any {
+        let all = {};
+        for (const d of [d1, d2, d3]) {
+            if (!d) {
+                continue;
+            }
+            for (const key of Object.keys(d)) {
+                if(all[key]) {
+                    all[key] += d[key];
+                } else {
+                    all[key] = d[key];
+                }
+            }
+        }
+        return all;
     }
 }
