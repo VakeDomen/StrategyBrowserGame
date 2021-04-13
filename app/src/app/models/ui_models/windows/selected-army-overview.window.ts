@@ -115,12 +115,15 @@ export class SelectedArmyOverviewWindow extends Window {
     }
 
     handleBodyClick(x: number, y: number) {
-        this.moveButton.handleClick();
-        this.showPath.handleClick();
-        this.hidePath.handleClick();
-        this.showInventory.handleClick();
-        this.showBattalions.handleClick();
-        this.showBuildMenu.handleClick();
+        const clicks = [
+            this.moveButton.handleClick(),
+            this.showPath.handleClick(),
+            this.hidePath.handleClick(),
+            this.showInventory.handleClick(),
+            this.showBattalions.handleClick(),
+            this.showBuildMenu.handleClick(),
+        ];
+        return clicks.includes(true);
     }
           
     postAnimationStep() {

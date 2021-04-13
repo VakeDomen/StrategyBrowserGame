@@ -77,9 +77,9 @@ export class ArmyListWindow extends Window {
         }
     }
 
-    handleBodyClick(x: number, y: number): void {
+    handleBodyClick(x: number, y: number): boolean {
         if (!this.armies) {
-            return;
+            return false;
         }
         for (let i = 0 ; i < this.armies.length ; i++) {
             const army = this.armies[i];
@@ -92,8 +92,13 @@ export class ArmyListWindow extends Window {
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
                 Cache.selectedArmy = army;
+                return true;
             }
         }
+        return false;
     } 
 
+    onClose() {
+        Cache.sideWindow = undefined;
+    }
 }

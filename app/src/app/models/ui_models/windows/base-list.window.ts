@@ -75,9 +75,9 @@ export class BaseListWindow extends Window {
         }
     }
 
-    handleBodyClick(x: number, y: number): void {
+    handleBodyClick(x: number, y: number): boolean {
         if (!this.bases) {
-            return;
+            return false;
         }
         for (let i = 0 ; i < this.bases.length ; i++) {
             const base = this.bases[i];
@@ -90,8 +90,14 @@ export class BaseListWindow extends Window {
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
                 Cache.selectedBase = base;
+                return true;
             }
         }
+        return false;
     } 
+
+    onClose() {
+        Cache.sideWindow = undefined;
+    }
 
 }

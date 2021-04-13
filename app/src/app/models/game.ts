@@ -25,8 +25,7 @@ export class Game {
     static state: 'loading' | 
         'view' | 
         'army_movement_select' | 
-        'path_view' | 
-        'view_reports';
+        'path_view';
 
     // loding checks
     private loaded: boolean = false;
@@ -116,9 +115,6 @@ export class Game {
                     this.GUI.update(this.mouseX, this.mouseY);
                     this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
                     break;
-                case 'view_reports':
-                    this.GUI.update(this.mouseX, this.mouseY);
-                    break;
                 default:
                     this.GUI.update(this.mouseX, this.mouseY);
                     break;
@@ -167,11 +163,6 @@ export class Game {
             case 'path_view':   
                 this.map.draw(canvasContext); 
                 Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));  
-                this.drawUI(guiContext);
-                break;
-            case 'view_reports':
-                this.map.draw(canvasContext); 
-                Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
                 this.drawUI(guiContext);
                 break;
             case 'army_movement_select':
@@ -378,6 +369,7 @@ export class Game {
         if (Cache.soundOn) {
             this.click.play();
         }
+        console.log(Game.state)
         const army = this.findHoveredArmy();
         switch (Game.state) {
             case 'view':
@@ -387,6 +379,7 @@ export class Game {
                 if (army) { Cache.selectedArmy = army; return; }
                 // click on tile
                 const tile = this.map.getHovered();
+                console.log(tile)
                 if (tile) { 
                     Cache.selectedTile = tile; 
                     if (tile.base) {
@@ -402,10 +395,6 @@ export class Game {
                 if (Cache.selectedArmy && Cache.path) this.moveArmy();
                 return;
             case 'path_view':
-                // click on HUD
-                if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
-                return;
-            case 'view_reports':
                 // click on HUD
                 if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
                 return;
@@ -432,9 +421,6 @@ export class Game {
     }
 
     private handleCameraDrag(): void {
-        if (Game.state == 'view_reports') {
-            return;
-        }
         if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
             const startX = (this.mouseDownEvent.x / window.innerWidth) * 1600;
             const startY = (this.mouseDownEvent.y / window.innerHeight) * 900;

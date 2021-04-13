@@ -48,10 +48,13 @@ export class ArmyBuildWindow extends Window {
 
     handleBodyClick() {
         if (Cache.selectedArmy) {
+            const clicks = [];
             for (const btn of this.baseButtons) {
-                btn.handleClick();
+                clicks.push(btn.handleClick());
             }
+            return clicks.includes(true);
         }
+        return false;
     }
 
     generateButtons(): Button[] {

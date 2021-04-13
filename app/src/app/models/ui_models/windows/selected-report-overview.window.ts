@@ -90,6 +90,10 @@ export class SelectedReportOverviewWindow extends Window {
         return undefined;
     }
 
+    handleBodyClick() {
+        return !!Cache.selectedReport && this.hovered;
+    }
+
     update(x: number, y: number) {
         if (!Cache.selectedReport) {
             this.goalY = this.originY;

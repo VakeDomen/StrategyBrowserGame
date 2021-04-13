@@ -78,7 +78,7 @@ export class Window implements Drawable {
         this.checkHover(x, y);
     }
 
-    protected handleClose(x: number, y: number): void {
+    protected handleClose(x: number, y: number): boolean {
         if (
             x > this.x + this.width - Window.HEADER_END_WIDTH &&
             y > this.y &&
@@ -87,18 +87,20 @@ export class Window implements Drawable {
         ) {
             this.onClose()
             Game.state = 'view';
+            return true;
         }
+        return false;
     }
 
-    protected handleBodyClick(x: number, y: number): void {
-        return;
+    protected handleBodyClick(x: number, y: number): boolean {
+        return this.hovered;
     }
 
     handleClick(x: number, y: number): boolean {
         if (this.hovered) {
-            this.handleClose(x, y);
-            this.handleBodyClick(x, y);
-            return true;
+            if (this.handleClose(x, y)) return true;
+            return this.handleBodyClick(x, y);
+            
         }
         return false;
     }

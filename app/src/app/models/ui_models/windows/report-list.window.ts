@@ -14,7 +14,7 @@ export class ReportListWindow extends Window {
             return;
         } else {
             super.goalX = 1330;
-            this.title = `Report list (unread: ${Cache.unreadReports})`;
+            this.title = `Report list (${Cache.unreadReports})`;
         }
         this.checkHover(x, y);
     }
@@ -83,9 +83,9 @@ export class ReportListWindow extends Window {
         }
     }
 
-    handleBodyClick(x: number, y: number): void {
+    handleBodyClick(x: number, y: number): boolean {
         if (!Cache.getReports()) {
-            return;
+            return false;
         }
         for (let i = 0 ; i < Cache.getReports().length ; i++) {
             const report = Cache.getReports()[i];
@@ -98,7 +98,13 @@ export class ReportListWindow extends Window {
                 super.hoverY < super.y + Window.HEADER_HEIGHT + i * 20 + 20
             ) {
                 Cache.selectedReport = report;
+                return true;
             }
         }
+        return false;
     } 
+
+    onClose() {
+        Cache.sideWindow = undefined;
+    }
 }
