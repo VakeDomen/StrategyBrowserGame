@@ -12,6 +12,19 @@ export class ArmyListWindow extends Window {
         this.armies = armies;
     }
 
+    update(x: number, y: number) {
+        if (Cache.sideWindow != 'army') {
+            this.goalX = this.originX;
+            return;
+        } else {
+            if (!this.armies) {
+                this.armies = Cache.getPlayerArmies(Cache.getMe().id);
+            }
+            super.goalX = 1330;
+        }
+        this.checkHover(x, y);
+    }
+
     drawBody(ctx: CanvasRenderingContext2D): void {
         if (!this.armies) {
             ctx.fillText(

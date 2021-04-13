@@ -26,6 +26,8 @@ import { BaseTypeItem } from '../../models/db_items/base-type.item';
 import { ArmyBaseBuildEvent } from '../../models/events/army-build-base.event';
 import { EventItem } from '../../models/db_items/event.item';
 import { EventFactory } from '../../helpers/event.factory';
+import { ReportItem } from '../../models/db_items/report.item';
+import { Report } from '../../models/game_models/report.game';
 
 export function applyGameSockets(socket) {
     
@@ -218,5 +220,16 @@ export function applyGameSockets(socket) {
         const eventItems = await fetch<EventItem>(conf.tables.event, new EventItem({game_id: game_id}));
         socket.emit('GET_EVENTS', await Promise.all(eventItems.map(async (e: EventItem) => (await EventFactory.createEvent(new EventItem(e)))?.exportPacket())));
     });
-    
+
+
+    socket.on('GET_REPORTS', async (player_id: string) => {
+        const players: PlayerItem[] = await fetch<PlayerItem>(conf.tables.player, new PlayerItem({id: player_id}));
+        if (!players.length) {
+            socket.emit('PLAYERS_NOT_EXIST', null);   
+        }
+        
+        const items = await fetch<ReportItem>(conf.tables.reports, new ReportItem({player_id: player_id}));
+        socket.emit('GET_REPORTS', await Promise.all(items.map(async (e: ReportItem) => new Report(e).exportPacket())));
+    });
+
 }

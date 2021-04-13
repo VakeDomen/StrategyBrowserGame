@@ -19,9 +19,14 @@ import { ResourcePacket } from "./packets/resource.packet";
 import { BasePacket } from "./packets/base.packet";
 import { Base } from "./game_models/base.game";
 import { BaseTypePacket } from "./packets/base-type.packet";
+import { ReportPacket } from "./packets/report.packet";
 
 export class Game {
-    static state: 'loading' | 'view' | 'army_movement_select' | 'path_view';
+    static state: 'loading' | 
+        'view' | 
+        'army_movement_select' | 
+        'path_view' | 
+        'view_reports';
 
     // loding checks
     private loaded: boolean = false;
@@ -38,7 +43,6 @@ export class Game {
     private loadedBaseTypes: boolean = false;
     private loadedEvents: boolean = false;
 
-    private view: 'map' | 'base';
     private canvas: ElementRef
     private guiCanvas: ElementRef
     private GUI: GUI;
@@ -85,7 +89,6 @@ export class Game {
         this.running = data.running;
         this._lastDrawTimestamp = new Date().getTime();
         this._lastUpdateTimestamp = new Date().getTime();
-        this.view = 'map';
         Game.state = 'loading';
         this.map = new GameMap({} as MapPacket);
         this.camera = new Camera(800, 450, this);
@@ -112,6 +115,9 @@ export class Game {
                 case 'path_view':
                     this.GUI.update(this.mouseX, this.mouseY);
                     this.map.update(...this.camera.pixelToCoordinate(this.mouseX, this.mouseY));
+                    break;
+                case 'view_reports':
+                    this.GUI.update(this.mouseX, this.mouseY);
                     break;
                 default:
                     this.GUI.update(this.mouseX, this.mouseY);
@@ -152,12 +158,26 @@ export class Game {
         canvasContext.scale(1 / zoom, 1 / zoom)
         // draw code here
         this.clearCanvas(canvasContext)
-        switch (this.view) {
-            case 'map':
+        switch (Game.state) {
+            case 'view':
                 this.map.draw(canvasContext); 
                 Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
+                this.drawUI(guiContext);
                 break;
-            case 'base':     
+            case 'path_view':   
+                this.map.draw(canvasContext); 
+                Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));  
+                this.drawUI(guiContext);
+                break;
+            case 'view_reports':
+                this.map.draw(canvasContext); 
+                Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
+                this.drawUI(guiContext);
+                break;
+            case 'army_movement_select':
+                this.map.draw(canvasContext); 
+                Cache.getAllArmies().forEach((army: Army) => army.draw(canvasContext));
+                this.drawUI(guiContext);
                 break;
             default:
                 break;
@@ -165,7 +185,6 @@ export class Game {
         // end draw code
         this.camera.adjust(canvasContext, !this.mousePressed);
         canvasContext.scale(zoom, zoom);
-        this.drawUI(guiContext);
         guiContext.scale(1, 1)
         this.camera.inFrameTiles = 0;
 
@@ -199,6 +218,7 @@ export class Game {
 
     private initSecondLoad(): void{
         this.ws.getEvents();
+        this.ws.getReports(Cache.getMe().id);
     }
 
     setBases(bases: BasePacket[]): void {
@@ -245,6 +265,13 @@ export class Game {
         }
         this.loadedUsers = true;
         this.checkLoaded();
+    }
+
+    setReports(reports: ReportPacket[]) {
+        console.log(reports)
+        for (const report of reports) {
+            Cache.setReport(report);
+        }
     }
 
     async setArmies(packet: ArmyPacket[]) {
@@ -378,6 +405,10 @@ export class Game {
                 // click on HUD
                 if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
                 return;
+            case 'view_reports':
+                // click on HUD
+                if (this.GUI.handleClick(this.mouseX, this.mouseY)) return;
+                return;
             default:
                 return;
         }
@@ -401,6 +432,9 @@ export class Game {
     }
 
     private handleCameraDrag(): void {
+        if (Game.state == 'view_reports') {
+            return;
+        }
         if (this.mouseDownEvent && this.preMoveCameraX && this.preMoveCameraY) {
             const startX = (this.mouseDownEvent.x / window.innerWidth) * 1600;
             const startY = (this.mouseDownEvent.y / window.innerHeight) * 900;

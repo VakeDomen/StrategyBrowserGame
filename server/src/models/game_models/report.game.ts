@@ -17,7 +17,7 @@ export class Report implements Save, Export {
     constructor(data) {
         this.id = data.id;
         this.player_id = data.player_id;
-        this.report_read = data.read;
+        this.report_read = data.report_read;
         this.report_type = data.report_type;
         this.body = data.body;
     }

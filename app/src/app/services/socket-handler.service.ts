@@ -18,12 +18,14 @@ import { ResourcePacket } from '../models/packets/resource.packet';
 import { BasePacket } from '../models/packets/base.packet';
 import { BaseTypePacket } from '../models/packets/base-type.packet';
 import { BuildOrderPacket } from '../models/packets/build-order.packet';
+import { ReportPacket } from '../models/packets/report.packet';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class SocketHandlerService {
+
  
   private contexts: any = {};
 
@@ -234,6 +236,7 @@ export class SocketHandlerService {
     this.ws.listen('ARMY_MOVE_EVENT').subscribe((resp: ArmyMovementPacket) => this.contexts['game'].updateArmy(resp));
     this.ws.listen('GET_RESOURCE_TYPES').subscribe((resp: ResourcePacket[]) => this.contexts['game'].setResources(resp));
     this.ws.listen('GET_BASE_TYPES').subscribe((resp: BaseTypePacket[]) => this.contexts['game'].setBaseTypes(resp));
+    this.ws.listen('GET_REPORTS').subscribe((resp: ReportPacket[]) => this.contexts['game'].setReports(resp));
   }
 
   moveArmy(armyPacket: ArmyMovementPacket): void {
@@ -276,5 +279,7 @@ export class SocketHandlerService {
   getEvents() {
     this.ws.emit('GET_EVENTS', Cache.getGameId());
   }
-
+  getReports(id: string) {
+    this.ws.emit('GET_REPORTS', id);
+  }
 }

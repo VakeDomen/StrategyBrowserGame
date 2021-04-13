@@ -14,7 +14,7 @@ export class BaseListButton extends Button {
 
     handleClick(): boolean {
         if (this.hovered) {
-            this.gui.addElement(new BaseListWindow(Cache.getPlayerBases(Cache.getMe().id)));
+            Cache.sideWindow = 'base';
         }
         return this.hovered;
     }

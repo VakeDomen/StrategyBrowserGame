@@ -14,7 +14,7 @@ export class ArmyListButton extends Button {
 
     handleClick(): boolean {
         if (this.hovered) {
-            this.gui.addElement(new ArmyListWindow(Cache.getPlayerArmies(Cache.getMe().id)));
+            Cache.sideWindow = 'army';
         }
         return this.hovered;
     }

@@ -42,7 +42,6 @@ export class LobbyComponent implements AfterViewInit {
   
   handleStartedGames(games: GamePacket[]): void {
     this.startedGames.push(...games);
-    console.log(games)
     this.startedGamesReady = true;
     this.checkData();
   }
@@ -87,7 +86,6 @@ export class LobbyComponent implements AfterViewInit {
     this.router.navigate(['/game', id]);
   }
   canJoin(game: GamePacket): boolean {
-    console.log(game.players, this.auth.getId())
     return !game.running || 
       (game.running && game.players.includes(this.auth.getId() as string));
   }

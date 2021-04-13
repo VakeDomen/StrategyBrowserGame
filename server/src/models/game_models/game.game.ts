@@ -51,6 +51,7 @@ export class Game implements Export {
         return {
             id: this.id,
             host: this.host,
+            name: this.name,
             players: this.users,
             running: this.running
         } as GamePacket;

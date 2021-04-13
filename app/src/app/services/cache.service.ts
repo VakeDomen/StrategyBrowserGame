@@ -4,6 +4,7 @@ import { Base } from '../models/game_models/base.game';
 import { Tile } from '../models/game_models/tile.game';
 import { BaseTypePacket } from '../models/packets/base-type.packet';
 import { PlayerPacket } from '../models/packets/player.packet';
+import { ReportPacket } from '../models/packets/report.packet';
 import { ResourcePacket } from '../models/packets/resource.packet';
 import { TileTypePacket } from '../models/packets/tile-type.packet';
 import { UserPacket } from '../models/packets/user.packet';
@@ -14,13 +15,17 @@ import { SocketHandlerService } from './socket-handler.service';
   providedIn: 'root'
 })
 export class Cache {
-  
+ 
   public static soundOn: boolean = true;
+  public static sideWindow: 'army' | 'base' | 'reports' | undefined;
 
   static path: Tile[] | undefined;
   private static _selectedArmy: Army | undefined;
   private static _selectedTile: Tile | undefined;
   private static _selectedBase: Base | undefined;
+  private static _selectedReport: ReportPacket | undefined;
+
+  
   
   private static _ws: SocketHandlerService;
   private static gameId: string;
@@ -32,10 +37,13 @@ export class Cache {
   private static armies: Map<string, Army[]> // playerId
   private static tileTypes: TileTypePacket[];
   private static baseTypes: BaseTypePacket[];
+  private static reports: ReportPacket[];
   private static tiles: Map<number, Map<number, Tile>>;
   private static resources: ResourcePacket[];
   private static bases: Map<string, Base[]>; // playerId
   private static camera: Camera;
+
+  public static unreadReports: number;
 
   constructor() {
     Cache.users = new Map();
@@ -46,8 +54,35 @@ export class Cache {
     Cache.myUserId = '';
     Cache.me = {} as PlayerPacket;
     Cache.tileTypes = [];
+    Cache.reports = [];
     Cache.tiles = new Map();
     Cache.bases = new Map();
+    Cache.unreadReports = 0;
+  }
+
+  static setReport(report: ReportPacket) {
+    const existing = Cache.reports.filter(e => e.id == report.id);
+    if (existing.length > 0) {
+      existing[0] = report;
+      return;
+    }
+    this.reports.push(report);
+    this.countUnreadReports();
+  }
+  
+  static getReports() {
+    return this.reports;
+  }
+
+  private static countUnreadReports(): void {
+    console.log(Cache.reports)
+    let unread = 0;
+    for (const report of Cache.reports) {
+      if (!report.report_read) {
+        unread++;
+      }
+    }
+    this.unreadReports = unread;
   }
 
   static getPlayerBases(id: string): Base[] | undefined {
@@ -308,6 +343,13 @@ export class Cache {
       this.selectedBase = undefined;
     }
     Cache._selectedTile = value;
+  }
+
+  public static get selectedReport(): ReportPacket | undefined {
+    return Cache._selectedReport;
+  }
+  public static set selectedReport(value: ReportPacket | undefined) {
+    Cache._selectedReport = value;
   }
 
   public static get ws(): SocketHandlerService {

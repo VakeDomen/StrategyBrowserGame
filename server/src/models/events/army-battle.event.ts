@@ -85,7 +85,7 @@ export class ArmyBattleEvent extends Event {
             const initiatorReport = new Report({
                 player_id: initiator.player_id,
                 report_read: false,
-                report_type: 'ARMY_FILED_BATTLE',
+                report_type: 'ARMY_FIELD_BATTLE',
                 body: JSON.stringify({
                     preInitiator,
                     preDefender,
@@ -96,7 +96,7 @@ export class ArmyBattleEvent extends Event {
             const defenderReport = new Report({
                 player_id: defender.player_id,
                 report_read: false,
-                report_type: 'ARMY_FILED_BATTLE',
+                report_type: 'ARMY_FIELD_BATTLE',
                 body: JSON.stringify({
                     preInitiator,
                     preDefender,

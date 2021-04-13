@@ -15,6 +15,11 @@ import { PlayerNameBanner } from "./components/player-name-banner.component";
 import { SelectedBaseOverviewWindow } from "./windows/selected-base-overview.window";
 import { ToggleSoundButton } from "./buttons/togge-sound.button";
 import { ArmyBuildWindow } from "./windows/army-build.window";
+import { ToggleReportsButton } from "./buttons/toggle-reports.button";
+import { ArmyListWindow } from "./windows/army-list.window";
+import { BaseListWindow } from "./windows/base-list.window";
+import { ReportListWindow } from "./windows/report-list.window";
+import { SelectedReportOverviewWindow } from "./windows/selected-report-overview.window";
 
 export class GUI implements Drawable {
 
@@ -29,12 +34,17 @@ export class GUI implements Drawable {
             new ToggleSoundButton(),
             new ArmyListButton(this),
             new BaseListButton(this),
+            new ToggleReportsButton(),
             new SelectedArmyOverviewWindow(),
             new SelectedTileOverviewWindow(),
             new SelectedBaseOverviewWindow(),
+            new ArmyListWindow(undefined),
+            new BaseListWindow(undefined),
+            new ReportListWindow(),
             new ArmyInventoryWindow(),
             new ArmyBattalionsWindow(),
             new ArmyBuildWindow(),
+            new SelectedReportOverviewWindow(),
             new PlayerNameBanner(),
         ];
     }
